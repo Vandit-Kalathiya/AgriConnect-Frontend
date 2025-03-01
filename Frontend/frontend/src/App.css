@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+  --color-jewel-50: #f3faf4;
+  --color-jewel-100: #e3f5e7;
+  --color-jewel-200: #c8ead1;
+  --color-jewel-300: #9cd9ac;
+  --color-jewel-400: #69bf80;
+  --color-jewel-500: #45a25e;
+  --color-jewel-600: #34854a;
+  --color-jewel-700: #2e6f40;
+  --color-jewel-800: #275434;
+  --color-jewel-900: #21462c;
+  --color-jewel-950: #0e2515;
+
+  --color-everglade-50: #f4f9f4;
+  --color-everglade-100: #e6f2e9;
+  --color-everglade-200: #cde5d2;
+  --color-everglade-300: #a5d0b0;
+  --color-everglade-400: #76b286;
+  --color-everglade-500: #539464;
+  --color-everglade-600: #40794f;
+  --color-everglade-700: #356040;
+  --color-everglade-800: #2e4d37;
+  --color-everglade-900: #253d2c;
+  --color-everglade-950: #112216;
+
+  --color-de-york-50: #f0f9f2;
+  --color-de-york-100: #daf1dd;
+  --color-de-york-200: #b7e3bf;
+  --color-de-york-300: #87ce99;
+  --color-de-york-400: #68ba7f;
+  --color-de-york-500: #349553;
+  --color-de-york-600: #247740;
+  --color-de-york-700: #1c6034;
+  --color-de-york-800: #194c2c;
+  --color-de-york-900: #153f25;
+  --color-de-york-950: #0b2314;
+
+  --color-snowy-mint-50: #effef3;
+  --color-snowy-mint-100: #cfffdc;
+  --color-snowy-mint-200: #b5fdc9;
+  --color-snowy-mint-300: #7cf9a0;
+  --color-snowy-mint-400: #3cec6f;
+  --color-snowy-mint-500: #13d44c;
+  --color-snowy-mint-600: #09b03b;
+  --color-snowy-mint-700: #0b8a31;
+  --color-snowy-mint-800: #0f6c2b;
+  --color-snowy-mint-900: #0e5927;
+  --color-snowy-mint-950: #013211;
+
+  --color-snowy-mint : #CFFFDC;
+  --color-Jewel : #2E6F40;
+  --color-de-york: #68BA7F;
+  --color-everglade: #253D2C;
+
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+
+  --font-poppins: "Poppins", sans-serif;
+}
+
+
+/* Tailwind doesn't support custom animations out of the box, so add these to your CSS */
+@keyframes spin-leaf {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes spin-leaf-reverse {
+  0% {
+    transform: rotate(360deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(0.8);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+.animate-spin-leaf {
+  animation: spin-leaf infinite linear;
+}
+
+.animate-spin-leaf-reverse {
+  animation: spin-leaf-reverse infinite linear;
+}
