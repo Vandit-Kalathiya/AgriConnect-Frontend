@@ -20,11 +20,13 @@ import AuthPage from "./Component/Auth/AuthPage";
 import { getUsernameFromToken } from "../helper";
 import HomePage from "./Component/HomePage/HomePage";
 import ColdStoragePage from "./Component/ColdStorage/ColdStorage";
+import Agriprice from "./Component/ColdStorage/AgriPrice";
+import { ToastContainer } from "react-toastify";
 
 // PrivateRoute component to protect authenticated routes
 const PrivateRoute = ({ children }) => {
   const isAuthenticated = !!getUsernameFromToken(); // Check if user is logged in
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  return isAuthenticated ? children : <Navigate to="/auth" />;
 };
 
 // PublicRoute component to restrict logged-in users from login/register
@@ -40,6 +42,7 @@ function App() {
   return (
     <MantineProvider>
       <BrowserRouter>
+        {/* <ToastContainer> */}
         <Routes>
           {/* Public routes: Only accessible when not logged in */}
           <Route
@@ -61,9 +64,9 @@ function App() {
           <Route
             path="/"
             element={
-              // <PublicRoute>
+              <PublicRoute>
                 <HomePage />
-              // </PublicRoute>
+              </PublicRoute>
             }
           />
 
@@ -90,7 +93,11 @@ function App() {
                           path="/market-trends"
                           element={<MarketTrendsDashboard />}
                         />
-                        <Route path="/cold-storage" element={<ColdStoragePage/>} />
+                        <Route
+                          path="/cold-storage"
+                          element={<ColdStoragePage />}
+                        />
+                        <Route path="/agriprice" element={<Agriprice />} />
                         <Route path="/profile" element={<UserProfile />} />
                         <Route path="/my-orders" element={<MyOrders />} />
                         <Route
@@ -107,6 +114,7 @@ function App() {
             }
           />
         </Routes>
+        {/* </ToastContainer> */}
       </BrowserRouter>
     </MantineProvider>
   );

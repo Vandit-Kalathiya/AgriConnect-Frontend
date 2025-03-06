@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import CropCard from "./CropCard";
 import axios from "axios";
+import Loader from "../Loader/Loader";
 
 const BASE_URL = "http://localhost:2527"; // Adjust to your backend URL
 
@@ -14,6 +15,7 @@ export const CropListingPage = () => {
       const response = await axios.get(`${BASE_URL}/listings/all/active`, {
         withCredentials: true,
       });
+      setLoading(true);
 
       // Fetch images for each listing
       const listingsWithImages = await Promise.all(
@@ -34,7 +36,7 @@ export const CropListingPage = () => {
             harvestDate: listing.harvestedDate,
             availabilityDate: listing.availabilityDate,
             shelfLife: listing.shelfLifetime,
-            price: `$${listing.finalPrice / 100}`,
+            price: `₹${listing.finalPrice}`,
             priceUnit: "per " + listing.unitOfQuantity,
             description: listing.productDescription,
             contact: listing.contactOfFarmer,
@@ -66,9 +68,9 @@ export const CropListingPage = () => {
         </h1>
 
         {loading && (
-          <p className="text-center text-gray-600 text-md md:text-lg">
-            Loading listings...
-          </p>
+          <div className="text-center text-gray-600 text-md md:text-lg">
+             <Loader />
+          </div>
         )}
 
         {error && (

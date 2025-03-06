@@ -12,7 +12,7 @@ export const getUsernameFromToken = () => {
             ?.split('=')[1];
 
         if (!token) {
-            console.error('JWT token not found in cookies');
+            console.log('JWT token not found in cookies');
             return null;
         }
 
@@ -20,7 +20,7 @@ export const getUsernameFromToken = () => {
         const decodedToken = jwtDecode(token);
         return decodedToken?.sub || null;
     } catch (error) {
-        console.error('Error decoding JWT token:', error);
+        console.log('Error decoding JWT token:', error);
         return null;
     }
 };

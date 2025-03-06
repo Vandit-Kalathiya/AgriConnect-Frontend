@@ -26,6 +26,7 @@ import {
 } from "react-icons/wi";
 import { FaRegCompass, FaSearch, FaMapMarkerAlt } from "react-icons/fa";
 import Loader from "../Loader/Loader";
+import RainfallAdvisory from "./RainfallAdvisory"; // Import the new component
 
 ChartJS.register(
   CategoryScale,
@@ -328,94 +329,100 @@ const WeatherDashboard = () => {
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          {/* Left Section: Current Weather */}
-          <div className="lg:col-span-1 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-4 md:p-6 flex flex-col">
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-lg md:text-xl font-bold text-slate-800">
-                    Current Weather
-                  </h2>
-                  <p className="text-xs md:text-sm text-slate-500">
-                    {new Date().toLocaleDateString("en-US", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
+          {/* Left Section: Current Weather & Rainfall Advisory */}
+          <div className="lg:col-span-1 space-y-4 md:space-y-6">
+            {/* Current Weather */}
+            <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-4 md:p-6 flex flex-col">
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-lg md:text-xl font-bold text-slate-800">
+                      Current Weather
+                    </h2>
+                    <p className="text-xs md:text-sm text-slate-500">
+                      {new Date().toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <div className="bg-jewel-500/10 rounded-lg px-2 md:px-3 py-1">
+                    <p className="text-jewel-600 text-xs md:text-sm font-medium">
+                      {weatherData.city.name}
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-jewel-500/10 rounded-lg px-2 md:px-3 py-1">
-                  <p className="text-jewel-600 text-xs md:text-sm font-medium">
-                    {weatherData.city.name}
-                  </p>
+
+                <div className="flex flex-col items-center space-y-4 my-2 md:my-4">
+                  {getWeatherIcon(current.weather[0].description)}
+                  <div className="text-center">
+                    <p className="text-4xl md:text-6xl font-bold text-slate-800">
+                      {Math.round(current.main.temp)}°C
+                    </p>
+                    <p className="text-md md:text-lg text-slate-500 capitalize">
+                      {current.weather[0].description}
+                    </p>
+                  </div>
                 </div>
+
+                <p className="text-center text-xs md:text-sm text-slate-600">
+                  Feels like {Math.round(current.main.feels_like)}°C • Min{" "}
+                  {Math.round(current.main.temp_min)}°C • Max{" "}
+                  {Math.round(current.main.temp_max)}°C
+                </p>
               </div>
 
-              <div className="flex flex-col items-center space-y-4 my-2 md:my-4">
-                {getWeatherIcon(current.weather[0].description)}
-                <div className="text-center">
-                  <p className="text-4xl md:text-6xl font-bold text-slate-800">
-                    {Math.round(current.main.temp)}°C
-                  </p>
-                  <p className="text-md md:text-lg text-slate-500 capitalize">
-                    {current.weather[0].description}
-                  </p>
+              {/* Weather Details */}
+              <div className="grid grid-cols-2 gap-2 md:gap-3 mt-4 md:mt-auto">
+                <div className="flex items-center space-x-2 md:space-x-3 bg-blue-50 rounded-xl p-2 md:p-3">
+                  <WiHumidity className="text-blue-600 text-2xl md:text-3xl" />
+                  <div>
+                    <p className="text-xs text-slate-500">Humidity</p>
+                    <p className="text-md md:text-lg font-semibold text-slate-700">
+                      {current.main.humidity}%
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 md:space-x-3 bg-green-50 rounded-xl p-2 md:p-3">
+                  <WiWindy className="text-green-600 text-2xl md:text-3xl" />
+                  <div>
+                    <p className="text-xs text-slate-500">Wind</p>
+                    <p className="text-md md:text-lg font-semibold text-slate-700">
+                      {current.wind.speed} m/s
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 md:space-x-3 bg-amber-50 rounded-xl p-2 md:p-3">
+                  <WiSunrise className="text-amber-600 text-2xl md:text-3xl" />
+                  <div>
+                    <p className="text-xs text-slate-500">Sunrise</p>
+                    <p className="text-md md:text-lg font-semibold text-slate-700">
+                      {new Date(current.sys.sunrise * 1000).toLocaleTimeString(
+                        [],
+                        { hour: "2-digit", minute: "2-digit" }
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 md:space-x-3 bg-purple-50 rounded-xl p-2 md:p-3">
+                  <WiSunset className="text-purple-600 text-2xl md:text-3xl" />
+                  <div>
+                    <p className="text-xs text-slate-500">Sunset</p>
+                    <p className="text-md md:text-lg font-semibold text-slate-700">
+                      {new Date(current.sys.sunset * 1000).toLocaleTimeString(
+                        [],
+                        { hour: "2-digit", minute: "2-digit" }
+                      )}
+                    </p>
+                  </div>
                 </div>
               </div>
-
-              <p className="text-center text-xs md:text-sm text-slate-600">
-                Feels like {Math.round(current.main.feels_like)}°C • Min{" "}
-                {Math.round(current.main.temp_min)}°C • Max{" "}
-                {Math.round(current.main.temp_max)}°C
-              </p>
             </div>
 
-            {/* Weather Details with Icons */}
-            <div className="grid grid-cols-2 gap-2 md:gap-3 mt-4 md:mt-auto">
-              <div className="flex items-center space-x-2 md:space-x-3 bg-blue-50 rounded-xl p-2 md:p-3">
-                <WiHumidity className="text-blue-600 text-2xl md:text-3xl" />
-                <div>
-                  <p className="text-xs text-slate-500">Humidity</p>
-                  <p className="text-md md:text-lg font-semibold text-slate-700">
-                    {current.main.humidity}%
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 md:space-x-3 bg-green-50 rounded-xl p-2 md:p-3">
-                <WiWindy className="text-green-600 text-2xl md:text-3xl" />
-                <div>
-                  <p className="text-xs text-slate-500">Wind</p>
-                  <p className="text-md md:text-lg font-semibold text-slate-700">
-                    {current.wind.speed} m/s
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 md:space-x-3 bg-amber-50 rounded-xl p-2 md:p-3">
-                <WiSunrise className="text-amber-600 text-2xl md:text-3xl" />
-                <div>
-                  <p className="text-xs text-slate-500">Sunrise</p>
-                  <p className="text-md md:text-lg font-semibold text-slate-700">
-                    {new Date(current.sys.sunrise * 1000).toLocaleTimeString(
-                      [],
-                      { hour: "2-digit", minute: "2-digit" }
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 md:space-x-3 bg-purple-50 rounded-xl p-2 md:p-3">
-                <WiSunset className="text-purple-600 text-2xl md:text-3xl" />
-                <div>
-                  <p className="text-xs text-slate-500">Sunset</p>
-                  <p className="text-md md:text-lg font-semibold text-slate-700">
-                    {new Date(current.sys.sunset * 1000).toLocaleTimeString(
-                      [],
-                      { hour: "2-digit", minute: "2-digit" }
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
+            {/* Rainfall Advisory */}
+            <RainfallAdvisory />
           </div>
 
           {/* Middle and Right Section */}

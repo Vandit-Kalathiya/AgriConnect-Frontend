@@ -382,7 +382,7 @@ const ListingForm = () => {
 
         {/* Confirmation Modal */}
         {showConfirmModal && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 px-4">
             <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 w-full max-w-xs md:max-w-md">
               <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-4">
                 Confirm Submission

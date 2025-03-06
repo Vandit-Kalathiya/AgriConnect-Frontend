@@ -62,7 +62,7 @@ const Dashboard = () => {
         <div className="space-y-6">
           <AlertsPanel />
           <CropAdvisory />
-          <DemandAnalytics />
+          {/* <DemandAnalytics /> */}
           {/* <PriceSuggestions /> */}
         </div>
 

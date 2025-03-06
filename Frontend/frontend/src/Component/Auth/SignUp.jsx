@@ -38,35 +38,29 @@ const SignUp = ({ onNavigateToLogin }) => {
         { username, address, phoneNumber },
         { withCredentials: true }
       );
+
+      const jwtRequest = {
+        phoneNumber,
+      };
       if (response.status === 201) {
         // After successful registration, automatically log in
         const loginResponse = await axios.post(
-          "http://localhost:2525/auth/login",
-          {
-            phoneNumber,
-          }
+          "http://localhost:2525/auth/login/after/register",
+          jwtRequest,
+          { withCredentials: true }
         );
         if (loginResponse.status === 200) {
-          const verifyLoginResponse = await axios.post(
-            `http://localhost:2525/auth/verify-otp/${phoneNumber}/${otp}`,
-            {},
-            { withCredentials: true }
-          );
-          if (verifyLoginResponse.status === 200) {
-            const token = verifyLoginResponse.data.split(
-              "Login successful.: "
-            )[1];
-            localStorage.setItem("jwtToken", token);
-            setUsername("");
-            setAddress("");
-            setPhoneNumber("");
-            setShowOtp(false);
-            navigate("/dashboard");
-          }
+          console.log(loginResponse.data);
+          const token = loginResponse.data.jwtToken;
+          setUsername("");
+          setAddress("");
+          setPhoneNumber("");
+          setShowOtp(false);
+          navigate("/dashboard");
         }
       }
     } catch (err) {
-      setError(err.response?.data || "Failed to verify OTP or login");
+      setError(err || "Failed to verify OTP or login");
     }
   };
 
@@ -85,6 +79,33 @@ const SignUp = ({ onNavigateToLogin }) => {
       />
     );
   }
+
+  // Handle input change
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    // Allow only digits
+    const numericValue = value.replace(/\D/g, "");
+
+    // Restrict to 10 digits max
+    if (numericValue.length <= 10) {
+      setPhoneNumber(numericValue);
+      // Check if less than 10 digits on blur or submission, but not during typing
+      if (numericValue.length > 0 && numericValue.length < 10) {
+        setError("Phone number must be exactly 10 digits");
+      } else {
+        setError("");
+      }
+    }
+  };
+
+  // Validate on blur (when user leaves the input)
+  const handleBlur = () => {
+    if (phoneNumber.length !== 10) {
+      setError("Phone number must be exactly 10 digits");
+    } else {
+      setError("");
+    }
+  };
 
   return (
     <div>
@@ -130,10 +151,17 @@ const SignUp = ({ onNavigateToLogin }) => {
         <input
           type="text"
           placeholder="Enter your phone number"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#45a25e]"
+          className={`w-full px-3 py-2 border ${
+            error ? "border-red-500" : "border-gray-300"
+          } rounded-md focus:outline-none focus:ring-2 focus:ring-[#45a25e]`}
           value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
+          onChange={handlePhoneChange}
+          onBlur={handleBlur}
+          maxLength={10} // HTML attribute to limit input length
+          inputMode="numeric" // Suggests numeric keyboard on mobile
+          pattern="[0-9]*" // Enforces numeric input for some browsers
         />
+        {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
       </div>
       <button
         className="w-full bg-[#45a25e] text-white py-3 rounded-md hover:bg-[#34854a] transition duration-200 font-medium"

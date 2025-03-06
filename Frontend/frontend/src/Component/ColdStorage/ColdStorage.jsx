@@ -3,6 +3,7 @@ import axios from "axios";
 import { FaWarehouse, FaPlus, FaTimes, FaCheckCircle, FaHourglassHalf, FaArrowRight, FaSearch, FaMapMarkerAlt } from "react-icons/fa";
 import { getCurrentUser } from "../../../helper";
 // import NearbyColdStorages from "./NearbyColdStorages";
+import Loader from "../Loader/Loader"
 
 const ColdStoragePage = () => {
   const [bookings, setBookings] = useState([]);
@@ -26,13 +27,43 @@ const ColdStoragePage = () => {
   });
   const [bookingStatus, setBookingStatus] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
+  const [loading, setLoading] = useState(false);
 
   // Static cold storages with coordinates for proximity sorting
   const staticColdStorages = [
-    { id: "1", name: "Storage A", phoneNumber: "+1234567890", lat: 19.0760, lon: 72.8777, location: "Mumbai, Maharashtra", temperature: "-5°C", specialty: "Fruits", capacity: "85% available" },
-    { id: "2", name: "Storage B", phoneNumber: "+0987654321", lat: 28.7041, lon: 77.1025, location: "Delhi, Delhi", temperature: "-10°C", specialty: "Vegetables", capacity: "60% available" },
-    { id: "3", name: "Cold Store XYZ", phoneNumber: "+1122334455", lat: 12.9716, lon: 77.5946, location: "Bangalore, Karnataka", temperature: "-2°C", specialty: "Mixed", capacity: "75% available" },
-    { id: "4", name: "Frosty Warehouse", phoneNumber: "+3344556677", lat: 22.5726, lon: 88.3639, location: "Kolkata, West Bengal", temperature: "-15°C", specialty: "Dairy", capacity: "90% available" },
+    {
+      id: "1",
+      name: "RADHA KISHAN COLD SOTRAGE",
+      phoneNumber: "98253 64071",
+      lat: 19.076,
+      lon: 72.8777,
+      location: "Kanjari, Gujarat",
+      temperature: "-5°C",
+      specialty: "Fruits",
+      capacity: "85% available",
+    },
+    {
+      id: "2",
+      name: "Amar Cold Storage",
+      phoneNumber: "90999 08522",
+      lat: 28.7041,
+      lon: 77.1025,
+      location: "N H No 228, Nadiad-Anand Rd",
+      temperature: "-10°C",
+      specialty: "Vegetables",
+      capacity: "60% available",
+    },
+    {
+      id: "3",
+      name: "Vrundavan Cold Storage",
+      phoneNumber: "94260 61878",
+      lat: 12.9716,
+      lon: 77.5946,
+      location: "Boriavi, Gujarat",
+      temperature: "-2°C",
+      specialty: "Mixed",
+      capacity: "75% available",
+    },
   ];
 
   // Get current user (farmer)
@@ -85,6 +116,7 @@ const ColdStoragePage = () => {
       const response = await axios.get(
         `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
       );
+      setLoading(true);
       const address = response.data.address;
       return {
         district: address.county || address.city_district || "N/A",
@@ -93,6 +125,8 @@ const ColdStoragePage = () => {
     } catch (error) {
       console.error("Error reverse geocoding:", error);
       return { district: "N/A", state: "N/A" };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -209,8 +243,17 @@ const ColdStoragePage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 animate-fadeIn">
         <div className="px-8 pt-4">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2 tracking-tight">Cold Storage</h1>
-          <p className="text-gray-600 max-w-2xl text-lg">Secure your harvest with ease and precision</p>
+          {loading && (
+            <div className="text-center text-gray-600 text-md md:text-lg">
+              <Loader />
+            </div>
+          )}
+          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2 tracking-tight">
+            Cold Storage
+          </h1>
+          <p className="text-gray-600 max-w-2xl text-lg">
+            Secure your harvest with ease and precision
+          </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -225,8 +268,12 @@ const ColdStoragePage = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
             <FaMapMarkerAlt className="text-green-600" />
-            <span className="text-lg font-semibold text-gray-800">Your Location:</span>
-            <span className="text-gray-600">{district}, {state}</span>
+            <span className="text-lg font-semibold text-gray-800">
+              Your Location:
+            </span>
+            <span className="text-gray-600">
+              {district}, {state}
+            </span>
           </div>
           <div className="flex gap-2">
             <button
@@ -235,13 +282,21 @@ const ColdStoragePage = () => {
                 fetchLiveLocation();
                 setManualLocation({ district: "", state: "" });
               }}
-              className={`px-4 py-2 rounded-lg ${locationMode === "live" ? "bg-green-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"} transition`}
+              className={`px-4 py-2 rounded-lg ${
+                locationMode === "live"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              } transition`}
             >
               Live Tracking
             </button>
             <button
               onClick={() => setLocationMode("manual")}
-              className={`px-4 py-2 rounded-lg ${locationMode === "manual" ? "bg-green-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"} transition`}
+              className={`px-4 py-2 rounded-lg ${
+                locationMode === "manual"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              } transition`}
             >
               Manual Entry
             </button>
@@ -286,7 +341,11 @@ const ColdStoragePage = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${activeTab === tab ? "bg-green-600 text-white shadow-md" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                activeTab === tab
+                  ? "bg-green-600 text-white shadow-md"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
@@ -315,22 +374,42 @@ const ColdStoragePage = () => {
                     <div className="p-2 bg-green-100 rounded-lg">
                       <FaWarehouse className="text-green-600 text-xl" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-800">{booking.cropName}</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {booking.cropName}
+                    </h3>
                   </div>
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${
-                      booking.status === "Approved" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                      booking.status === "Approved"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
                     }`}
                   >
-                    {booking.status === "Approved" ? <FaCheckCircle className="mr-1" /> : <FaHourglassHalf className="mr-1" />}
+                    {booking.status === "Approved" ? (
+                      <FaCheckCircle className="mr-1" />
+                    ) : (
+                      <FaHourglassHalf className="mr-1" />
+                    )}
                     {booking.status}
                   </span>
                 </div>
                 <div className="space-y-2 text-gray-600 text-sm">
-                  <p><span className="font-medium">Type:</span> {booking.cropType}</p>
-                  <p><span className="font-medium">Quantity:</span> {booking.cropQuantity} tons</p>
-                  <p><span className="font-medium">Duration:</span> {booking.storageDuration} days</p>
-                  <p><span className="font-medium">Storage:</span> {booking.coldStorageName}</p>
+                  <p>
+                    <span className="font-medium">Type:</span>{" "}
+                    {booking.cropType}
+                  </p>
+                  <p>
+                    <span className="font-medium">Quantity:</span>{" "}
+                    {booking.cropQuantity} tons
+                  </p>
+                  <p>
+                    <span className="font-medium">Duration:</span>{" "}
+                    {booking.storageDuration} days
+                  </p>
+                  <p>
+                    <span className="font-medium">Storage:</span>{" "}
+                    {booking.coldStorageName}
+                  </p>
                 </div>
                 {booking.status === "Pending" && (
                   <div className="flex justify-center mt-4 pt-4 border-t border-gray-100">
@@ -348,8 +427,12 @@ const ColdStoragePage = () => {
         ) : (
           <div className="text-center py-16 bg-gray-50 rounded-lg">
             <FaWarehouse className="mx-auto text-gray-300 text-5xl mb-4" />
-            <p className="text-gray-500 mb-2 text-lg">No storage bookings yet</p>
-            <p className="text-gray-400 text-sm mb-6">Book a storage space to get started</p>
+            <p className="text-gray-500 mb-2 text-lg">
+              No storage bookings yet
+            </p>
+            <p className="text-gray-400 text-sm mb-6">
+              Book a storage space to get started
+            </p>
             <button
               onClick={() => setIsModalOpen(true)}
               className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
@@ -370,12 +453,18 @@ const ColdStoragePage = () => {
             >
               <FaTimes size={24} />
             </button>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Book Cold Storage</h2>
-            <p className="text-gray-600 mb-6">Secure a spot for your crops with ease</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              Book Cold Storage
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Secure a spot for your crops with ease
+            </p>
             <form onSubmit={handleBookingSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Crop Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Crop Name
+                  </label>
                   <input
                     type="text"
                     name="cropName"
@@ -387,7 +476,9 @@ const ColdStoragePage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Crop Type
+                  </label>
                   <select
                     name="cropType"
                     value={bookingForm.cropType}
@@ -406,7 +497,9 @@ const ColdStoragePage = () => {
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Crop Quantity (tons)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Crop Quantity (tons)
+                  </label>
                   <input
                     type="number"
                     name="cropQuantity"
@@ -420,7 +513,9 @@ const ColdStoragePage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Storage Duration (days)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Storage Duration (days)
+                  </label>
                   <input
                     type="number"
                     name="storageDuration"
@@ -434,7 +529,9 @@ const ColdStoragePage = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Select Cold Storage</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Cold Storage
+                </label>
                 <select
                   name="coldStorageName"
                   value={bookingForm.coldStorageName}
@@ -445,7 +542,11 @@ const ColdStoragePage = () => {
                   <option value="">Select Nearest Storage</option>
                   {sortedColdStorages.map((storage) => (
                     <option key={storage.id} value={storage.name}>
-                      {storage.name} - {storage.specialty} ({liveLocation ? `${Math.round(storage.distance)} km` : storage.location})
+                      {storage.name} - {storage.specialty} (
+                      {liveLocation
+                        ? `${Math.round(storage.distance)} km`
+                        : storage.location}
+                      )
                     </option>
                   ))}
                 </select>
@@ -466,14 +567,24 @@ const ColdStoragePage = () => {
                 </button>
               </div>
               {bookingStatus && (
-                <div className={`mt-4 p-4 rounded-lg flex items-center ${
-                  bookingStatus.type === "success" ? "bg-green-50 text-green-800" :
-                  bookingStatus.type === "error" ? "bg-red-50 text-red-800" :
-                  "bg-blue-50 text-blue-800"
-                }`}>
-                  {bookingStatus.type === "loading" && <div className="animate-spin h-5 w-5 border-b-2 border-blue-600 mr-3"></div>}
-                  {bookingStatus.type === "success" && <FaCheckCircle className="mr-2" />}
-                  {bookingStatus.type === "error" && <FaTimes className="mr-2" />}
+                <div
+                  className={`mt-4 p-4 rounded-lg flex items-center ${
+                    bookingStatus.type === "success"
+                      ? "bg-green-50 text-green-800"
+                      : bookingStatus.type === "error"
+                      ? "bg-red-50 text-red-800"
+                      : "bg-blue-50 text-blue-800"
+                  }`}
+                >
+                  {bookingStatus.type === "loading" && (
+                    <div className="animate-spin h-5 w-5 border-b-2 border-blue-600 mr-3"></div>
+                  )}
+                  {bookingStatus.type === "success" && (
+                    <FaCheckCircle className="mr-2" />
+                  )}
+                  {bookingStatus.type === "error" && (
+                    <FaTimes className="mr-2" />
+                  )}
                   {bookingStatus.message}
                 </div>
               )}
@@ -482,7 +593,7 @@ const ColdStoragePage = () => {
         </div>
       )}
 
-{/* {locationMode === "live" && liveLocation ? (
+      {/* {locationMode === "live" && liveLocation ? (
   <NearbyColdStorages 
     userLocation={liveLocation}
     onSelectStorage={handleSelectStorage}
@@ -502,8 +613,13 @@ const ColdStoragePage = () => {
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md border-t-4 border-green-500">
             <div className="text-center">
               <FaCheckCircle className="text-green-500 text-5xl mx-auto mb-4 animate-bounce" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Confirm Approval</h2>
-              <p className="text-gray-600 mb-6">Are you sure you want to approve this booking? This action will notify the farmer and update the status.</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Confirm Approval
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to approve this booking? This action will
+                notify the farmer and update the status.
+              </p>
             </div>
             <div className="flex justify-center gap-4">
               <button

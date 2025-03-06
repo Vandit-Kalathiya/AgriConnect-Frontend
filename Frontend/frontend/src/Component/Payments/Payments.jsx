@@ -10,6 +10,7 @@ import {
 import { motion } from "framer-motion";
 import axios from "axios";
 import { getCurrentUser } from "../../../helper";
+import Loader from "../Loader/Loader";
 
 const Payments = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -103,7 +104,7 @@ const Payments = () => {
               {
                 icon: FaMoneyBillWave,
                 label: "Total Transactions",
-                value: `$${paymentData.totalTransactions.toLocaleString(
+                value: `₹${paymentData.totalTransactions.toLocaleString(
                   "en-US",
                   {
                     minimumFractionDigits: 2,
@@ -165,10 +166,10 @@ const Payments = () => {
                     height: `${payment.amount / 1200}%`,
                   }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  title={`$${payment.amount}`} // Tooltip for full amount
+                  title={`$₹{payment.amount}`} // Tooltip for full amount
                 >
                   <span className="text-xs text-white mt-1 block text-center">
-                    $
+                    ₹
                     {payment.amount > 999
                       ? `${(payment.amount / 1000).toFixed(1)}k`
                       : payment.amount}
@@ -202,9 +203,8 @@ const Payments = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center py-8">
-              <FaShoppingCart className="text-green-500 text-4xl mx-auto mb-4 animate-bounce" />
-              <p className="text-gray-600">Loading transactions...</p>
+            <div className="text-center text-gray-600 text-md md:text-lg">
+              <Loader />
             </div>
           ) : filteredTransactions.length === 0 ? (
             <div className="text-center py-12">
@@ -243,7 +243,7 @@ const Payments = () => {
                     </div>
                     <div className="text-left sm:text-right">
                       <p className="text-lg font-bold text-green-900">
-                        $
+                        ₹
                         {transaction.amount.toLocaleString("en-US", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,

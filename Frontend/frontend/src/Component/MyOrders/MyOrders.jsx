@@ -8,12 +8,12 @@ import {
   FaUndo,
   FaMoneyCheckAlt,
 } from "react-icons/fa";
-import { Loader } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getCurrentUser } from "../../../helper";
 import { XCircle, ThumbsUp } from "react-feather";
 import { toast } from "react-toastify";
+import Loader from "../Loader/Loader";
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -58,7 +58,6 @@ const MyOrders = () => {
       const fetchedOrders = response.data;
       setOrders(fetchedOrders);
 
-      // Fetch listings and images for all orders
       const listingPromises = fetchedOrders.map((order) =>
         fetchListingById(order.listingId).then((listing) => ({
           orderId: order.id,
@@ -74,7 +73,6 @@ const MyOrders = () => {
 
       setListings(newListings);
 
-      // Fetch images for all listings
       const imagePromises = Object.entries(newListings).map(
         ([orderId, listing]) =>
           listing?.images?.[0]?.id
@@ -173,12 +171,19 @@ const MyOrders = () => {
               isFarmerAction: false,
             };
       case "delivered":
-        return {
-          text: "Verify Delivery",
-          disabled: false,
-          icon: FaCheckCircle,
-          isFarmerAction: false,
-        };
+        return isFarmer
+          ? {
+              text: "Delivery Verified",
+              disabled: true,
+              icon: FaCheckCircle,
+              isFarmerAction: false,
+            }
+          : {
+              text: "Verified",
+              disabled: true,
+              icon: FaCheckCircle,
+              isFarmerAction: false,
+            };
       case "completed":
         return {
           text: "Completed",
@@ -187,13 +192,6 @@ const MyOrders = () => {
           isFarmerAction: false,
         };
       case "return_requested":
-        return {
-          text: "Return Requested",
-          disabled: true,
-          icon: FaUndo,
-          isFarmerAction: false,
-        };
-      case "return_confirmed":
         return isFarmer
           ? {
               text: "Confirm Return",
@@ -202,9 +200,23 @@ const MyOrders = () => {
               isFarmerAction: true,
             }
           : {
-              text: "Awaiting Refund",
+              text: "Return Requested",
               disabled: true,
-              icon: FaHourglassHalf,
+              icon: FaUndo,
+              isFarmerAction: false,
+            };
+      case "return_confirmed":
+        return isFarmer
+          ? {
+              text: "Return Confirmed",
+              disabled: true,
+              icon: FaUndo,
+              isFarmerAction: false,
+            }
+          : {
+              text: "Take Refund",
+              disabled: false,
+              icon: FaMoneyCheckAlt,
               isFarmerAction: false,
             };
       case "refunded":
@@ -226,23 +238,43 @@ const MyOrders = () => {
 
   const handleFarmerAction = async (pdfHash, newStatus, trackingNumber) => {
     try {
-      await axios.post(
-        `http://localhost:2526/api/payments/confirm-delivery/${pdfHash}/${trackingNumber}`,
-        { trackingNumber },
-        { withCredentials: true }
-      );
-      toast.success(
-        `${
-          newStatus === "delivered" ? "Delivery" : "Return"
-        } confirmed successfully!`
-      );
+      if (newStatus === "delivered") {
+        await axios.post(
+          `http://localhost:2526/api/payments/confirm-delivery/${pdfHash}/${trackingNumber}`,
+          { trackingNumber },
+          { withCredentials: true }
+        );
+        toast.success("Delivery confirmed successfully!");
+      } else if (newStatus === "return_confirmed") {
+        await axios.post(
+          `http://localhost:2526/api/payments/confirm-return/${pdfHash}`,
+          {},
+          { withCredentials: true }
+        );
+        toast.success("Return confirmed successfully!");
+      }
       setShowTrackingModal(false);
       setTrackingNumber("");
       setSelectedOrderId(null);
-      fetchOrders(); // Refresh order list
+      fetchOrders();
     } catch (error) {
       console.error("Error updating order status:", error);
       toast.error("Failed to update order status");
+    }
+  };
+
+  const handleBuyerRefund = async (pdfHash) => {
+    try {
+      await axios.post(
+        `http://localhost:2526/api/payments/reject-delivery/${pdfHash}`,
+        {},
+        { withCredentials: true }
+      );
+      toast.success("Refund processed successfully!");
+      fetchOrders();
+    } catch (error) {
+      console.error("Error processing refund:", error);
+      toast.error("Failed to process refund");
     }
   };
 
@@ -278,8 +310,7 @@ const MyOrders = () => {
     try {
       const order = orders.find((o) => o.id === selectedOrderId);
       await axios.post(
-        `http://localhost:2526/api/payments/reject-delivery/${order.pdfHash}`,
-        { reason: rejectionReason, comment: rejectionComment },
+        `http://localhost:2526/api/payments/request-return/${order.pdfHash}/abcd`,
         { withCredentials: true }
       );
       toast.success("Delivery rejection submitted successfully");
@@ -337,11 +368,8 @@ const MyOrders = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader color="green" size="xl" />
-            <p className="ml-4 text-green-700 font-medium">
-              Loading your orders...
-            </p>
+          <div className="text-center text-gray-600 text-md md:text-lg">
+            <Loader />
           </div>
         ) : error ? (
           <div className="text-center py-12">
@@ -453,7 +481,8 @@ const MyOrders = () => {
                                     order.status === "completed" ||
                                     order.status === "refunded"
                                       ? "text-green-600 bg-green-50"
-                                      : order.status === "created"
+                                      : order.status === "created" ||
+                                        order.status === "return_confirmed"
                                       ? "text-yellow-600 bg-yellow-50"
                                       : "text-blue-600 bg-blue-50"
                                   }`}
@@ -484,11 +513,10 @@ const MyOrders = () => {
                               </h3>
                               <div className="flex items-center mb-3 md:mb-0">
                                 <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium mr-3">
-                                  {listing.quantity}&nbsp;
-                                  {listing.unitOfQuantity}
+                                  {listing?.quantity} {listing?.unitOfQuantity}
                                 </div>
                                 <div className="text-lg font-bold text-green-900">
-                                  ₹&nbsp;
+                                  ₹{" "}
                                   {order.amount.toLocaleString("en-US", {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2,
@@ -510,19 +538,25 @@ const MyOrders = () => {
                                     handleVerifyDelivery(order.id);
                                   } else if (
                                     isFarmer &&
-                                    buttonConfig.isFarmerAction
+                                    buttonConfig.isFarmerAction &&
+                                    order.status === "paid_pending_delivery"
                                   ) {
-                                    if (
-                                      order.status === "paid_pending_delivery"
-                                    ) {
-                                      openTrackingModal(order.id);
-                                    } else {
-                                      handleFarmerAction(
-                                        order.pdfHash,
-                                        "refunded",
-                                        ""
-                                      );
-                                    }
+                                    openTrackingModal(order.id);
+                                  } else if (
+                                    isFarmer &&
+                                    buttonConfig.isFarmerAction &&
+                                    order.status === "return_requested"
+                                  ) {
+                                    handleFarmerAction(
+                                      order.pdfHash,
+                                      "return_confirmed",
+                                      ""
+                                    );
+                                  } else if (
+                                    !isFarmer &&
+                                    order.status === "return_confirmed"
+                                  ) {
+                                    handleBuyerRefund(order.pdfHash);
                                   }
                                 }}
                                 disabled={buttonConfig.disabled}

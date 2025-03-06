@@ -6,6 +6,7 @@ import CropDetails from "./CropDetails";
 import CropTimeline from "./CropTimeline";
 import FreshnessMeter from "./FreshnessMeter";
 import ActionBar from "./ActionBar";
+import { Loader } from "lucide-react";
 
 export const CropDetailPage = () => {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ export const CropDetailPage = () => {
           withCredentials: true,
         }
       );
+      setLoading(true);
 
       const listing = response.data;
 
@@ -59,7 +61,7 @@ export const CropDetailPage = () => {
         harvestDate: listing.harvestedDate,
         availabilityDate: listing.availabilityDate,
         shelfLife: listing.shelfLifetime,
-        price: `$${(listing.finalPrice / 100).toFixed(2)}`, // Assuming price is in cents
+        price: `₹${(listing.finalPrice).toFixed(2)}`, // Assuming price is in cents
         priceUnit: `per ${listing.unitOfQuantity}`,
         description: listing.productDescription,
         contact: listing.contactOfFarmer,
@@ -116,6 +118,11 @@ export const CropDetailPage = () => {
   return (
     <div className="bg-gray-50 py-12 md:ml-20 mt-20 min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {loading && (
+          <div className="text-center text-gray-600 text-md md:text-lg">
+            <Loader />
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <CropImageGallery
             images={images}

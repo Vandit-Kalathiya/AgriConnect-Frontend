@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import TermsAndConditionsModal from "../TermsAndConditions/TermsAndConditionsModal";
-import {CropContractAgreement} from "../CropContractAgreement/CropContractAgreement";
+import CropContractAgreement from "../CropContractAgreement/CropContractAgreement";
+// import {CropContractAgreement} from "../CropContractAgreement/CropContractAgreement";
 
 const ActionBar = ({ crop }) => {
   const [quantity, setQuantity] = useState(1);
