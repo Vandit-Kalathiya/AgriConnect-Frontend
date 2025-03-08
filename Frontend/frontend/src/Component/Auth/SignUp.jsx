@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import OtpVerification from "./OtpVerification";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const SignUp = ({ onNavigateToLogin }) => {
   const [username, setUsername] = useState("");
@@ -56,6 +57,7 @@ const SignUp = ({ onNavigateToLogin }) => {
           setAddress("");
           setPhoneNumber("");
           setShowOtp(false);
+          toast.success("Registered Successfully")
           navigate("/dashboard");
         }
       }

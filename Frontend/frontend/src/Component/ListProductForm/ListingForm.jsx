@@ -4,11 +4,15 @@ import Step1 from "./Step1";
 import Step2 from "./Step2";
 import Step3 from "./Step3";
 import Step4 from "./Step4";
+import { getCurrentUser } from "../../../helper";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const BASE_URL = "http://localhost:2527"; // Replace with your actual backend URL
 
 const ListingForm = () => {
   const [step, setStep] = useState(1);
+  const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     productName: "",
     cropType: "Grains",
@@ -22,8 +26,8 @@ const ListingForm = () => {
     storageConditions: "",
     certifications: "",
     shelfLife: "",
-    location: "",
-    contactInfo: "",
+    location: "", // Initially empty, will be set after fetching user
+    contactInfo: "", // Initially empty, will be set after fetching user
     aiGenPrice: "",
     finalPrice: "",
   });
@@ -31,11 +35,36 @@ const ListingForm = () => {
   const [isLoadingAiPrice, setIsLoadingAiPrice] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+  const navigate = useNavigate();
+
   const MAX_PHOTOS = 5;
+
+  const fetchUser = async () => {
+    try {
+      const user = await getCurrentUser();
+      setUser(user);
+
+      // Set default values for location and contactInfo
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        location: user.address || "", // Use user's address if available
+        contactInfo: user.phoneNumber || "", // Use user's phone number if available
+      }));
+    } catch (err) {
+      console.log("User not found");
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
     if (value.trim() && errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -205,7 +234,7 @@ const ListingForm = () => {
       );
 
       console.log("Backend response:", response.data);
-      alert("Listing submitted successfully!");
+      toast.success("Listing added successfully");
 
       // Reset form
       setStep(1);
@@ -222,11 +251,12 @@ const ListingForm = () => {
         storageConditions: "",
         certifications: "",
         shelfLife: "",
-        location: "",
-        contactInfo: "",
+        location: user ? user.address : "", // Reset to user's address
+        contactInfo: user ? user.phoneNumber : "", // Reset to user's phone number
         aiGenPrice: "",
         finalPrice: "",
       });
+      navigate("/crops");
       setErrors({});
     } catch (error) {
       console.error("Error submitting listing:", error);
@@ -270,7 +300,7 @@ const ListingForm = () => {
         }));
       } catch (error) {
         console.error("Error fetching AI price:", error);
-        setFormData((prev) => ({ ...prev, aiGenPrice: "250.00" }));
+        // setFormData((prev) => ({ ...prev, aiGenPrice: "250.00" }));
       } finally {
         setIsLoadingAiPrice(false);
       }

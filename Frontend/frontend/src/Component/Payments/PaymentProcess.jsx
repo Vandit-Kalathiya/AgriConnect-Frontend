@@ -15,16 +15,26 @@ import {
   ArrowRight,
 } from "lucide-react";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const PaymentProcess = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { order } = location.state || {};
+
+  useEffect(() => {
+    if (!order) {
+      navigate("/my-orders");
+      toast.error("Invalid order. Please try again.");
+      return;
+    }
+  });
+
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState(order?.amount); // Default from order or 12500
   const [pdfHash, setPdfHash] = useState("");
   const [paymentCompleted, setPaymentCompleted] = useState(
-    order.status === "paid_pending_delivery"?true:false
+    order?.status === "paid_pending_delivery" ? true : false
   );
   const [deliveryStatus, setDeliveryStatus] = useState("waiting");
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -58,14 +68,14 @@ const PaymentProcess = () => {
 
   // Effect to handle redirect after verification
   useEffect(() => {
-    if (deliveryStatus === "verified" && !redirecting) {
+    if (deliveryStatus === "paid_pending_delivery" && !redirecting) {
       setRedirecting(true);
 
       const countdownInterval = setInterval(() => {
         setRedirectCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(countdownInterval);
-            window.location.href = "/my-payments";
+            window.location.href = "/my-orders";
             return 0;
           }
           return prev - 1;
@@ -95,6 +105,11 @@ const PaymentProcess = () => {
   };
 
   const handlePayNow = async () => {
+    if (paymentCompleted) {
+      toast.error("Payment already completed.");
+      return;
+    }
+
     setLoading(true);
 
     if (!contractFile) {
@@ -104,15 +119,13 @@ const PaymentProcess = () => {
     }
 
     try {
-      // Prepare multipart/form-data for payment creation
       const paymentData = new FormData();
       paymentData.append("file", contractFile);
       paymentData.append("farmerAddress", farmerAddress);
       paymentData.append("buyerAddress", buyerAddress);
       paymentData.append("orderId", order?.id);
-      paymentData.append("amount", Math.round(amount)); // Amount in rupees
+      paymentData.append("amount", Math.round(amount));
 
-      // Call the payment creation API
       const response = await axios.post(
         "http://localhost:2526/api/payments/create-order",
         paymentData,
@@ -125,14 +138,11 @@ const PaymentProcess = () => {
       );
 
       const razorpayData = response.data;
-      console.log("Razorpay order response:", razorpayData);
-
       setPdfHash(razorpayData.pdfHash);
 
-      // Initialize Razorpay
       const options = {
         key: razorpayData.keyId,
-        amount: razorpayData.amount, // Already in paise from backend
+        amount: razorpayData.amount,
         currency: razorpayData.currency,
         name: "AgriConnect",
         description: "Escrow Payment for Crop Order",
@@ -149,19 +159,29 @@ const PaymentProcess = () => {
                 body: `razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${response.razorpay_signature}`,
               }
             );
-            alert(await verifyResponse.text());
-            setPaymentCompleted(true);
 
-            // Optionally download contract after payment
-            // handleDownloadContract();
+            const verifyData = await verifyResponse.json();
+            // console.log(verifyData);
+            
+            if (verifyData.success) {
+              setPaymentCompleted(true);
+              // localStorage.setItem(
+              //   `paymentStatus_${order?.id}`,
+              //   "paid_pending_delivery"
+              // );
+              toast.success(verifyData.message);
+              window.location.href = "http://localhost:5173/my-orders";
+            } else {
+              toast.error("Payment verification failed.");
+            }
           } catch (verifyError) {
             console.error("Payment verification failed:", verifyError);
-            alert("Payment verification failed");
+            toast.error("Payment verification failed.");
           }
         },
         prefill: {
           name: order?.buyerName || "Buyer",
-          email: "buyer@example.com", // Replace with actual email if available
+          email: "buyer@example.com",
           contact: order?.buyerContact || "9123456789",
         },
         theme: { color: "#34855a" },
@@ -171,7 +191,7 @@ const PaymentProcess = () => {
       paymentObject.open();
     } catch (error) {
       console.error("Payment initialization failed:", error);
-      alert("Payment initialization failed: " + error.message);
+      toast.error("Payment initialization failed: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -370,7 +390,7 @@ const PaymentProcess = () => {
                 <label className="block font-medium mb-2">Payment Amount</label>
                 <input
                   type="text"
-                  value={`₹${amount.toLocaleString()}`}
+                  value={`₹ ${amount?.toLocaleString()}`}
                   readOnly
                   className="w-full px-3 py-2 border border-gray-300 rounded-md font-semibold text-lg text-emerald-700 bg-gray-50"
                 />
@@ -394,7 +414,7 @@ const PaymentProcess = () => {
                 <button
                   onClick={handlePayNow}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white w-full max-w-md text-lg py-3 px-6 rounded-md flex items-center justify-center transition-all duration-300"
-                  disabled={loading || !contractFile} // Disable if no file uploaded
+                  disabled={loading || !contractFile}
                 >
                   {loading ? (
                     <>

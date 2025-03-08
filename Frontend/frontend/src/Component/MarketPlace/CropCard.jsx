@@ -3,14 +3,13 @@ import { Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import axios from "axios";
 
-// Simple in-memory cache for image URLs
-const imageCache = new Map();
-
 const CropCard = ({ crop }) => {
-  const listingId = crop.id;
   const [loading, setLoading] = useState(true); // Track loading state
   const [error, setError] = useState(null);
   const [images, setImages] = useState([]);
+
+  // Log the crop object to verify its structure
+  // console.log("Crop Data:", crop);
 
   useEffect(() => {
     fetchImages();
@@ -21,13 +20,6 @@ const CropCard = ({ crop }) => {
       setLoading(true);
       const imagePromises = crop.images.map((image) => {
         const imageUrl = `http://localhost:2527/image/${image.id}`;
-
-        // Check cache first
-        // if (imageCache.has(imageUrl)) {
-        //   return Promise.resolve(imageCache.get(imageUrl));
-        // }
-
-        // Fetch image if not in cache
         return axios
           .get(imageUrl, {
             withCredentials: true,
@@ -35,7 +27,6 @@ const CropCard = ({ crop }) => {
           })
           .then((res) => {
             const url = URL.createObjectURL(res.data);
-            // imageCache.set(imageUrl, url); // Cache the URL
             return url;
           });
       });
@@ -66,19 +57,46 @@ const CropCard = ({ crop }) => {
     });
   }, [crop.availabilityDate]);
 
+  // Determine the status badge color and text
+  const getStatusBadge = (status) => {
+    if (!status) return null;
+
+    const statusText =
+      status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+    let badgeColor = "bg-blue-600"; // Default for active or unknown status
+
+    if (status.toUpperCase() === "PURCHASED") {
+      badgeColor = "bg-green-600";
+    } else if (status.toUpperCase() === "ARCHIVED") {
+      badgeColor = "bg-gray-600";
+    }
+
+    return (
+      <div
+        className={`absolute right-2 top-2 px-3 py-1 rounded-full text-xs font-semibold shadow-md text-white ${badgeColor}`}
+      >
+        {statusText}
+      </div>
+    );
+  };
+
   return (
     <Link to={`/crop/${crop.id}`} state={{ cropData: crop, images }}>
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden h-full flex flex-col hover:shadow-xl cursor-pointer transition-all duration-300 transform hover:scale-105 hover:bg-jewel-50">
         {loading ? (
           <div className="w-full h-48 sm:h-56 md:h-64 bg-gray-200 animate-pulse rounded-t-2xl" />
         ) : (
-          <img
-            src={
-              images[0] || "https://via.placeholder.com/600x400?text=No+Image"
-            }
-            alt={`${crop.type} - ${crop.variety}`}
-            className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-t-2xl transition-opacity duration-300 hover:opacity-90"
-          />
+          <div className="relative">
+            <img
+              src={
+                images[0] || "https://via.placeholder.com/600x400?text=No+Image"
+              }
+              alt={`${crop.type} - ${crop.variety}`}
+              className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-t-2xl transition-opacity duration-300 hover:opacity-90"
+            />
+            {/* Status Badge */}
+            {getStatusBadge(crop.status)}
+          </div>
         )}
         <div className="p-4 md:p-6 flex-1 flex flex-col justify-between">
           <div>

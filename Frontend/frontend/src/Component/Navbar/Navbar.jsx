@@ -4,9 +4,9 @@ import { GiHamburgerMenu, GiCrossedBones } from "react-icons/gi";
 import { useClickOutside } from "@mantine/hooks";
 import { Link, useNavigate } from "react-router-dom"; // Ensure Link is imported
 import { BASE_URL, getCurrentUser, getTokenFromCookie } from "../../../helper";
-import { toast } from "react-toastify";
 import axios from "axios";
 import leafImg from "../../assets/leaf.png";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -87,11 +87,11 @@ const Navbar = () => {
       <div className="flex items-center space-x-2 md:space-x-4">
         {/* Profile Button */}
         <button
-          className="flex items-center space-x-1 md:space-x-2 border border-snowy-mint-900 text-snowy-mint-900 p-1 md:p-2 rounded-full hover:bg-snowy-mint-50 transition"
+          className="flex items-center space-x-1 md:space-x-2 border border-snowy-mint-700 text-snowy-mint-700 p-1 px-4 py-2 rounded-full hover:bg-snowy-mint-50 transition"
           onClick={toggleProfile}
         >
           <FaUser size={16} md:size={18} />
-          <span className="hidden md:inline text-sm md:text-md">
+          <span className="hidden md:inline text-md md:text-md font-semibold text-snowy-mint-700">
             {user?.username}
           </span>
         </button>

@@ -14,6 +14,7 @@ const Step2 = ({
   const isStep2Valid =
     formData.productPhotos.length > 0 &&
     formData.qualityGrade.trim() &&
+    formData.cropType.trim() &&
     (formData.harvestDate || formData.availabilityDate) &&
     formData.storageConditions.trim() &&
     formData.certifications.trim() &&
@@ -25,8 +26,7 @@ const Step2 = ({
     <div className="space-y-6">
       {/* Product Photos */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-        </label>
+        <label className="block text-sm font-medium text-gray-700"></label>
         <PhotoUpload
           productPhotos={formData.productPhotos}
           handlePhotoUpload={handlePhotoUpload}
@@ -59,6 +59,39 @@ const Step2 = ({
         </select>
         {errors.qualityGrade && (
           <p className="mt-1 text-sm text-red-600">{errors.qualityGrade}</p>
+        )}
+      </div>
+
+      {/* Crop Type Dropdown */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Crop Type
+        </label>
+        <select
+          name="cropType"
+          value={formData.cropType}
+          onChange={handleInputChange}
+          className={`mt-1 p-2 block w-full border rounded-lg shadow-sm focus:ring-jewel-500 focus:border-jewel-500 sm:text-sm ${
+            errors.cropType
+              ? "border-red-500 bg-red-50"
+              : "border-gray-300 bg-gray-50"
+          }`}
+        >
+          <option value="" disabled>
+            Select a crop type
+          </option>
+          <option value="Grains">Grains (e.g., Rice, Wheat)</option>
+          <option value="Fruits">Fruits (e.g., Mango, Apple)</option>
+          <option value="Vegetables">Vegetables (e.g., Tomato, Potato)</option>
+          <option value="Pulses">Pulses (e.g., Lentils, Chickpeas)</option>
+          <option value="Spices">Spices (e.g., Turmeric, Chili)</option>
+          <option value="Oilseeds">Oilseeds (e.g., Soybean, Mustard)</option>
+          <option value="Herbs">Herbs (e.g., Basil, Mint)</option>
+          <option value="Nuts">Nuts (e.g., Almond, Cashew)</option>
+          <option value="Nuts">Sweetener (e.g., Jaggery)</option>
+        </select>
+        {errors.cropType && (
+          <p className="mt-1 text-sm text-red-600">{errors.cropType}</p>
         )}
       </div>
 

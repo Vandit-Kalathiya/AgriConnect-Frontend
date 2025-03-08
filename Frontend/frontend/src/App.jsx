@@ -14,7 +14,6 @@ import ListingForm from "./Component/ListProductForm/ListingForm";
 import WeatherDashboard from "./Component/Weather/WeatherDashboard";
 import MarketTrendsDashboard from "./Component/MarketTrends/MarketTrendsDashboard";
 import UserProfile from "./Component/UserProfile/UserProfile";
-import MyOrders from "./Component/MyOrders/MyOrders";
 import PaymentProcess from "./Component/Payments/PaymentProcess";
 import AuthPage from "./Component/Auth/AuthPage";
 import { getUsernameFromToken } from "../helper";
@@ -22,6 +21,7 @@ import HomePage from "./Component/HomePage/HomePage";
 import ColdStoragePage from "./Component/ColdStorage/ColdStorage";
 import Agriprice from "./Component/ColdStorage/AgriPrice";
 import { ToastContainer } from "react-toastify";
+import MyOrders from "./Component/MyOrders/MyOrders";
 
 // PrivateRoute component to protect authenticated routes
 const PrivateRoute = ({ children }) => {
@@ -41,19 +41,20 @@ function App() {
 
   return (
     <MantineProvider>
-      <BrowserRouter>
-        {/* <ToastContainer> */}
-        <Routes>
-          {/* Public routes: Only accessible when not logged in */}
-          <Route
-            path="/auth"
-            element={
-              <PublicRoute>
-                <AuthPage />
-              </PublicRoute>
-            }
-          />
-          {/* <Route
+      <ToastContainer />
+      {/* <BrowserRouter> */}
+      {/* <ToastContainer> */}
+      <Routes>
+        {/* Public routes: Only accessible when not logged in */}
+        <Route
+          path="/auth"
+          element={
+            <PublicRoute>
+              <AuthPage />
+            </PublicRoute>
+          }
+        />
+        {/* <Route
             path="/register"
             element={
               <PublicRoute>
@@ -61,61 +62,61 @@ function App() {
               </PublicRoute>
             }
           /> */}
-          <Route
-            path="/"
-            element={
-              <PublicRoute>
-                <HomePage />
-              </PublicRoute>
-            }
-          />
+        <Route
+          path="/"
+          element={
+            // <PublicRoute>
+            <HomePage />
+            // </PublicRoute>
+          }
+        />
 
-          {/* Protected routes: Only accessible when logged in */}
-          <Route
-            path="*"
-            element={
-              <PrivateRoute>
-                <div className="flex flex-col h-screen font-poppins">
-                  <Navbar />
-                  <div className="flex flex-1 relative">
-                    <Sidebar />
-                    <main className="flex-1 ml-16 md:ml-0">
-                      <Routes>
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/crops" element={<CropListingPage />} />
-                        <Route path="/crop/:id" element={<CropDetailPage />} />
-                        <Route path="/my-listing" element={<MyListing />} />
-                        <Route path="/my-payments" element={<Payments />} />
-                        <Route path="/my-contracts" element={<Contracts />} />
-                        <Route path="/list" element={<ListingForm />} />
-                        <Route path="/weather" element={<WeatherDashboard />} />
-                        <Route
-                          path="/market-trends"
-                          element={<MarketTrendsDashboard />}
-                        />
-                        <Route
-                          path="/cold-storage"
-                          element={<ColdStoragePage />}
-                        />
-                        <Route path="/agriprice" element={<Agriprice />} />
-                        <Route path="/profile" element={<UserProfile />} />
-                        <Route path="/my-orders" element={<MyOrders />} />
-                        <Route
-                          path="/payment-process"
-                          element={<PaymentProcess />}
-                        />
-                        {/* Default route */}
-                        <Route path="/" element={<Dashboard />} />
-                      </Routes>
-                    </main>
-                  </div>
+        {/* Protected routes: Only accessible when logged in */}
+        <Route
+          path="*"
+          element={
+            <PrivateRoute>
+              <div className="flex flex-col h-screen font-poppins">
+                <Navbar />
+                <div className="flex flex-1 relative">
+                  <Sidebar />
+                  <main className="flex-1 ml-16 md:ml-0">
+                    <Routes>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/crops" element={<CropListingPage />} />
+                      <Route path="/crop/:id" element={<CropDetailPage />} />
+                      <Route path="/my-listing" element={<MyListing />} />
+                      <Route path="/my-payments" element={<Payments />} />
+                      <Route path="/my-contracts" element={<Contracts />} />
+                      <Route path="/list" element={<ListingForm />} />
+                      <Route path="/weather" element={<WeatherDashboard />} />
+                      <Route
+                        path="/market-trends"
+                        element={<MarketTrendsDashboard />}
+                      />
+                      <Route
+                        path="/cold-storage"
+                        element={<ColdStoragePage />}
+                      />
+                      <Route path="/agriprice" element={<Agriprice />} />
+                      <Route path="/profile" element={<UserProfile />} />
+                      <Route path="/my-orders" element={<MyOrders />} />
+                      <Route
+                        path="/payment-process"
+                        element={<PaymentProcess />}
+                      />
+                      {/* Default route */}
+                      {/* <Route path="/" element={<Dashboard />} /> */}
+                    </Routes>
+                  </main>
                 </div>
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-        {/* </ToastContainer> */}
-      </BrowserRouter>
+              </div>
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+      {/* </ToastContainer> */}
+      {/* </BrowserRouter> */}
     </MantineProvider>
   );
 }

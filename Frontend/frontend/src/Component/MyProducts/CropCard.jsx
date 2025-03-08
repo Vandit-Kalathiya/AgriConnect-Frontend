@@ -23,22 +23,37 @@ const CropCard = ({ crop }) => {
 
   useEffect(() => {
     getImage();
-  })
+  });
 
   return (
     <Link to={`/crop/${crop.id}`}>
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden h-full flex flex-col hover:shadow-xl cursor-pointer transition-all duration-300 transform hover:scale-105 hover:bg-jewel-50">
+        {/* Image Section */}
         <img
           src={images}
-          alt={`${crop.type} - ${crop.variety}`}
+          alt={`${crop.productType} - ${crop.productName}`}
           className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-t-2xl transition-opacity duration-300 hover:opacity-90"
         />
+        {/* Status Badge */}
         <div className="p-4 md:p-6 flex-1 flex flex-col justify-between">
           <div>
-            <div className="flex justify-between items-start mb-2 md:mb-3">
+            <div className="relative flex justify-between items-start mb-2 md:mb-3">
               <h2 className="text-md md:text-lg lg:text-xl font-semibold text-gray-800 line-clamp-1">
                 {crop.productType} - {crop.productName}
               </h2>
+              {crop.status && (
+                <div
+                  className={`absolute right-0 px-3 py-1 rounded-full text-xs font-semibold shadow-md ${
+                    crop.status === "PURCHASED"
+                      ? "bg-green-600 text-white"
+                      : crop.status === "ARCHIEVED"
+                      ? "bg-gray-600 text-white"
+                      : "bg-blue-600 text-white"
+                  }`}
+                >
+                  {crop.status.charAt(0).toUpperCase() + crop.status.slice(1)}
+                </div>
+              )}
               {/* <span className="flex items-center text-yellow-500 text-xs md:text-sm">
                 <FaStar className="mr-1" />
                 {crop.rating.toFixed(1)}

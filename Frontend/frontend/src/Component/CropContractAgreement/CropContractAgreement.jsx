@@ -10,6 +10,7 @@ import TermsAndConditions from "./TermsAndConditions";
 import Signatures from "./Signatures";
 import UploadContract from "./UploadContract";
 import NavigationButtons from "./NavigationButtons";
+import toast from "react-hot-toast";
 
 const CropContractAgreement = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -30,14 +31,14 @@ const CropContractAgreement = () => {
 
   const [formData, setFormData] = useState({
     farmerInfo: {
-      farmerName: "Rahul",
-      farmerAddress: "Anand, Gujarat",
-      farmerContact: "7990137814",
+      farmerName: "",
+      farmerAddress: "",
+      farmerContact: "",
     },
     buyerInfo: {
-      buyerName: "Raj",
-      buyerAddress: "Anand, Gujarat",
-      buyerContact: "8780850751",
+      buyerName: "",
+      buyerAddress: "",
+      buyerContact: "",
     },
     cropDetails: {
       type: "Organic Tomatoes",
@@ -146,9 +147,33 @@ const CropContractAgreement = () => {
   };
 
   const fetchUser = async () => {
-    const user = getCurrentUser();
-    setBuyerAddress(user.uniqueHexAddress);
-    return user;
+    try {
+      const user = await getCurrentUser();
+      const listing = await fetchListingById(listingId);
+      const farmer = await fetchFarmerDetails(listing.contactOfFarmer);
+      setBuyerAddress(user.uniqueHexAddress);
+      console.log(listing);
+      console.log(farmer);
+
+      // Set buyer info from current user
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        farmerInfo: {
+          farmerName: farmer.username,
+          farmerAddress: farmer.address,
+          farmerContact: farmer.phoneNumber,
+        },
+        buyerInfo: {
+          buyerName: user.username || "",
+          buyerAddress: user.address || "",
+          buyerContact: user.phoneNumber || "",
+        },
+      }));
+
+      return user;
+    } catch (err) {
+      console.error("Failed to fetch current user:", err);
+    }
   };
 
   useEffect(() => {
@@ -288,6 +313,9 @@ const CropContractAgreement = () => {
       );
       if (!response.ok) {
         const errorText = await updateListingStatus.text();
+        toast.error(
+          `Failed to generate PDF: ${updateListingStatus.status} - ${errorText}`
+        );
         throw new Error(
           `Failed to generate PDF: ${updateListingStatus.status} - ${errorText}`
         );
@@ -298,7 +326,8 @@ const CropContractAgreement = () => {
         updateListingStatus.data
       );
 
-      alert("Contract submitted and PDF generated successfully!");
+      // alert("Contract submitted and PDF generated successfully!");
+      toast.success("Contract PDF Generated SUccessfully");
       setContractGenerated(true);
     } catch (err) {
       const errorMessage = err.response?.data || err.message;
@@ -319,12 +348,21 @@ const CropContractAgreement = () => {
     const far = await fetchFarmerDetails(lis.contactOfFarmer);
     const buy = await fetchUser();
 
+    console.log(
+      formData.cropDetails.pricePerUnit,
+      " ",
+      formData.cropDetails.quantity
+    );
+
     const uploadData = new FormData();
     uploadData.append("file", contractFile);
     uploadData.append("farmerAddress", far.uniqueHexAddress);
     uploadData.append("buyerAddress", buy.uniqueHexAddress);
     uploadData.append("listingId", listingId);
-    uploadData.append("amount", lis.finalPrice * lis.quantity);
+    uploadData.append(
+      "amount",
+      formData.cropDetails.pricePerUnit * formData.cropDetails.quantity
+    );
 
     try {
       const response = await axios.post(
@@ -335,9 +373,10 @@ const CropContractAgreement = () => {
           withCredentials: true,
         }
       );
-      alert(
-        `Contract uploaded successfully!\nPDF Hash: ${response.data.pdfHash}\nTransaction Hash: ${response.data.txHash}`
-      );
+      // alert(
+      //   `Contract uploaded successfully!\nPDF Hash: ${response.data.pdfHash}\nTransaction Hash: ${response.data.txHash}`
+      // );
+      toast.success("Contract Uploaded Successfully!");
       navigate("/my-orders", { state: listing });
     } catch (err) {
       setError(err.response?.data || "Failed to upload contract");

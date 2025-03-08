@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import OtpVerification from "./OtpVerification";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Login = ({ onNavigateToSignUp }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -37,6 +38,7 @@ const Login = ({ onNavigateToSignUp }) => {
         // localStorage.setItem("jwtToken", token);
         setPhoneNumber("");
         setShowOtp(false);
+        toast.success("Login successful")
         navigate("/dashboard");
       }
     } catch (err) {

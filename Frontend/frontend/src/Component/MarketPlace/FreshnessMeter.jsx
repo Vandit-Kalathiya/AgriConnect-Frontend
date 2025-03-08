@@ -2,98 +2,138 @@ import React from "react";
 import { Clock } from "lucide-react";
 
 const FreshnessMeter = ({ shelfLife }) => {
-  // Parse shelf life string to get number and unit
-  const parseShelfLife = () => {
-    try {
-      const match = shelfLife.match(/(\d+)\s+(\w+)/);
-      if (match) {
-        return {
-          value: parseInt(match[1], 10),
-          unit: match[2].toLowerCase(),
-        };
-      }
-      return { value: parseInt(shelfLife, 10) || 7, unit: "days" };
-    } catch (e) {
-      return { value: 7, unit: "days" };
+  // Parse shelf life
+  const parseShelfLife = (shelfLifeStr) => {
+    if (!shelfLifeStr) return { value: 0, unit: "days" };
+
+    // const match = shelfLifeStr.match(/(\d+)\s*(\w+)/);
+    if (shelfLifeStr) {
+      return {
+        value: parseInt(shelfLifeStr),
+        unit: "days",
+      };
+    }
+
+    // Try to parse just a number
+    const numMatch = shelfLifeStr.match(/(\d+)/);
+    if (numMatch) {
+      return {
+        value: parseInt(numMatch[1], 10),
+        unit: "days",
+      };
+    }
+
+    return { value: 0, unit: "days" };
+  };
+
+  const { value, unit } = parseShelfLife(shelfLife);
+
+  // Calculate freshness level (1-5)
+  const getFreshnessLevel = () => {
+    if (unit === "months" || value > 30) return 5;
+    if (value > 14) return 4;
+    if (value > 7) return 3;
+    if (value > 3) return 2;
+    return 1;
+  };
+
+  const freshnessLevel = getFreshnessLevel();
+
+  // Get color based on freshness level
+  const getColor = () => {
+    switch (freshnessLevel) {
+      case 5:
+        return { bg: "bg-green-500", text: "text-green-800" };
+      case 4:
+        return { bg: "bg-green-400", text: "text-green-800" };
+      case 3:
+        return { bg: "bg-yellow-400", text: "text-yellow-800" };
+      case 2:
+        return { bg: "bg-orange-400", text: "text-orange-800" };
+      case 1:
+        return { bg: "bg-red-400", text: "text-red-800" };
+      default:
+        return { bg: "bg-gray-300", text: "text-gray-800" };
     }
   };
 
-  const { value, unit } = parseShelfLife();
+  const { bg, text } = getColor();
 
-  // Calculate the freshness level (0-100)
-  const calculateFreshnessPercentage = () => {
-    // Convert different units to a percentage
-    if (unit.includes("day")) {
-      if (value <= 3) return 100;
-      if (value <= 7) return 80;
-      if (value <= 14) return 60;
-      if (value <= 30) return 40;
-      return 20;
+  // Get freshness label
+  const getFreshnessLabel = () => {
+    switch (freshnessLevel) {
+      case 5:
+        return "Excellent";
+      case 4:
+        return "Very Good";
+      case 3:
+        return "Good";
+      case 2:
+        return "Fair";
+      case 1:
+        return "Short";
+      default:
+        return "Unknown";
     }
-
-    if (unit.includes("week")) {
-      if (value === 1) return 80;
-      if (value === 2) return 60;
-      if (value <= 4) return 40;
-      return 20;
-    }
-
-    if (unit.includes("month")) {
-      if (value === 1) return 40;
-      if (value <= 3) return 20;
-      return 10;
-    }
-
-    return 50; // Default value
-  };
-
-  const freshnessPercentage = calculateFreshnessPercentage();
-
-  // Determine color based on freshness level
-  const getFreshnessColor = () => {
-    if (freshnessPercentage >= 80) return "text-green-500 bg-green-100";
-    if (freshnessPercentage >= 60) return "text-green-600 bg-green-50";
-    if (freshnessPercentage >= 40) return "text-yellow-500 bg-yellow-50";
-    if (freshnessPercentage >= 20) return "text-orange-500 bg-orange-50";
-    return "text-red-500 bg-red-50";
-  };
-
-  const getFreshnessText = () => {
-    if (freshnessPercentage >= 80) return "Very Fresh";
-    if (freshnessPercentage >= 60) return "Fresh";
-    if (freshnessPercentage >= 40) return "Moderately Fresh";
-    if (freshnessPercentage >= 20) return "Store Appropriately";
-    return "Limited Shelf Life";
   };
 
   return (
-    <div className="rounded-lg p-3 bg-gray-50">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium text-gray-700 flex items-center">
-          <Clock size={16} className="mr-2" />
-          Freshness Level
-        </h3>
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${getFreshnessColor()}`}
-        >
-          {getFreshnessText()}
-        </span>
+    <div className="bg-white rounded-lg p-6 shadow-sm">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+        <Clock size={18} className="mr-2 text-green-600" />
+        Freshness Information
+      </h3>
+
+      <div className="mb-6">
+        <div className="flex justify-between mb-2">
+          <span className="text-sm font-medium text-gray-700">Shelf Life</span>
+          <span className="text-sm font-bold text-gray-900">
+            {value} {unit}
+          </span>
+        </div>
+
+        <div className="w-full bg-gray-100 rounded-full h-2.5">
+          <div
+            className={`${bg} h-2.5 rounded-full`}
+            style={{ width: `${freshnessLevel * 20}%` }}
+          ></div>
+        </div>
+
+        <div className="flex justify-between mt-1">
+          <span className="text-xs text-gray-500">Short</span>
+          <span className="text-xs text-gray-500">Excellent</span>
+        </div>
       </div>
 
-      <div className="w-full bg-gray-200 rounded-full h-2.5">
-        <div
-          className="h-2.5 rounded-full bg-gradient-to-r from-green-300 to-green-600"
-          style={{ width: `${freshnessPercentage}%` }}
-        ></div>
-      </div>
+      <div className={`${text.replace("text", "bg")}-50 p-4 rounded-lg`}>
+        <div className="flex items-center">
+          <div className={`w-3 h-3 rounded-full ${bg} mr-2`}></div>
+          <span className={`font-medium ${text}`}>
+            {getFreshnessLabel()} Freshness
+          </span>
+        </div>
 
-      <div className="mt-2 text-sm text-gray-600">
-        <span className="font-medium">Shelf Life: </span>
-        {shelfLife}
-      </div>
+        <p className="text-sm text-gray-600 mt-2">
+          {freshnessLevel >= 4 &&
+            "This crop has excellent shelf life and will remain fresh for an extended period."}
+          {freshnessLevel === 3 &&
+            "This crop has good shelf life and will maintain freshness for a moderate time."}
+          {freshnessLevel <= 2 &&
+            "This crop has limited shelf life and should be consumed soon for best quality."}
+        </p>
 
-      <div className="mt-1 text-xs text-gray-500">
-        For best quality, consume within the recommended shelf life period.
+        <div className="mt-3 text-xs text-gray-500">
+          <p className="flex items-center">
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></span>
+            Store in a cool, dry place for optimal freshness
+          </p>
+          {freshnessLevel <= 3 && (
+            <p className="flex items-center mt-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></span>
+              Refrigeration recommended
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
