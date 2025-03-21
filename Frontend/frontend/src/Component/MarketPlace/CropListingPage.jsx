@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import CropCard from "./CropCard";
 import axios from "axios";
 import Loader from "../Loader/Loader";
+import { getCurrentUser } from "../../../helper";
 
 const BASE_URL = "http://localhost:2527"; // Adjust to your backend URL
 
@@ -9,40 +10,62 @@ export const CropListingPage = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentUser, setCurrentUser] = useState({});
+
+  const fetchUser = async () => {
+    try {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+      return user;
+    } catch (err) {
+      console.error("Failed to fetch current user:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser()
+  },[])
 
   const fetchAllListings = async () => {
+    setLoading(true); 
+
     try {
       const response = await axios.get(`${BASE_URL}/listings/all/active`, {
         withCredentials: true,
       });
-      setLoading(true);
 
-      // Fetch images for each listing
+      const user = await getCurrentUser(); 
+
+      const listings = response.data.filter(
+        (listing) => listing.contactOfFarmer !== user.phoneNumber 
+      );
+
+      // Fetch images for each listing (if needed)
       const listingsWithImages = await Promise.all(
-        response.data.map(async (listing) => {
-          // const imageBlobs = await fetchListingImages(listing.id);
-          return {
-            id: listing.id,
-            images: listing.images, // Match CropCard structure
-            type: listing.productType,
-            variety: listing.productName,
-            grade: listing.qualityGrade,
-            certifications: listing.certifications
-              ? listing.certifications.split(", ")
-              : [],
-            quantity: listing.quantity,
-            unit: listing.unitOfQuantity,
-            location: listing.location,
-            harvestDate: listing.harvestedDate,
-            availabilityDate: listing.availabilityDate,
-            shelfLife: listing.shelfLifetime,
-            price: `₹${listing.finalPrice}`,
-            priceUnit: "per " + listing.unitOfQuantity,
-            description: listing.productDescription,
-            contact: listing.contactOfFarmer,
-            rating: 4.5,
-          };
-        })
+        listings.map(async (listing) => ({
+          id: listing.id,
+          images: listing.images, // Match CropCard structure
+          type: listing.productType,
+          variety: listing.productName,
+          grade: listing.qualityGrade,
+          certifications: listing.certifications
+            ? listing.certifications.split(", ")
+            : [],
+          quantity: listing.quantity,
+          unit: listing.unitOfQuantity,
+          location: listing.location,
+          harvestDate: listing.harvestedDate,
+          availabilityDate: listing.availabilityDate,
+          shelfLife: listing.shelfLifetime,
+          price: `₹${listing.finalPrice}`,
+          priceUnit: "per " + listing.unitOfQuantity,
+          description: listing.productDescription,
+          contact: listing.contactOfFarmer,
+          lastUpdatedDate: listing.lastUpdatedDate,
+          createdDate: listing.createdDate,
+          createdTime: listing.createdTime,
+          rating: 4.5,
+        }))
       );
 
       setListings(listingsWithImages);
@@ -52,9 +75,10 @@ export const CropListingPage = () => {
         `Failed to fetch listings: ${err.response?.data || err.message}`
       );
     } finally {
-      setLoading(false);
+      setLoading(false); // Ensure loading is stopped in all cases
     }
   };
+
 
   useEffect(() => {
     fetchAllListings();
@@ -69,7 +93,7 @@ export const CropListingPage = () => {
 
         {loading && (
           <div className="text-center text-gray-600 text-md md:text-lg">
-             <Loader />
+            <Loader />
           </div>
         )}
 

@@ -18,12 +18,6 @@ const Payments = () => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const paymentData = {
-    totalTransactions: 12500.75,
-    completedTransactions: 320,
-    successRate: 92.5,
-  };
-
   const fetchAllPayments = async () => {
     try {
       setIsLoading(true);
@@ -90,6 +84,12 @@ const Payments = () => {
     const minute = parts.find((part) => part.type === "minute").value;
     return `${day}-${month}-${year} ${hour}:${minute}`;
   }
+
+  const paymentData = {
+    totalTransactions: 0,
+    completedTransactions: payments.length,
+    successRate: 0,
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 md:py-12 px-4 md:px-6 lg:px-8 ml-0 md:ml-20 mt-16 md:mt-20">

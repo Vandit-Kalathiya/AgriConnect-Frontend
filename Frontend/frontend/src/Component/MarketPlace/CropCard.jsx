@@ -11,6 +11,9 @@ const CropCard = ({ crop }) => {
   // Log the crop object to verify its structure
   // console.log("Crop Data:", crop);
 
+  console.log(crop.lastUpdatedDate);
+  
+
   useEffect(() => {
     fetchImages();
   }, []);
@@ -50,12 +53,12 @@ const CropCard = ({ crop }) => {
 
   // Memoize the date formatting to avoid unnecessary recalculations
   const formattedDate = useMemo(() => {
-    return new Date(crop.availabilityDate).toLocaleDateString("en-US", {
+    return new Date(crop.lastUpdatedDate).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
-  }, [crop.availabilityDate]);
+  }, [crop.lastUpdatedDate]);
 
   // Determine the status badge color and text
   const getStatusBadge = (status) => {
@@ -122,7 +125,7 @@ const CropCard = ({ crop }) => {
           <div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs md:text-sm text-gray-600 mb-2 md:mb-3 gap-1 sm:gap-0">
               <span className="truncate">{crop.location}</span>
-              <span className="whitespace-nowrap">{formattedDate}</span>
+              <span className="whitespace-nowrap">{crop.lastUpdatedDate}</span>
             </div>
             {crop.certifications.length > 0 && (
               <div className="mt-1 md:mt-2 flex flex-wrap gap-1 md:gap-2">

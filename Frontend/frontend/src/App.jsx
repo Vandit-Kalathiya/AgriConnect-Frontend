@@ -22,6 +22,7 @@ import ColdStoragePage from "./Component/ColdStorage/ColdStorage";
 import Agriprice from "./Component/ColdStorage/AgriPrice";
 import { ToastContainer } from "react-toastify";
 import MyOrders from "./Component/MyOrders/MyOrders";
+import Index from "./Component/CropAdvisoryBot/Index";
 
 // PrivateRoute component to protect authenticated routes
 const PrivateRoute = ({ children }) => {
@@ -37,7 +38,7 @@ const PublicRoute = ({ children }) => {
 
 function App() {
   const isAuthenticated = !!getUsernameFromToken();
-  console.log("Is authenticated:", isAuthenticated);
+  // console.log("Is authenticated:", isAuthenticated);
 
   return (
     <MantineProvider>
@@ -89,6 +90,7 @@ function App() {
                       <Route path="/my-payments" element={<Payments />} />
                       <Route path="/my-contracts" element={<Contracts />} />
                       <Route path="/list" element={<ListingForm />} />
+                      <Route path="/advisory" element={<Index/>} />
                       <Route path="/weather" element={<WeatherDashboard />} />
                       <Route
                         path="/market-trends"

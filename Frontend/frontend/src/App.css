@@ -13,62 +13,114 @@
   --color-jewel-900: #21462c;
   --color-jewel-950: #0e2515;
 
-  --color-everglade-50: #f4f9f4;
-  --color-everglade-100: #e6f2e9;
-  --color-everglade-200: #cde5d2;
-  --color-everglade-300: #a5d0b0;
-  --color-everglade-400: #76b286;
-  --color-everglade-500: #539464;
-  --color-everglade-600: #40794f;
-  --color-everglade-700: #356040;
-  --color-everglade-800: #2e4d37;
-  --color-everglade-900: #253d2c;
-  --color-everglade-950: #112216;
-
-  --color-de-york-50: #f0f9f2;
-  --color-de-york-100: #daf1dd;
-  --color-de-york-200: #b7e3bf;
-  --color-de-york-300: #87ce99;
-  --color-de-york-400: #68ba7f;
-  --color-de-york-500: #349553;
-  --color-de-york-600: #247740;
-  --color-de-york-700: #1c6034;
-  --color-de-york-800: #194c2c;
-  --color-de-york-900: #153f25;
-  --color-de-york-950: #0b2314;
-
-  --color-snowy-mint-50: #effef3;
-  --color-snowy-mint-100: #cfffdc;
-  --color-snowy-mint-200: #b5fdc9;
-  --color-snowy-mint-300: #7cf9a0;
-  --color-snowy-mint-400: #3cec6f;
-  --color-snowy-mint-500: #13d44c;
-  --color-snowy-mint-600: #09b03b;
-  --color-snowy-mint-700: #0b8a31;
-  --color-snowy-mint-800: #0f6c2b;
-  --color-snowy-mint-900: #0e5927;
-  --color-snowy-mint-950: #013211;
-
-  --color-snowy-mint : #CFFFDC;
-  --color-Jewel : #2E6F40;
-  --color-de-york: #68BA7F;
-  --color-everglade: #253D2C;
-
-  --color-slate-50: #f8fafc;
-  --color-slate-100: #f1f5f9;
-  --color-slate-200: #e2e8f0;
-  --color-slate-300: #cbd5e1;
-  --color-slate-400: #94a3b8;
-  --color-slate-500: #64748b;
-  --color-slate-600: #475569;
-  --color-slate-700: #334155;
-  --color-slate-800: #1e293b;
-  --color-slate-900: #0f172a;
-  --color-slate-950: #020617;
-
   --font-poppins: "Poppins", sans-serif;
-}
 
+  /* Container settings (equivalent to container in v3) */
+  --container-padding: 2rem;
+  --container-max-width-2xl: 1400px;
+
+  /* Font families */
+  --font-sans: "Inter var", sans-serif;
+  --font-display: "SF Pro Display", "Inter var", sans-serif;
+
+  /* Custom colors */
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* Border radius */
+  --radius: 0.5rem; /* Base radius variable */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  /* Keyframes */
+  --keyframes-accordion-down: {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  --keyframes-accordion-up: {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+  --keyframes-fade-in: {
+    "0%" {
+      opacity: 0;
+    }
+    "100%" {
+      opacity: 1;
+    }
+  }
+  --keyframes-fade-up: {
+    "0%" {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    "100%" {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  --keyframes-pulse-slow: {
+    "0%, 100%" {
+      opacity: 1;
+    }
+    "50%" {
+      opacity: 0.8;
+    }
+  }
+  --keyframes-float: {
+    "0%, 100%" {
+      transform: translateY(0);
+    }
+    "50%" {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Animations */
+  --animation-accordion-down: accordion-down 0.2s ease-out;
+  --animation-accordion-up: accordion-up 0.2s ease-out;
+  --animation-fade-in: fade-in 0.5s ease-out;
+  --animation-fade-up: fade-up 0.5s ease-out;
+  --animation-pulse-slow: pulse-slow 4s ease-in-out infinite;
+  --animation-float: float 6s ease-in-out infinite;
+
+  /* Backdrop blur */
+  --backdrop-blur-xs: 2px;
+}
 
 /* Tailwind doesn't support custom animations out of the box, so add these to your CSS */
 @keyframes spin-leaf {
@@ -101,4 +153,53 @@
 
 .animate-spin-leaf-reverse {
   animation: spin-leaf-reverse infinite linear;
+}
+
+.map-container {
+  width: 100%;
+  height: 500px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .map-container {
+    height: 600px;
+  }
+}
+@media (min-width: 1024px) {
+  .map-container {
+    height: 700px;
+  }
+}
+.marker {
+  width: 24px;
+  height: 24px;
+  background-color: #4caf50;
+  border-radius: 50%;
+  border: 2px solid white;
+  cursor: pointer;
+}
+.marker:hover {
+  background-color: #45a049;
+}
+.popup {
+  padding: 16px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 300px;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }

@@ -23,7 +23,7 @@ const CropCard = ({ crop }) => {
 
   useEffect(() => {
     getImage();
-  });
+  }, []);
 
   return (
     <Link to={`/crop/${crop.id}`}>
@@ -73,18 +73,20 @@ const CropCard = ({ crop }) => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs md:text-sm text-gray-600 mb-2 md:mb-3 gap-1 sm:gap-0">
               <span className="truncate">{crop.location}</span>
               <span className="whitespace-nowrap">
-                {new Date(crop.availabilityDate).toLocaleDateString("en-US", {
+                {new Date(crop.lastUpdatedDate).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
                 })}
               </span>
             </div>
-            <div className="mt-1 md:mt-2 flex flex-wrap gap-1 md:gap-2">
-              <span className="px-2 md:px-3 py-1 bg-jewel-100 text-jewel-700 text-xs font-medium rounded-full shadow-sm">
-                {crop.certifications}
-              </span>
-            </div>
+            {crop.certifications && (
+              <div className="mt-1 md:mt-2 flex flex-wrap gap-1 md:gap-2">
+                <span className="px-2 md:px-3 py-1 bg-jewel-100 text-jewel-700 text-xs font-medium rounded-full shadow-sm">
+                  {crop.certifications}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>

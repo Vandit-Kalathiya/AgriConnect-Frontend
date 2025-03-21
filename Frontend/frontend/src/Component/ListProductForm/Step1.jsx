@@ -84,7 +84,7 @@ const Step1 = ({
           type="number"
           id="quantity"
           name="quantity"
-          value={formData.quantity}
+          value={formData.quantity.toString()}
           onChange={handleInputChange}
           step="1"
           className={`mt-1 p-2 block w-full border rounded-lg shadow-sm focus:ring-jewel-500 focus:border-jewel-500 sm:text-sm ${
@@ -119,9 +119,7 @@ const Step1 = ({
           }`}
         >
           <option value="kg">kg</option>
-          <option value="ton">ton</option>
-          <option value="quintal">quintal</option>
-          <option value="per 20 kg">per 20 kg</option>
+          <option value="per 20 kg">pieces</option>
         </select>
         {errors.unitOfQuantity && (
           <p className="mt-1 text-sm text-red-600">{errors.unitOfQuantity}</p>

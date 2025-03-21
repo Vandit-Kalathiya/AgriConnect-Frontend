@@ -29,16 +29,16 @@ const NavigationButtons = ({
           {currentStep === 1 && (
             <button
               onClick={handleSaveAndNext}
-              className="bg-jewel-600 text-white px-4 py-2 rounded hover:bg-jewel-700"
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
               Save and Next
             </button>
           )}
 
-          {currentStep > 1 && currentStep < 6 && (
+          {currentStep > 1 && currentStep < 5 && (
             <button
               onClick={nextStep}
-              className="bg-jewel-600 text-white px-4 py-2 rounded hover:bg-jewel-700"
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
               Next
             </button>
@@ -48,7 +48,7 @@ const NavigationButtons = ({
             <button
               onClick={handleSubmit}
               disabled={loading || !farmerSignature || !buyerSignature}
-              className={`bg-jewel-600 text-white px-4 py-2 rounded hover:bg-jewel-700 ${
+              className={`bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 ${
                 loading || !farmerSignature || !buyerSignature
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-green-600 hover:bg-green-700"
@@ -65,7 +65,7 @@ const NavigationButtons = ({
     return (
       <div className="flex justify-between pt-6">
         <div>
-          {currentStep > 1 && (
+          {currentStep > 1 && currentStep < 5 && (
             <button
               onClick={prevStep}
               className="bg-gray-200 text-gray-800 px-6 py-2 rounded hover:bg-gray-300"
@@ -79,16 +79,16 @@ const NavigationButtons = ({
           {currentStep === 1 && (
             <button
               onClick={handleSaveAndNext}
-              className="bg-jewel-600 text-white px-4 py-2 rounded hover:bg-jewel-700"
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
               Save and Next
             </button>
           )}
 
-          {currentStep > 1 && currentStep < 6 && (
+          {currentStep > 1 && currentStep < 5 && (
             <button
               onClick={handleSaveAndNext}
-              className="bg-jewel-600 text-white px-4 py-2 rounded hover:bg-jewel-700"
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
               Save and Next
             </button>
@@ -99,7 +99,7 @@ const NavigationButtons = ({
               <button
                 onClick={handleSubmit}
                 disabled={loading || !farmerSignature || !buyerSignature}
-                className={`bg-jewel-600 text-white px-4 py-2 rounded hover:bg-jewel-700 ${
+                className={`bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 ${
                   loading || !farmerSignature || !buyerSignature
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-green-600 hover:bg-green-700"
@@ -113,7 +113,7 @@ const NavigationButtons = ({
           {currentStep === 6 && (
             <button
               onClick={handleSaveAndNext}
-              className="bg-jewel-600 text-white px-4 py-2 rounded hover:bg-jewel-700"
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
               Save and Next
             </button>

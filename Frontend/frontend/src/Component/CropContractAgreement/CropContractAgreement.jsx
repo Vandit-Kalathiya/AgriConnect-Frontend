@@ -41,27 +41,22 @@ const CropContractAgreement = () => {
       buyerContact: "",
     },
     cropDetails: {
-      type: "Organic Tomatoes",
-      variety: "Roma, Grade A",
-      quantity: "5,000 kg",
-      pricePerUnit: "$2.50 per kg",
-      qualityStandards: [
-        "Minimum 90% of tomatoes must be free from blemishes",
-        "Size: Medium to large (6-8 cm diameter)",
-        "Color: Deep red, fully ripened",
-        "Pesticide-free certification required",
-      ],
+      type: "",
+      variety: "",
+      quantity: "",
+      pricePerUnit: "",
+      qualityStandards: [],
     },
     deliveryTerms: {
-      date: "2025-04-15",
-      location: "Sunshine Groceries Warehouse, 789 Distribution Ave",
+      date: "",
+      location: "",
       transportation: "Farmer",
-      packaging: "Food-grade crates, max 20kg per crate",
+      packaging: "Standard packaging",
     },
     paymentTerms: {
-      totalValue: "$12,500.00",
+      totalValue: "",
       method: "Bank Transfer",
-      advancePayment: "30%",
+      advancePayment: "100%",
       balanceDue: "On Delivery",
     },
     termsConditions: [
@@ -108,8 +103,7 @@ const CropContractAgreement = () => {
           "This contract shall be governed by the laws of [State/Country].",
       },
     ],
-    additionalNotes:
-      "Buyer to provide reusable crates one week before harvest. Farmer agrees to participate in buyer's farm-to-table marketing program.",
+    additionalNotes: "",
   });
 
   const fetchListingById = async () => {
@@ -121,7 +115,6 @@ const CropContractAgreement = () => {
         }
       );
       console.log("Listing details:", response.data);
-      fetchFarmerDetails(response.data.contactOfFarmer);
       setListing(response.data);
       return response.data;
     } catch (err) {
@@ -149,19 +142,16 @@ const CropContractAgreement = () => {
   const fetchUser = async () => {
     try {
       const user = await getCurrentUser();
-      const listing = await fetchListingById(listingId);
+      const listing = await fetchListingById();
       const farmer = await fetchFarmerDetails(listing.contactOfFarmer);
       setBuyerAddress(user.uniqueHexAddress);
-      console.log(listing);
-      console.log(farmer);
 
-      // Set buyer info from current user
       setFormData((prevFormData) => ({
         ...prevFormData,
         farmerInfo: {
-          farmerName: farmer.username,
-          farmerAddress: farmer.address,
-          farmerContact: farmer.phoneNumber,
+          farmerName: farmer.username || "",
+          farmerAddress: farmer.address || "",
+          farmerContact: farmer.phoneNumber || "",
         },
         buyerInfo: {
           buyerName: user.username || "",
@@ -177,9 +167,50 @@ const CropContractAgreement = () => {
   };
 
   useEffect(() => {
-    fetchUser();
-    fetchListingById();
-  }, []);
+    const initializeFormData = async () => {
+      const user = await fetchUser();
+      const listingData = await fetchListingById();
+      console.log(listingData);
+
+      if (listingData) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          cropDetails: {
+            type: listingData.productType,
+            variety: listingData.productName,
+            quantity: `${listingData.quantity} kg`,
+            pricePerUnit: `${listingData.finalPrice} per kg`,
+            qualityStandards: [
+              listingData.qualityGrade
+                ? `Quality Grade: ${listingData.qualityGrade}`
+                : "No specific quality grade specified",
+              `Storage Condition: ${listingData.storageCondition}`,
+              `Shelf Life: ${listingData.shelfLifetime} days`,
+              "Harvested on: " + listingData.harvestedDate,
+            ],
+          },
+          deliveryTerms: {
+            ...prevFormData.deliveryTerms,
+            date: Date.now(),
+            location: listingData.location,
+          },
+          paymentTerms: {
+            ...prevFormData.paymentTerms,
+            totalValue: `${
+              listingData.finalPrice && listingData.quantity
+                ? (listingData.finalPrice * listingData.quantity).toFixed(2)
+                : "0.00"
+            }`,
+          },
+          additionalNotes: listingData.productDescription
+            ? `Product Description: ${listingData.productDescription}`
+            : "No additional notes provided.",
+        }));
+      }
+    };
+
+    initializeFormData();
+  }, [listingId]);
 
   const toggleUserType = () => {
     setUserType(userType === "farmer" ? "buyer" : "farmer");
@@ -201,6 +232,9 @@ const CropContractAgreement = () => {
     saveFormData();
     if (currentStep < 7) {
       setCurrentStep(currentStep + 1);
+    }
+    if (currentStep === 5) {
+      handleSubmit();
     }
   };
 
@@ -308,16 +342,16 @@ const CropContractAgreement = () => {
       window.URL.revokeObjectURL(url);
       console.log("Contract PDF generated successfully");
 
-      const updateListingStatus = axios.put(
+      const updateListingStatus = await axios.put(
         `http://localhost:2527/listings/${listingId}/archived`
       );
-      if (!response.ok) {
+      if (!updateListingStatus.status === 200) {
         const errorText = await updateListingStatus.text();
         toast.error(
-          `Failed to generate PDF: ${updateListingStatus.status} - ${errorText}`
+          `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
         );
         throw new Error(
-          `Failed to generate PDF: ${updateListingStatus.status} - ${errorText}`
+          `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
         );
       }
 
@@ -326,8 +360,7 @@ const CropContractAgreement = () => {
         updateListingStatus.data
       );
 
-      // alert("Contract submitted and PDF generated successfully!");
-      toast.success("Contract PDF Generated SUccessfully");
+      toast.success("Contract PDF Generated Successfully");
       setContractGenerated(true);
     } catch (err) {
       const errorMessage = err.response?.data || err.message;
@@ -339,44 +372,45 @@ const CropContractAgreement = () => {
   };
 
   const handleContractUpload = async () => {
-    if (!contractFile) {
-      setError("Please select a PDF file to upload");
-      return;
-    }
+    // if (!contractFile) {
+    //   setError("Please select a PDF file to upload");
+    //   return;
+    // }
 
     const lis = await fetchListingById();
     const far = await fetchFarmerDetails(lis.contactOfFarmer);
     const buy = await fetchUser();
 
-    console.log(
-      formData.cropDetails.pricePerUnit,
-      " ",
-      formData.cropDetails.quantity
-    );
+    // const uploadData = new FormData();
+    // // uploadData.append("file", contractFile);
+    // uploadData.append("farmerAddress", far.uniqueHexAddress);
+    // uploadData.append("buyerAddress", buy.uniqueHexAddress);
+    // uploadData.append("listingId", listingId);
+    // uploadData.append(
+    //   "amount",
+    //   formData.cropDetails.pricePerUnit.split(" ")[0] *
+    //     formData.cropDetails.quantity.split(" ")[0]
+    // );
 
-    const uploadData = new FormData();
-    uploadData.append("file", contractFile);
-    uploadData.append("farmerAddress", far.uniqueHexAddress);
-    uploadData.append("buyerAddress", buy.uniqueHexAddress);
-    uploadData.append("listingId", listingId);
-    uploadData.append(
-      "amount",
-      formData.cropDetails.pricePerUnit * formData.cropDetails.quantity
-    );
+    const orderRequest = {
+      farmerAddress: far.uniqueHexAddress,
+      buyerAddress: buy.uniqueHexAddress,
+      listingId,
+      amount: parseFloat(
+        formData.cropDetails.pricePerUnit.split(" ")[0] *
+          formData.cropDetails.quantity.split(" ")[0]
+      ),
+    };
 
     try {
       const response = await axios.post(
-        "http://localhost:2526/api/agreements/upload",
-        uploadData,
+        "http://localhost:2526/orders/create",
+        orderRequest,
         {
-          headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
         }
       );
-      // alert(
-      //   `Contract uploaded successfully!\nPDF Hash: ${response.data.pdfHash}\nTransaction Hash: ${response.data.txHash}`
-      // );
-      toast.success("Contract Uploaded Successfully!");
+      toast.success("Order Created!");
       navigate("/my-orders", { state: listing });
     } catch (err) {
       setError(err.response?.data || "Failed to upload contract");
@@ -431,6 +465,8 @@ const CropContractAgreement = () => {
             formData={formData}
             userType={userType}
             setFormData={setFormData}
+            handleContractUpload={handleContractUpload}
+            prevStep={prevStep}
           />
         );
       case 6:

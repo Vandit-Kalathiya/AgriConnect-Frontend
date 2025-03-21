@@ -38,6 +38,7 @@ export const CropDetailPage = () => {
   const fetchUserProfile = async () => {
     try {
       const response = await getCurrentUser();
+      console.log(response);
       if (response && response.phoneNumber) {
         setUserPhone(response.phoneNumber);
       }
@@ -45,6 +46,17 @@ export const CropDetailPage = () => {
       console.error("Failed to fetch user profile:", err);
     }
   };
+  
+  useEffect(() => {
+    fetchUserProfile();
+    fetchCropData();
+    // Simulate checking if item is in wishlist
+    setIsWishlisted(Math.random() > 0.7);
+
+    return () => {
+      images.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [id]);
 
   const fetchCropData = async () => {
     try {
@@ -59,6 +71,7 @@ export const CropDetailPage = () => {
       );
 
       const listing = response.data;
+      
 
       // Map backend fields to frontend structure
       const mappedCropData = {
@@ -111,18 +124,6 @@ export const CropDetailPage = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchUserProfile();
-    fetchCropData();
-
-    // Simulate checking if item is in wishlist
-    setIsWishlisted(Math.random() > 0.7);
-
-    return () => {
-      images.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [id]);
 
   const handleGoBack = () => {
     navigate(-1);

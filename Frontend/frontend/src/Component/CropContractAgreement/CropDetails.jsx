@@ -17,7 +17,24 @@ const CropDetails = ({ formData, userType, setFormData }) => {
           <label className="block font-medium text-sm mb-1 text-gray-700">
             Crop Type
           </label>
-          <div className="relative">
+          <input
+            type="text"
+            className="w-full p-2 border rounded-lg focus:ring focus:ring-jewel-300 focus:border-jewel-500 focus:outline-none transition-all duration-200"
+            value={formData.cropDetails.type}
+            disabled={userType === "buyer"}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                cropDetails: {
+                  ...formData.cropDetails,
+                  variety: e.target.value,
+                },
+              })
+            }
+            readOnly={true}
+            placeholder="e.g., Roma, Cherry, Beefsteak"
+          />
+          {/* <div className="relative">
             <select
               className="w-full p-2 pl-3 border rounded-lg focus:ring focus:ring-jewel-300 focus:border-jewel-500 focus:outline-none appearance-none transition-all duration-200 bg-white"
               value={formData.cropDetails.type}
@@ -52,13 +69,13 @@ const CropDetails = ({ formData, userType, setFormData }) => {
                 />
               </svg>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block font-medium text-sm mb-1 text-gray-700">
-              Variety/Grade
+              Crop Name
             </label>
             <input
               type="text"
@@ -74,6 +91,7 @@ const CropDetails = ({ formData, userType, setFormData }) => {
                   },
                 })
               }
+              readOnly={true}
               placeholder="e.g., Roma, Cherry, Beefsteak"
             />
           </div>
@@ -106,7 +124,7 @@ const CropDetails = ({ formData, userType, setFormData }) => {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500">$</span>
+              <span className="text-gray-500">₹</span>
             </div>
             <input
               type="text"
@@ -122,6 +140,7 @@ const CropDetails = ({ formData, userType, setFormData }) => {
                   },
                 })
               }
+              readOnly={true}
               placeholder="0.00"
             />
           </div>
@@ -133,7 +152,7 @@ const CropDetails = ({ formData, userType, setFormData }) => {
               Total Value:
             </span>
             <span className="font-semibold text-jewel-700">
-              $
+              ₹
               {(
                 parseFloat(formData.cropDetails.pricePerUnit || 0) *
                 parseFloat(formData.cropDetails.quantity || 0)

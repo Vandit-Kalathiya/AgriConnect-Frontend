@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
+// export const PORT = import.meta.env.VITE_PORT;
+
 export const BASE_URL = "http://localhost:2525";
 
 // Function to get the username from the token
@@ -61,6 +63,7 @@ export const getCurrentUser = async () => {
         const response = await axios.get(`${BASE_URL}/users/${phoneNumber}`, {
             headers: {
                 Authorization: `Bearer ${token}`, // Include token in Authorization header
+                
             },
             withCredentials: true, // If your backend uses cookies for auth
         });

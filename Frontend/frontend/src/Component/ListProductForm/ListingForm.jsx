@@ -15,7 +15,7 @@ const ListingForm = () => {
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     productName: "",
-    cropType: "Grains",
+    cropType: "all",
     description: "",
     quantity: "",
     unitOfQuantity: "kg",
@@ -28,7 +28,7 @@ const ListingForm = () => {
     shelfLife: "",
     location: "", // Initially empty, will be set after fetching user
     contactInfo: "", // Initially empty, will be set after fetching user
-    aiGenPrice: "",
+    aiGeneratedPrice: "",
     finalPrice: "",
   });
   const [errors, setErrors] = useState({});
@@ -126,14 +126,14 @@ const ListingForm = () => {
     const newErrors = {};
     if (formData.productPhotos.length === 0)
       newErrors.productPhotos = "At least one photo is required";
-    if (!formData.qualityGrade.trim())
-      newErrors.qualityGrade = "Quality grade is required";
+    // if (!formData.qualityGrade.trim())
+    //   newErrors.qualityGrade = "Quality grade is required";
     if (!formData.harvestDate && !formData.availabilityDate)
       newErrors.harvestDate = "Harvest date or availability date is required";
     if (!formData.storageConditions.trim())
       newErrors.storageConditions = "Storage conditions are required";
-    if (!formData.certifications.trim())
-      newErrors.certifications = "Certifications are required";
+    // if (!formData.certifications.trim())
+    //   newErrors.certifications = "Certifications are required";
     if (
       !formData.shelfLife.trim() ||
       isNaN(formData.shelfLife) ||
@@ -150,11 +150,12 @@ const ListingForm = () => {
     if (!formData.contactInfo.trim() || !/^\d{10}$/.test(formData.contactInfo))
       newErrors.contactInfo = "Contact info must be a 10-digit mobile number";
     if (
-      !formData.aiGenPrice.trim() ||
-      isNaN(formData.aiGenPrice) ||
-      Number(formData.aiGenPrice) <= 0
+      !formData.aiGeneratedPrice.trim() ||
+      isNaN(formData.aiGeneratedPrice) ||
+      Number(formData.aiGeneratedPrice) <= 0
     )
-      newErrors.aiGenPrice = "AI-generated price must be a positive number";
+      newErrors.aiGeneratedPrice =
+        "AI-generated price must be a positive number";
     if (
       !formData.finalPrice.trim() ||
       isNaN(formData.finalPrice) ||
@@ -200,19 +201,23 @@ const ListingForm = () => {
 
     // Append regular fields
     submissionData.append("productName", formData.productName);
-    submissionData.append("productType", formData.cropType);
     submissionData.append("productDescription", formData.description);
-    submissionData.append("quantity", formData.quantity);
+    submissionData.append("productType", formData.cropType);
+    submissionData.append("quantity", formData.quantity.toString().trim());
     submissionData.append("unitOfQuantity", formData.unitOfQuantity);
-    submissionData.append("qualityGrade", formData.qualityGrade);
     submissionData.append("harvestedDate", formData.harvestDate);
-    submissionData.append("availabilityDate", formData.availabilityDate);
     submissionData.append("storageCondition", formData.storageConditions);
-    submissionData.append("certifications", formData.certifications);
-    submissionData.append("shelfLifetime", formData.shelfLife);
+    submissionData.append("finalPrice", formData.finalPrice.toString().trim());
+    submissionData.append(
+      "shelfLifetime",
+      formData.shelfLife.toString().trim()
+    );
     submissionData.append("location", formData.location);
     submissionData.append("contactOfFarmer", formData.contactInfo);
-    submissionData.append("finalPrice", formData.finalPrice);
+    submissionData.append(
+      "aiGeneratedPrice",
+      formData.aiGeneratedPrice.toString().trim()
+    );
 
     // Append multiple files
     if (formData.productPhotos && formData.productPhotos.length > 0) {
@@ -240,23 +245,23 @@ const ListingForm = () => {
       setStep(1);
       setFormData({
         productName: "",
-        cropType: "Grains",
+        cropType: "",
         description: "",
         quantity: "",
         unitOfQuantity: "kg",
         productPhotos: [],
-        qualityGrade: "Grade A",
+        // qualityGrade: "Grade A",
         harvestDate: "",
-        availabilityDate: "",
+        // availabilityDate: "",
         storageConditions: "",
-        certifications: "",
+        // certifications: "",
         shelfLife: "",
         location: user ? user.address : "", // Reset to user's address
         contactInfo: user ? user.phoneNumber : "", // Reset to user's phone number
-        aiGenPrice: "",
+        aiGeneratedPrice: "",
         finalPrice: "",
       });
-      navigate("/crops");
+      navigate("/my-listing");
       setErrors({});
     } catch (error) {
       console.error("Error submitting listing:", error);
@@ -366,8 +371,8 @@ const ListingForm = () => {
 
   return (
     <div className="flex justify-center items-center px-4 md:px-6 lg:px-8 py-6 md:py-12 ml-0 md:ml-20 mt-5 min-h-screen bg-gray-50">
-      <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 w-full max-w-full sm:max-w-lg md:max-w-2xl">
-        <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-900">
+      <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 w-full max-w-full sm:max-w-lg md:max-w-4xl">
+        <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-jewel-700">
           {step === 4 ? "Review Listing" : "Create New Listing"}
         </h2>
         {step === 1 && (
