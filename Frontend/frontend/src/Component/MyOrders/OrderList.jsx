@@ -17,6 +17,7 @@ const OrderList = ({
   inProgressCount,
   completedCount,
   handleFarmerAction,
+  fetchOrders,
 }) => {
   return (
     <>
@@ -82,6 +83,7 @@ const OrderList = ({
                 handleOpenRejectModal={handleOpenRejectModal}
                 handleBuyerRefund={handleBuyerRefund}
                 handleFarmerAction={handleFarmerAction}
+                fetchOrders={fetchOrders}
               />
             ))}
           </ul>

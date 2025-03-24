@@ -1,16 +1,36 @@
 import React, { useState, useEffect } from "react";
 
-const DeliveryTerms = ({ formData, userType, setFormData }) => {
+const DeliveryTerms = ({
+  formData,
+  userType,
+  setFormData,
+  onValidationChange,
+}) => {
   const [dateError, setDateError] = useState("");
   const [warnings, setWarnings] = useState([]);
+  const [isFormValid, setIsFormValid] = useState(false);
 
   // Format today's date as YYYY-MM-DD for the date input min attribute
   const today = new Date().toISOString().split("T")[0];
 
-  // Validate date whenever it changes
+  // Validate date whenever it changes or when form data changes
   useEffect(() => {
-    validateDate(formData.deliveryTerms.date);
+    const isDateValid = validateDate(formData.deliveryTerms.date);
     checkWarnings();
+
+    // Determine if the entire form is valid
+    const isValid =
+      isDateValid &&
+      formData.deliveryTerms.location &&
+      formData.deliveryTerms.transportation &&
+      formData.deliveryTerms.packaging;
+
+    setIsFormValid(isValid);
+
+    // Communicate validation state to parent component
+    if (onValidationChange) {
+      onValidationChange(isValid);
+    }
   }, [formData.deliveryTerms]);
 
   const validateDate = (date) => {
@@ -34,7 +54,12 @@ const DeliveryTerms = ({ formData, userType, setFormData }) => {
   const checkWarnings = () => {
     const newWarnings = [];
 
-    // Add warnings based on form data
+    // Add delivery date warning first if missing
+    if (!formData.deliveryTerms.date) {
+      newWarnings.push("Delivery date is required to proceed");
+    }
+
+    // Add warnings based on other form data
     if (!formData.deliveryTerms.location) {
       newWarnings.push("Delivery location is required");
     }
@@ -119,9 +144,9 @@ const DeliveryTerms = ({ formData, userType, setFormData }) => {
                 type="date"
                 min={today}
                 className={`w-full p-2 pl-10 border rounded-lg focus:ring focus:ring-jewel-300 focus:border-jewel-500 focus:outline-none transition-all duration-200 ${
-                  dateError ? "border-red-500" : ""
+                  dateError ? "border-red-500 ring-1 ring-red-300" : ""
                 }`}
-                value={formData.deliveryTerms.date}
+                value={formData.deliveryTerms.date || ""}
                 disabled={userType === "buyer"}
                 onChange={(e) => {
                   const newDate = e.target.value;
@@ -133,10 +158,13 @@ const DeliveryTerms = ({ formData, userType, setFormData }) => {
                     },
                   });
                 }}
+                required
               />
             </div>
             {dateError ? (
-              <div className="text-xs text-red-500 mt-1">{dateError}</div>
+              <div className="text-xs text-red-500 mt-1 font-medium">
+                {dateError}
+              </div>
             ) : (
               formData.deliveryTerms.date && (
                 <div className="text-xs text-gray-500 mt-1">
@@ -182,7 +210,7 @@ const DeliveryTerms = ({ formData, userType, setFormData }) => {
                 className={`w-full p-2 pl-10 border rounded-lg focus:ring focus:ring-jewel-300 focus:border-jewel-500 focus:outline-none transition-all duration-200 ${
                   !formData.deliveryTerms.location ? "border-red-300" : ""
                 }`}
-                value={formData.deliveryTerms.location}
+                value={formData.deliveryTerms.location || ""}
                 disabled={userType === "buyer"}
                 onChange={(e) =>
                   setFormData({
@@ -194,6 +222,7 @@ const DeliveryTerms = ({ formData, userType, setFormData }) => {
                   })
                 }
                 placeholder="Enter delivery address"
+                required
               />
             </div>
           </div>
@@ -263,7 +292,7 @@ const DeliveryTerms = ({ formData, userType, setFormData }) => {
             className={`w-full p-3 border rounded-lg focus:ring focus:ring-jewel-300 focus:border-jewel-500 focus:outline-none transition-all duration-200 min-h-24 ${
               !formData.deliveryTerms.packaging ? "border-red-300" : ""
             }`}
-            value={formData.deliveryTerms.packaging}
+            value={formData.deliveryTerms.packaging || ""}
             disabled={userType === "buyer"}
             onChange={(e) =>
               setFormData({
@@ -275,6 +304,7 @@ const DeliveryTerms = ({ formData, userType, setFormData }) => {
               })
             }
             placeholder="Specify packaging type, materials, weight limits, etc."
+            required
           />
         </div>
 
@@ -349,6 +379,29 @@ const DeliveryTerms = ({ formData, userType, setFormData }) => {
           </div>
         </div>
       </div>
+
+      {/* Date validation reminder at the bottom */}
+      {!formData.deliveryTerms.date && (
+        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-3">
+          <div className="text-amber-500">
+            <svg
+              className="h-5 w-5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <p className="text-sm text-amber-800 font-medium">
+            Please select a delivery date to proceed to the next step.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

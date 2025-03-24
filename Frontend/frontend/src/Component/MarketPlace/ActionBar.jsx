@@ -5,7 +5,7 @@ import TermsAndConditionsModal from "../TermsAndConditions/TermsAndConditionsMod
 import CropContractAgreement from "../CropContractAgreement/CropContractAgreement";
 
 const ActionBar = ({ crop, userPhone }) => {
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(crop.quantity);
   const [showTerms, setShowTerms] = useState(false);
   const [showContract, setShowContract] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
@@ -182,7 +182,7 @@ const ActionBar = ({ crop, userPhone }) => {
                 </svg>
               </button>
             </div>
-            <CropContractAgreement />
+            <CropContractAgreement quantity={quantity} />
           </div>
         </div>
       )}

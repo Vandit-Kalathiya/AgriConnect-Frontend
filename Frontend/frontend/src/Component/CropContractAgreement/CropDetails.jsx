@@ -1,6 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 
-const CropDetails = ({ formData, userType, setFormData }) => {
+const CropDetails = ({ formData, userType, setFormData, quantity }) => {
+
+  useEffect(() => {
+    setFormData({
+      ...formData,
+      cropDetails: {
+        ...formData.cropDetails,
+        quantity: quantity.toString(),
+      },
+    });
+  }, []);
+
   return (
     <div className="space-y-6 max-w-2xl mx-auto bg-white p-6">
       <div className="border-b pb-2 mb-4">
@@ -27,7 +38,7 @@ const CropDetails = ({ formData, userType, setFormData }) => {
                 ...formData,
                 cropDetails: {
                   ...formData.cropDetails,
-                  variety: e.target.value,
+                  type: e.target.value,
                 },
               })
             }
@@ -97,12 +108,12 @@ const CropDetails = ({ formData, userType, setFormData }) => {
           </div>
           <div>
             <label className="block font-medium text-sm mb-1 text-gray-700">
-              Quantity
+              Quantity (kg)
             </label>
             <input
               type="text"
               className="w-full p-2 border rounded-lg focus:ring focus:ring-jewel-300 focus:border-jewel-500 focus:outline-none transition-all duration-200"
-              value={formData.cropDetails.quantity}
+              value={quantity}
               disabled={userType === "buyer"}
               onChange={(e) =>
                 setFormData({

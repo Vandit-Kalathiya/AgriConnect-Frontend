@@ -164,19 +164,21 @@ const MyOrders = () => {
     }
   });
 
-  const handleFarmerAction = async (pdfHash, newStatus, trackingNumber) => {
+  const handleFarmerAction = async (orderId, newStatus, trackingNumber2) => {
+    console.log(trackingNumber2,' ',newStatus);
+    
     setIsProcessingPayment(true);
     try {
       if (newStatus === "delivered") {
         await axios.post(
-          `http://localhost:2526/api/payments/confirm-delivery/${pdfHash}/${trackingNumber}`,
-          { trackingNumber },
+          `http://localhost:2526/api/payments/confirm-delivery/${orderId}/${trackingNumber2}`,
+          {},
           { withCredentials: true }
         );
         toast.success("Delivery confirmed successfully!");
       } else if (newStatus === "return_confirmed") {
         await axios.post(
-          `http://localhost:2526/api/payments/confirm-return/${pdfHash}`,
+          `http://localhost:2526/api/payments/confirm-return/${orderId}`,
           {},
           { withCredentials: true }
         );
@@ -194,11 +196,11 @@ const MyOrders = () => {
     }
   };
 
-  const handleBuyerRefund = async (pdfHash) => {
+  const handleBuyerRefund = async (orderId) => {
     setIsProcessingPayment(true);
     try {
       await axios.post(
-        `http://localhost:2526/api/payments/reject-delivery/${pdfHash}`,
+        `http://localhost:2526/api/payments/reject-delivery/${orderId}`,
         {},
         { withCredentials: true }
       );
@@ -249,9 +251,9 @@ const MyOrders = () => {
         return;
       }
 
-      console.log(order.pdfHash);
+      console.log(order.id);
       const finalRes = await axios.post(
-        `http://localhost:2526/api/payments/request-return/${order.pdfHash}/abcd`,
+        `http://localhost:2526/api/payments/request-return/${order.id}/abcd`,
         { withCredentials: true }
       );
       const res = finalRes.data;
@@ -324,6 +326,7 @@ const MyOrders = () => {
               inProgressCount={inProgressCount}
               completedCount={completedCount}
               handleFarmerAction={handleFarmerAction}
+              fetchOrders={fetchOrders}
             />
           </>
         )}

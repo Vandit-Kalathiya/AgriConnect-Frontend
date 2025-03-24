@@ -278,7 +278,7 @@ const Index = () => {
 
         <footer className="mt-16 text-center text-sm text-muted-foreground/70">
           <p>
-            © 2025 Indian Crop Advisor • Helping farmers make data-driven
+            © 2025 AgriConnect - Indian Crop Advisor • Helping farmers make data-driven
             decisions
           </p>
         </footer>

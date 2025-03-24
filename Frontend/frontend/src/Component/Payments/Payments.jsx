@@ -4,7 +4,6 @@ import {
   FaCheckCircle,
   FaPercentage,
   FaSearch,
-  FaDownload,
   FaShoppingCart,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -17,194 +16,214 @@ const Payments = () => {
   const [payments, setPayments] = useState([]);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const fetchAllPayments = async () => {
-    try {
-      setIsLoading(true);
-      const response = await axios.get(
-        "http://localhost:2526/api/agreements/all"
-      );
-      console.log("All Payments: ", response.data);
-      setPayments(response.data);
-    } catch (error) {
-      console.error("Error fetching payments:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchUser = async () => {
-    const user = await getCurrentUser();
-    setUser(user);
-  };
-
+  // Fetch payments and user data
   useEffect(() => {
-    fetchAllPayments();
-    fetchUser();
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Fetch current user
+        const currentUser = await getCurrentUser();
+        if (!currentUser?.uniqueHexAddress) {
+          throw new Error("User not logged in or missing uniqueHexAddress");
+        }
+        setUser(currentUser);
+
+        // Fetch all payments
+        const response = await axios.get(
+          "http://localhost:2526/api/agreements/all"
+        );
+        setPayments(response.data || []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError(error.message || "Failed to load payments");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
+  // Shorten hash for display
   const shortenHash = (hash) => {
-    if (!hash || hash.length < 10) return hash;
+    if (!hash || hash.length < 10) return hash || "N/A";
     return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
   };
 
-  // Filter transactions for the current user
-  const filteredTransactions1 = payments.filter(
-    (txn) =>
-      txn.buyer === user?.uniqueHexAddress ||
-      txn.farmer === user?.uniqueHexAddress
-  );
-
-  // Further filter by search query
-  const filteredTransactions = filteredTransactions1
-    .filter((txn) =>
-      `${txn.paymentId} ${txn.buyer}`
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => b.timestamp - a.timestamp); // Sort by timestamp descending
-
-  function getISTDateTime(timestamp) {
+  // Convert timestamp to IST
+  const getISTDateTime = (timestamp) => {
+    if (!timestamp) return "N/A";
     const date = new Date(timestamp * 1000);
-    const options = {
-      timeZone: "Asia/Kolkata",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    };
-    const formatter = new Intl.DateTimeFormat("en-IN", options);
-    const parts = formatter.formatToParts(date);
-    const day = parts.find((part) => part.type === "day").value;
-    const month = parts.find((part) => part.type === "month").value;
-    const year = parts.find((part) => part.type === "year").value;
-    const hour = parts.find((part) => part.type === "hour").value;
-    const minute = parts.find((part) => part.type === "minute").value;
-    return `${day}-${month}-${year} ${hour}:${minute}`;
-  }
-
-  const paymentData = {
-    totalTransactions: 0,
-    completedTransactions: payments.length,
-    successRate: 0,
+    return date
+      .toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+      .replace(/,/, "");
   };
+
+  // Filter and sort transactions
+  const filteredTransactions = payments
+    .filter(
+      (txn) =>
+        (txn.buyer === user?.uniqueHexAddress ||
+          txn.farmer === user?.uniqueHexAddress) &&
+        `${txn.paymentId || ""} ${txn.buyer || ""}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+  // Calculate payment overview data
+  const calculatePaymentData = () => {
+    const totalAmount = filteredTransactions.reduce(
+      (sum, payment) => sum + (payment.amount || 0),
+      0
+    );
+    const completedCount = filteredTransactions.filter(
+      (payment) => payment.status === "Signed"
+    ).length;
+    const successRate =
+      payments.length > 0 ? (completedCount / filteredTransactions.length) * 100 : 0;
+
+    return {
+      totalAmount: totalAmount.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+      completedCount: completedCount.toLocaleString("en-US"),
+      successRate: successRate.toFixed(1),
+    };
+  };
+
+  const paymentData = calculatePaymentData();
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 md:py-12 px-4 md:px-6 lg:px-8 ml-0 md:ml-20 mt-16 md:mt-20">
       <div className="max-w-full md:max-w-6xl mx-auto">
-        {/* Hero Section */}
+        {/* Hero Section - Payments Overview */}
         <div className="bg-gradient-to-r from-green-600 to-green-800 text-white rounded-lg p-4 md:p-6 mb-4 md:mb-8 shadow-lg">
           <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">
             Payments Overview
           </h1>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-            {[
-              {
-                icon: FaMoneyBillWave,
-                label: "Total Transactions",
-                value: `₹${paymentData.totalTransactions.toLocaleString(
-                  "en-US",
-                  {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }
-                )}`,
-                sub: "All time",
-              },
-              {
-                icon: FaCheckCircle,
-                label: "Completed Transactions",
-                value:
-                  paymentData.completedTransactions.toLocaleString("en-US"),
-                sub: "Successful",
-              },
-              {
-                icon: FaPercentage,
-                label: "Success Rate",
-                value: `${paymentData.successRate}%`,
-                sub: "Reliability",
-              },
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                className="bg-green-100 bg-opacity-20 rounded-md p-3 md:p-4 flex items-center gap-2 md:gap-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.2 }}
-              >
-                <item.icon className="text-2xl md:text-3xl text-green-800" />
-                <div>
-                  <h2 className="text-xs md:text-sm font-semibold text-gray-700">
-                    {item.label}
-                  </h2>
-                  <p className="text-lg md:text-2xl font-bold text-gray-700">
-                    {item.value}
-                  </p>
-                  <p className="text-xs text-gray-600">{item.sub}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {isLoading ? (
+            <Loader />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+              {[
+                {
+                  icon: FaMoneyBillWave,
+                  label: "Total Amount",
+                  value: `₹${paymentData.totalAmount}`,
+                  sub: "All Transactions",
+                },
+                {
+                  icon: FaCheckCircle,
+                  label: "Completed Transactions",
+                  value: paymentData.completedCount,
+                  sub: "Successful",
+                },
+                {
+                  icon: FaPercentage,
+                  label: "Success Rate",
+                  value: `${paymentData.successRate}%`,
+                  sub: "Reliability",
+                },
+              ].map((item, index) => (
+                <motion.div
+                  key={index}
+                  className="rounded-md p-3 md:p-4 flex items-center gap-2 md:gap-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.2 }}
+                >
+                  <item.icon className="text-2xl md:text-3xl text-green-200" />
+                  <div>
+                    <h2 className="text-xs md:text-sm font-semibold text-green-100">
+                      {item.label}
+                    </h2>
+                    <p className="text-lg md:text-2xl font-bold">
+                      {item.value}
+                    </p>
+                    <p className="text-xs text-green-200">{item.sub}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Mini Chart */}
+        {/* Transaction Trends */}
         <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-8">
           <h2 className="text-lg md:text-xl font-semibold text-green-900 mb-2 md:mb-4">
             Transaction Trends
           </h2>
           {filteredTransactions.length > 0 ? (
-            <div className="flex items-end gap-1 md:gap-2 h-24 md:h-32 overflow-x-auto">
+            <div className="flex items-end gap-1 md:gap-2 h-24 md:h-32">
               {filteredTransactions.map((payment, index) => (
                 <motion.div
-                  key={index}
-                  className="bg-green-600 rounded-t w-10 md:w-12 flex-shrink-0"
-                  style={{ height: `${payment.amount / 1200}%` }} // Cap at 100%
+                  key={payment.paymentId || index}
+                  className="bg-green-600 rounded-t w-8 md:w-10 flex-shrink-0"
+                  style={{
+                    height: `${Math.min((payment.amount || 0) / 500, 100)}%`,
+                  }}
                   initial={{ height: 0 }}
                   animate={{
-                    height: `${payment.amount / 1200}%`,
+                    height: `${Math.min((payment.amount || 0) / 500, 100)}%`,
                   }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  title={`$₹{payment.amount}`} // Tooltip for full amount
+                  title={`₹${payment.amount || 0}`}
                 >
                   <span className="text-xs text-white mt-1 block text-center">
                     ₹
-                    {payment.amount > 999
-                      ? `${(payment.amount / 1000).toFixed(1)}k`
-                      : payment.amount}
+                    {(payment.amount || 0) > 999
+                      ? `${((payment.amount || 0) / 1000).toFixed(1)}k`
+                      : payment.amount || 0}
                   </span>
                 </motion.div>
               ))}
             </div>
           ) : (
             <p className="text-center text-gray-500 italic">
-              No transaction data available for trends
+              No transaction data available
             </p>
           )}
         </div>
 
-        {/* Transactions Section */}
+        {/* Recent Transactions */}
         <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 md:gap-6 mb-4 md:mb-6">
             <h2 className="text-lg md:text-xl font-semibold text-green-900">
               Recent Transactions
             </h2>
-            <div className="relative w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by ID or Buyer"
-                className="w-full sm:w-64 pl-10 p-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full pl-10 p-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
           </div>
 
           {isLoading ? (
-            <div className="text-center text-gray-600 text-md md:text-lg">
-              <Loader />
+            <Loader />
+          ) : error ? (
+            <div className="text-center py-12">
+              <FaShoppingCart className="text-red-500 text-5xl mx-auto mb-4 opacity-50" />
+              <h3 className="text-xl font-semibold text-red-700 mb-2">Error</h3>
+              <p className="text-gray-600">{error}</p>
             </div>
           ) : filteredTransactions.length === 0 ? (
             <div className="text-center py-12">
@@ -214,15 +233,15 @@ const Payments = () => {
               </h3>
               <p className="text-gray-600 max-w-md mx-auto">
                 {searchQuery
-                  ? "No transactions match your search criteria."
-                  : "You haven't made or received any payments yet."}
+                  ? "No transactions match your search."
+                  : "No payments recorded yet."}
               </p>
             </div>
           ) : (
             <div className="space-y-4">
               {filteredTransactions.map((transaction) => (
                 <motion.div
-                  key={transaction.paymentId}
+                  key={transaction.paymentId || transaction.timestamp}
                   className="border border-green-200 rounded-md p-4 hover:shadow-lg transition-shadow duration-300 bg-green-50"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -231,7 +250,7 @@ const Payments = () => {
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                       <h3 className="text-md md:text-lg font-semibold text-green-800">
-                        {transaction.paymentId}
+                        {transaction.paymentId || "N/A"}
                       </h3>
                       <p className="text-sm text-gray-700">
                         <strong>Buyer:</strong> {shortenHash(transaction.buyer)}
@@ -244,7 +263,7 @@ const Payments = () => {
                     <div className="text-left sm:text-right">
                       <p className="text-lg font-bold text-green-900">
                         ₹
-                        {transaction.amount.toLocaleString("en-US", {
+                        {(transaction.amount || 0).toLocaleString("en-US", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -260,7 +279,7 @@ const Payments = () => {
                       >
                         {transaction.status === "Signed"
                           ? "Completed"
-                          : transaction.status}
+                          : transaction.status || "Unknown"}
                       </span>
                       <p className="text-xs text-gray-600 mt-1 font-mono truncate">
                         {shortenHash(transaction.paymentId)}

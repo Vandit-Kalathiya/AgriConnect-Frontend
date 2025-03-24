@@ -10,7 +10,7 @@ const TrackingModal = ({
   handleFarmerAction,
 }) => {
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg">
         <h2 className="text-xl font-bold text-green-800 mb-4">
           Confirm Delivery
@@ -44,7 +44,7 @@ const TrackingModal = ({
                 return;
               }
               const order = orders.find((o) => o.id === selectedOrderId);
-              handleFarmerAction(order.pdfHash, "delivered", trackingNumber);
+              handleFarmerAction(order.id, "delivered", trackingNumber);
             }}
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center"
           >

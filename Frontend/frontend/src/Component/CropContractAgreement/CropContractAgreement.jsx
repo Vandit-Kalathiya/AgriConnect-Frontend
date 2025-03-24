@@ -12,7 +12,7 @@ import UploadContract from "./UploadContract";
 import NavigationButtons from "./NavigationButtons";
 import toast from "react-hot-toast";
 
-const CropContractAgreement = () => {
+const CropContractAgreement = ({quantity}) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [userType, setUserType] = useState("farmer");
   const [farmerSignature, setFarmerSignature] = useState(null);
@@ -178,7 +178,7 @@ const CropContractAgreement = () => {
           cropDetails: {
             type: listingData.productType,
             variety: listingData.productName,
-            quantity: `${listingData.quantity} kg`,
+            quantity: `${listingData.quantity}`,
             pricePerUnit: `${listingData.finalPrice} per kg`,
             qualityStandards: [
               listingData.qualityGrade
@@ -392,14 +392,18 @@ const CropContractAgreement = () => {
     //     formData.cropDetails.quantity.split(" ")[0]
     // );
 
+    console.log(formData);
+    
+
     const orderRequest = {
       farmerAddress: far.uniqueHexAddress,
       buyerAddress: buy.uniqueHexAddress,
       listingId,
       amount: parseFloat(
         formData.cropDetails.pricePerUnit.split(" ")[0] *
-          formData.cropDetails.quantity.split(" ")[0]
+          formData.cropDetails.quantity
       ),
+      quantity: formData.cropDetails.quantity
     };
 
     try {
@@ -411,6 +415,19 @@ const CropContractAgreement = () => {
         }
       );
       toast.success("Order Created!");
+      
+      const updateListingStatus = await axios.put(
+        `http://localhost:2527/listings/${listingId}/archived/${formData.cropDetails.quantity}`
+      );
+      if (!updateListingStatus.status === 200) {
+        const errorText = await updateListingStatus.text();
+        toast.error(
+          `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
+        );
+        throw new Error(
+          `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
+        );
+      }
       navigate("/my-orders", { state: listing });
     } catch (err) {
       setError(err.response?.data || "Failed to upload contract");
@@ -441,6 +458,7 @@ const CropContractAgreement = () => {
             formData={formData}
             userType={userType}
             setFormData={setFormData}
+            quantity={quantity}
           />
         );
       case 3:

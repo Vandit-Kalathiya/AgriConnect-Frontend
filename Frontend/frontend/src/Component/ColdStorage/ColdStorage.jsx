@@ -731,7 +731,7 @@ const ColdStoragePage = () => {
         coldStorageName: bookingForm.coldStorageName,
       };
       const response = await axios.post(
-        "http://localhost:2529/coldstorage/book",
+        "http://localhost:2529/coldStorage/book",
         bookingData
       );
       setBookingStatus({
@@ -767,7 +767,7 @@ const ColdStoragePage = () => {
   const confirmApproveBooking = async () => {
     try {
       await axios.put(
-        `http://localhost:2529/coldstorage/approve/${selectedBookingId}`
+        `http://localhost:2529/coldStorage/approve/${selectedBookingId}`
       );
       setIsApproveModalOpen(false);
       fetchBookings(user.id);

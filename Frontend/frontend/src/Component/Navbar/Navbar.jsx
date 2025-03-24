@@ -124,6 +124,7 @@ const Navbar = () => {
     { name: "Home", path: "/" },
     { name: "Dashboard", path: "/dashboard" },
     { name: "Marketplace", path: "/crops" },
+    { name: "Crop Advisory", path: "/advisory" },
     { name: "Contact", path: "/contact" },
   ];
 
@@ -173,13 +174,7 @@ const Navbar = () => {
 
         {/* Right Section */}
         <div className="flex items-center space-x-2 md:space-x-4">
-          <button className="hidden md:flex text-gray-600 hover:text-green-600 transition-colors duration-200 relative">
-            <FaBell size={20} />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-              3
-            </span>
-          </button>
-          <Link
+          {/* <Link
             to="/cart"
             className="hidden md:flex text-gray-600 hover:text-green-600 transition-colors duration-200 relative"
           >
@@ -187,7 +182,7 @@ const Navbar = () => {
             <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
               2
             </span>
-          </Link>
+          </Link> */}
 
           {/* Profile Button */}
           <div className="relative">
@@ -295,6 +290,13 @@ const Navbar = () => {
               </div>
             )}
           </div>
+
+          <button className="hidden md:flex text-gray-600 hover:text-green-600 transition-colors duration-200 relative">
+            <FaBell size={20} />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+              3
+            </span>
+          </button>
 
           {/* Hamburger Menu */}
           <div className="md:hidden">

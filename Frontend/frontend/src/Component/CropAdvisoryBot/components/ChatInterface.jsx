@@ -318,7 +318,7 @@ These recommendations consider current market prices, projected demand, and grow
                     <div className="h-2 w-2 bg-green-600 rounded-full animate-bounce"></div>
                   </div>
                   <span className="text-sm text-green-700">
-                    Analyzing your farm data...
+                    Analyzing the data...
                   </span>
                 </div>
               </div>
