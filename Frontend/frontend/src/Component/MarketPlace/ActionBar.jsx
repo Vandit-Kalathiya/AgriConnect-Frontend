@@ -3,6 +3,7 @@ import { ShoppingCart, Phone, AlertTriangle, Check, X } from "lucide-react";
 import { toast } from "react-hot-toast";
 import TermsAndConditionsModal from "../TermsAndConditions/TermsAndConditionsModal";
 import CropContractAgreement from "../CropContractAgreement/CropContractAgreement";
+import axios from "axios";
 
 const ActionBar = ({ crop, userPhone }) => {
   const [quantity, setQuantity] = useState(crop.quantity);
@@ -10,14 +11,14 @@ const ActionBar = ({ crop, userPhone }) => {
   const [showContract, setShowContract] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [showCallPopup, setShowCallPopup] = useState(false); // State for initial call pop-up
+  const [showCallScreen, setShowCallScreen] = useState(false); // State for call screen
 
   useEffect(() => {
-    // Check if current user is the owner of this listing
     if (userPhone && crop.contact) {
       setIsOwner(userPhone === crop.contact);
     }
 
-    // Calculate total price
     const priceValue =
       typeof crop.price === "string"
         ? parseFloat(crop.price.replace(/[^\d.]/g, ""))
@@ -45,16 +46,38 @@ const ActionBar = ({ crop, userPhone }) => {
       toast.error("This is your own listing!");
       return;
     }
+    setShowCallPopup(true);
+  };
 
-    // Implement contact functionality
-    navigator.clipboard.writeText(crop.contact);
-    toast.success("Phone number copied to clipboard!", {
-      icon: <Check size={18} />,
-      style: {
-        borderRadius: "10px",
-        background: "#333",
-        color: "#fff",
-      },
+  const handleCall = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:2525/auth/otp/initiate?phoneNumber=${crop.contact}`,
+        {},
+        { withCredentials: true }
+      );
+      toast.success("Call initiated successfully!", {
+        icon: <Phone size={18} />,
+        style: { borderRadius: "10px", background: "#333", color: "#fff" },
+      });
+      console.log("Call API response:", response.data);
+      setShowCallPopup(false); // Close initial pop-up
+      setShowCallScreen(true); // Open call screen
+    } catch (err) {
+      toast.error("Failed to initiate call!");
+      console.error("Call API error:", err);
+    }
+  };
+
+  const handleEndCall = () => {
+    if (showCallScreen) {
+      setShowCallScreen(false);
+    } else {
+      setShowCallPopup(false);
+    }
+    toast.success("Call ended!", {
+      icon: <X size={18} />,
+      style: { borderRadius: "10px", background: "#333", color: "#fff" },
     });
   };
 
@@ -183,6 +206,71 @@ const ActionBar = ({ crop, userPhone }) => {
               </button>
             </div>
             <CropContractAgreement quantity={quantity} />
+          </div>
+        </div>
+      )}
+
+      {/* Initial Call Pop-up */}
+      {showCallPopup && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full relative">
+            <button
+              onClick={handleEndCall}
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
+            >
+              <X size={24} />
+            </button>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+              Contact Farmer
+            </h2>
+            <p className="text-center text-gray-700 mb-4">
+              Phone Number: <strong>{crop.contact}</strong>
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleCall}
+                className="py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Phone size={18} />
+                Call
+              </button>
+              <button
+                onClick={handleEndCall}
+                className="py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <X size={18} />
+                End Call
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Call Screen Interface */}
+      {showCallScreen && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gray-800 text-white p-6 rounded-lg shadow-lg w-full max-w-sm h-[500px] flex flex-col justify-between relative">
+            {/* Call Status */}
+            <div className="text-center">
+              <p className="text-lg font-semibold">Calling...</p>
+              <p className="text-2xl mt-2">{crop.contact}</p>
+              <div className="mt-4 flex justify-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse delay-200"></span>
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse delay-400"></span>
+              </div>
+            </div>
+
+            {/* End Call Button */}
+            <div className="flex justify-center">
+              <button
+                onClick={handleEndCall}
+                className="py-3 px-6 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <X size={24} />
+                End Call
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -276,12 +276,12 @@ const Index = () => {
           )}
         </motion.div>
 
-        <footer className="mt-16 text-center text-sm text-muted-foreground/70">
+        {/* <footer className="mt-16 text-center text-sm text-muted-foreground/70">
           <p>
             © 2025 AgriConnect - Indian Crop Advisor • Helping farmers make data-driven
             decisions
           </p>
-        </footer>
+        </footer> */}
       </main>
     </div>
   );

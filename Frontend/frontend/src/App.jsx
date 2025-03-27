@@ -3,9 +3,9 @@ import "./App.css";
 import Navbar from "./Component/Navbar/Navbar";
 import Dashboard from "./Component/Dashboard/Dashboard";
 import Sidebar from "./Component/Dashboard/Sidebar";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, Link } from "react-router-dom";
 import { CropListingPage } from "./Component/MarketPlace/CropListingPage";
-import { CropDetailPage } from "./Component/MarketPlace/CropDetailPage";
+import CropDetailPage from "./Component/MarketPlace/CropDetailPage";
 import { MyListing } from "./Component/MyProducts/MyListing";
 import Payments from "./Component/Payments/Payments";
 import Contracts from "./Component/MyContracts/MyContracts";
@@ -23,6 +23,20 @@ import Agriprice from "./Component/ColdStorage/AgriPrice";
 import { ToastContainer } from "react-toastify";
 import MyOrders from "./Component/MyOrders/MyOrders";
 import Index from "./Component/CropAdvisoryBot/Index";
+import ChatbotButton from "./Component/Dashboard/ChatbotButton";
+import Index_Bot from "./Component/KisanMitra/Pages/Index";
+import QrDetailsPopup from "./Component/MarketPlace/QrDetailsPopup";
+
+
+const Layout = ({ children }) => (
+  <div className="flex flex-col h-screen font-poppins">
+    <Navbar />
+    <div className="flex flex-1 relative">
+      <Sidebar />
+      <main className="flex-1 ml-16 md:ml-0">{children}</main>
+    </div>
+  </div>
+);
 
 // PrivateRoute component to protect authenticated routes
 const PrivateRoute = ({ children }) => {
@@ -86,12 +100,16 @@ function App() {
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/crops" element={<CropListingPage />} />
                       <Route path="/crop/:id" element={<CropDetailPage />} />
+                      <Route
+                        path="/qr-details/:id"
+                        element={<QrDetailsPopup />}
+                      />
                       <Route path="/my-listing" element={<MyListing />} />
                       <Route path="/my-payments" element={<Payments />} />
                       <Route path="/my-contracts" element={<Contracts />} />
                       <Route path="/list" element={<ListingForm />} />
-                      <Route path="/advisory" element={<Index/>} />
                       <Route path="/weather" element={<WeatherDashboard />} />
+                      <Route path="/crop-advisory" element={<Index />} />
                       <Route
                         path="/market-trends"
                         element={<MarketTrendsDashboard />}
@@ -107,6 +125,8 @@ function App() {
                         path="/payment-process"
                         element={<PaymentProcess />}
                       />
+                      <Route path="/support" element={<Index_Bot />} />
+
                       {/* Default route */}
                       {/* <Route path="/" element={<Dashboard />} /> */}
                     </Routes>
@@ -117,6 +137,7 @@ function App() {
           }
         />
       </Routes>
+      <ChatbotButton />
       {/* </ToastContainer> */}
       {/* </BrowserRouter> */}
     </MantineProvider>

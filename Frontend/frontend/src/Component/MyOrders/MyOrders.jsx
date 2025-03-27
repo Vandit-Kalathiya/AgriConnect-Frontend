@@ -164,17 +164,40 @@ const MyOrders = () => {
     }
   });
 
-  const handleFarmerAction = async (orderId, newStatus, trackingNumber2) => {
-    console.log(trackingNumber2,' ',newStatus);
-    
+  const handleFarmerAction = async (orderId, newStatus, deliveryData) => {
+    // console.log(trackingNumber2,' ',newStatus);
+
     setIsProcessingPayment(true);
     try {
       if (newStatus === "delivered") {
         await axios.post(
-          `http://localhost:2526/api/payments/confirm-delivery/${orderId}/${trackingNumber2}`,
+          `http://localhost:2526/api/payments/confirm-delivery/${orderId}/${deliveryData.trackingNumber}`,
           {},
           { withCredentials: true }
         );
+
+        
+
+        // const updateListingStatus = await axios.put(
+        //   `http://localhost:2527/listings/${listingId}/archived`
+        // );
+        // if (!updateListingStatus.status === 200) {
+        //   const errorText = await updateListingStatus.text();
+        //   toast.error(
+        //     `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
+        //   );
+        //   throw new Error(
+        //     `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
+        //   );
+        // }
+
+        // console.log(
+        //   "Listing status updated successfully:",
+        //   updateListingStatus.data
+        // );
+
+        
+
         toast.success("Delivery confirmed successfully!");
       } else if (newStatus === "return_confirmed") {
         await axios.post(

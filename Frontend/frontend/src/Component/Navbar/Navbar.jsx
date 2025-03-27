@@ -124,7 +124,7 @@ const Navbar = () => {
     { name: "Home", path: "/" },
     { name: "Dashboard", path: "/dashboard" },
     { name: "Marketplace", path: "/crops" },
-    { name: "Crop Advisory", path: "/advisory" },
+    { name: "Crop Advisory", path: "/crop-advisory" },
     { name: "Contact", path: "/contact" },
   ];
 

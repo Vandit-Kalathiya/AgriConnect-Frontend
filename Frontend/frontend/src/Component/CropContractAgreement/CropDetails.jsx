@@ -131,7 +131,7 @@ const CropDetails = ({ formData, userType, setFormData, quantity }) => {
 
         <div>
           <label className="block font-medium text-sm mb-1 text-gray-700">
-            Price per Unit
+            Price per Unit (kg / piece)
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

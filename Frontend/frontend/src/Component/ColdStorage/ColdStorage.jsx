@@ -791,7 +791,7 @@ const ColdStoragePage = () => {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="mt-4 md:mt-0 flex items-center gap-2 bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-300 shadow-lg transform hover:scale-105"
+          className="mt-4 md:mt-0 flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-300 shadow-lg transform hover:scale-105"
         >
           Book Storage
         </button>

@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   Bookmark,
   Leaf,
+  X,
 } from "lucide-react";
 import CropImageGallery from "./CropImageGallery";
 import CropDetails from "./CropDetails";
@@ -18,8 +19,9 @@ import FreshnessMeter from "./FreshnessMeter";
 import ActionBar from "./ActionBar";
 import { toast } from "react-hot-toast";
 import { getCurrentUser } from "../../../helper";
+import { QRCodeCanvas } from "qrcode.react";
 
-export const CropDetailPage = () => {
+const CropDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
@@ -31,14 +33,13 @@ export const CropDetailPage = () => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [userPhone, setUserPhone] = useState(null);
 
-  // Check if data was passed via state (from CropCard)
   const { cropData: initialCropData, images: initialImages } =
     location.state || {};
 
   const fetchUserProfile = async () => {
     try {
       const response = await getCurrentUser();
-      console.log(response);
+      // console.log(response);
       if (response && response.phoneNumber) {
         setUserPhone(response.phoneNumber);
       }
@@ -46,11 +47,10 @@ export const CropDetailPage = () => {
       console.error("Failed to fetch user profile:", err);
     }
   };
-  
+
   useEffect(() => {
     fetchUserProfile();
     fetchCropData();
-    // Simulate checking if item is in wishlist
     setIsWishlisted(Math.random() > 0.7);
 
     return () => {
@@ -61,8 +61,6 @@ export const CropDetailPage = () => {
   const fetchCropData = async () => {
     try {
       setLoading(true);
-
-      // Fetch from backend
       const response = await axios.get(
         `http://localhost:2527/listings/get/${id}`,
         {
@@ -71,39 +69,31 @@ export const CropDetailPage = () => {
       );
 
       const listing = response.data;
-      
-
-      // Map backend fields to frontend structure
+      // console.log(listing);
       const mappedCropData = {
         id: listing.id,
-        images: listing.images, // Array of image objects with id
+        images: listing.images, // Fixed: Keep full array
         type: listing.productType,
         variety: listing.productName,
-        grade: listing.qualityGrade,
-        certifications: listing.certifications
-          ? listing.certifications.split(", ")
-          : [],
         quantity: listing.quantity,
         unit: listing.unitOfQuantity,
         location: listing.location,
         harvestDate: listing.harvestedDate,
-        availabilityDate: listing.availabilityDate,
         shelfLife: listing.shelfLifetime,
         price: `₹${listing.finalPrice.toFixed(2)}`,
         priceUnit: `per ${listing.unitOfQuantity}`,
         description: listing.productDescription,
         contact: listing.contactOfFarmer,
-        rating: 4.5, // Hardcoded; fetch from backend if available
+        rating: 4.5,
         farmName: listing.farmName || "Organic Farm",
         farmerName: listing.farmerName || "Local Farmer",
         isOrganic: listing.isOrganic || false,
         isSustainable: listing.isSustainable || true,
-        status: listing.status || "active", // Ensure status is included
+        status: listing.status || "active",
       };
 
       setCropData(mappedCropData);
 
-      // Fetch images
       const imagePromises = listing.images.map((image) =>
         axios
           .get(`http://localhost:2527/image/${image.id}`, {
@@ -139,11 +129,7 @@ export const CropDetailPage = () => {
         ) : (
           <Heart size={18} className="text-red-500 fill-red-500" />
         ),
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
+        style: { borderRadius: "10px", background: "#333", color: "#fff" },
       }
     );
   };
@@ -152,12 +138,16 @@ export const CropDetailPage = () => {
     navigator.clipboard.writeText(window.location.href);
     toast.success("Link copied to clipboard!", {
       icon: <Share2 size={18} />,
-      style: {
-        borderRadius: "10px",
-        background: "#333",
-        color: "#fff",
-      },
+      style: { borderRadius: "10px", background: "#333", color: "#fff" },
     });
+  };
+
+  const generateQrData = () => {
+    if (!cropData) return "";
+    // Generate a URL to a new route with the crop ID
+    const qrUrl = `${window.location.origin}/qr-details/${cropData.id}`;
+    console.log("QR URL:", qrUrl); // Debug output
+    return qrUrl;
   };
 
   if (loading) {
@@ -209,7 +199,6 @@ export const CropDetailPage = () => {
   return (
     <div className="bg-gray-50 py-12 md:ml-20 mt-16 min-h-screen pb-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header with back button and actions */}
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={handleGoBack}
@@ -242,7 +231,6 @@ export const CropDetailPage = () => {
           </div>
         </div>
 
-        {/* Owner banner */}
         {isOwner && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-center justify-between">
             <div className="flex items-center">
@@ -262,7 +250,6 @@ export const CropDetailPage = () => {
           </div>
         )}
 
-        {/* Product badges */}
         <div className="flex flex-wrap gap-2 mb-4 relative">
           {cropData.isOrganic && (
             <span className="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium">
@@ -297,16 +284,32 @@ export const CropDetailPage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <CropImageGallery
-            images={images}
-            type={cropData.type}
-            variety={cropData.variety}
-          />
+          <div className="space-y-6">
+            <CropImageGallery
+              images={images}
+              type={cropData.type}
+              variety={cropData.variety}
+            />
+            <div className="mb-6 bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+                Product Authenticity QR Code
+              </h2>
+              <div className="flex flex-col items-center">
+                <QRCodeCanvas value={generateQrData()} size={200} />
+                <p className="mt-4 text-gray-600 text-sm text-center">
+                  Scan this QR code to verify product authenticity and view
+                  details.
+                </p>
+              </div>
+            </div>
+          </div>
           <div className="space-y-6">
             <CropDetails crop={cropData} />
             <CropTimeline
               harvestDate={cropData.harvestDate}
-              availabilityDate={cropData.availabilityDate}
+              availabilityDate={
+                cropData.availabilityDate || cropData.harvestDate
+              }
             />
             <FreshnessMeter shelfLife={cropData.shelfLife} />
           </div>
@@ -316,3 +319,5 @@ export const CropDetailPage = () => {
     </div>
   );
 };
+
+export default CropDetailPage;

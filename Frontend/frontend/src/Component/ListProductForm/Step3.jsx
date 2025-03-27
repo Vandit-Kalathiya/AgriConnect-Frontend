@@ -239,7 +239,7 @@ const Step3 = ({
                 !formData.qualityGrade ||
                 !formData.quantity
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-jewel-500 to-jewel-600 hover:from-jewel-600 hover:to-jewel-700"
+                  : "bg-jewel-500 hover:bg-jewel-600"
               } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-jewel-500 transition-all`}
             >
               {isLoadingAiPrice ? (
@@ -384,16 +384,16 @@ const Step3 = ({
           <div className="flex justify-between pt-4">
             <button
               onClick={handleBack}
-              className="px-6 py-3 rounded-lg border border-jewel-300 bg-white text-jewel-700 hover:bg-jewel-50 transition-colors"
+              className="px-4 py-2 rounded-lg border border-jewel-300 bg-white text-jewel-700 hover:bg-jewel-50 transition-colors"
             >
               Back
             </button>
             <button
               onClick={handleNext}
               disabled={!isStep3Valid}
-              className={`px-6 py-3 rounded-lg text-white font-medium ${
+              className={`px-4 py-2 rounded-lg text-white font-medium ${
                 isStep3Valid
-                  ? "bg-gradient-to-r from-jewel-500 to-jewel-600 hover:from-jewel-600 hover:to-jewel-700"
+                  ? "bg-jewel-500 hover:bg-jewel-600"
                   : "bg-gray-400 cursor-not-allowed"
               } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-jewel-500 transition-colors`}
             >

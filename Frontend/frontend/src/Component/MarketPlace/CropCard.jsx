@@ -11,7 +11,7 @@ const CropCard = ({ crop }) => {
   // Log the crop object to verify its structure
   // console.log("Crop Data:", crop);
 
-  console.log(crop.lastUpdatedDate);
+  // console.log(crop.lastUpdatedDate);
   
 
   useEffect(() => {

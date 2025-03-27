@@ -12,7 +12,7 @@ import UploadContract from "./UploadContract";
 import NavigationButtons from "./NavigationButtons";
 import toast from "react-hot-toast";
 
-const CropContractAgreement = ({quantity}) => {
+const CropContractAgreement = ({ quantity }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [userType, setUserType] = useState("farmer");
   const [farmerSignature, setFarmerSignature] = useState(null);
@@ -179,7 +179,7 @@ const CropContractAgreement = ({quantity}) => {
             type: listingData.productType,
             variety: listingData.productName,
             quantity: `${listingData.quantity}`,
-            pricePerUnit: `${listingData.finalPrice} per kg`,
+            pricePerUnit: `${listingData.finalPrice}`,
             qualityStandards: [
               listingData.qualityGrade
                 ? `Quality Grade: ${listingData.qualityGrade}`
@@ -289,79 +289,8 @@ const CropContractAgreement = ({quantity}) => {
         throw new Error("Agreement ID not returned from save response");
       }
 
-      const fetchResponse = await axios.get(
-        `http://localhost:2526/agreements/get/${agreementId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-
-      const fetchedAgreementDetails = fetchResponse.data;
-      console.log("Fetched agreement details:", fetchedAgreementDetails);
-
-      const contractRequest = {
-        farmerInfo: fetchedAgreementDetails.farmerInfo,
-        buyerInfo: fetchedAgreementDetails.buyerInfo,
-        cropDetails: fetchedAgreementDetails.cropDetails,
-        deliveryTerms: fetchedAgreementDetails.deliveryTerms,
-        paymentTerms: fetchedAgreementDetails.paymentTerms,
-        termsConditions: fetchedAgreementDetails.termsConditions,
-        additionalNotes: fetchedAgreementDetails.additionalNotes,
-      };
-
-      const response = await fetch("http://localhost:2529/contracts/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/pdf",
-        },
-        body: JSON.stringify(contractRequest),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Failed to generate PDF: ${response.status} - ${errorText}`
-        );
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `AgriConnect_Contract_${contractRequest.farmerInfo.farmerName.replace(
-        /\s+/g,
-        "_"
-      )}_${contractRequest.buyerInfo.buyerName.replace(/\s+/g, "_")}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      console.log("Contract PDF generated successfully");
-
-      const updateListingStatus = await axios.put(
-        `http://localhost:2527/listings/${listingId}/archived`
-      );
-      if (!updateListingStatus.status === 200) {
-        const errorText = await updateListingStatus.text();
-        toast.error(
-          `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
-        );
-        throw new Error(
-          `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
-        );
-      }
-
-      console.log(
-        "Listing status updated successfully:",
-        updateListingStatus.data
-      );
-
-      toast.success("Contract PDF Generated Successfully");
-      setContractGenerated(true);
+      toast.success("Contract saved successfully");
+      return agreementId;
     } catch (err) {
       const errorMessage = err.response?.data || err.message;
       setError(`Failed to submit contract or generate PDF: ${errorMessage}`);
@@ -393,7 +322,8 @@ const CropContractAgreement = ({quantity}) => {
     // );
 
     console.log(formData);
-    
+    const agreementId = await handleSubmit();
+    console.log(agreementId);
 
     const orderRequest = {
       farmerAddress: far.uniqueHexAddress,
@@ -403,7 +333,8 @@ const CropContractAgreement = ({quantity}) => {
         formData.cropDetails.pricePerUnit.split(" ")[0] *
           formData.cropDetails.quantity
       ),
-      quantity: formData.cropDetails.quantity
+      quantity: formData.cropDetails.quantity,
+      agreementId: agreementId,
     };
 
     try {
@@ -415,7 +346,7 @@ const CropContractAgreement = ({quantity}) => {
         }
       );
       toast.success("Order Created!");
-      
+
       const updateListingStatus = await axios.put(
         `http://localhost:2527/listings/${listingId}/archived/${formData.cropDetails.quantity}`
       );
@@ -514,7 +445,7 @@ const CropContractAgreement = ({quantity}) => {
   return (
     <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-2xl w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-        <div className="mb-4 text-right">
+        {/* <div className="mb-4 text-right">
           <button
             onClick={toggleUserType}
             className="text-sm text-jewel-600 hover:text-jewel-800"
@@ -522,7 +453,7 @@ const CropContractAgreement = ({quantity}) => {
             Current role: {userType === "farmer" ? "Farmer" : "Buyer"} (click to
             toggle)
           </button>
-        </div>
+        </div> */}
 
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">

@@ -34,11 +34,70 @@ const OrderItem = ({
   const approveDelivery = async (orderId) => {
     setLoading(true);
     try {
-      const response = await axios.post(
+      const response2 = await axios.post(
         `http://localhost:2526/api/payments/verify-delivery/${orderId}`,
         {},
         { withCredentials: true }
       );
+
+      const agreementId = order.agreementId;
+
+      const fetchResponse = await axios.get(
+        `http://localhost:2526/agreements/get/${agreementId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      const fetchedAgreementDetails = fetchResponse.data;
+      console.log("Fetched agreement details:", fetchedAgreementDetails);
+
+      const contractRequest = {
+        farmerInfo: fetchedAgreementDetails.farmerInfo,
+        buyerInfo: fetchedAgreementDetails.buyerInfo,
+        cropDetails: fetchedAgreementDetails.cropDetails,
+        deliveryTerms: fetchedAgreementDetails.deliveryTerms,
+        paymentTerms: fetchedAgreementDetails.paymentTerms,
+        termsConditions: fetchedAgreementDetails.termsConditions,
+        additionalNotes: fetchedAgreementDetails.additionalNotes,
+      };
+
+      const response = await fetch("http://localhost:2529/contracts/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/pdf",
+        },
+        body: JSON.stringify(contractRequest),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to generate PDF: ${response.status} - ${errorText}`
+        );
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `AgriConnect_Contract_${contractRequest.farmerInfo.farmerName.replace(
+        /\s+/g,
+        "_"
+      )}_${contractRequest.buyerInfo.buyerName.replace(/\s+/g, "_")}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      console.log("Contract PDF generated successfully");
+
+      toast.success("Contract PDF Generated Successfully");
+      // setContractGenerated(true);
+
       toast.success("Delivery successfully approved!");
       fetchOrders();
     } catch (error) {

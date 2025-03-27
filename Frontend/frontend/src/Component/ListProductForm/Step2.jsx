@@ -185,9 +185,7 @@ const Step2 = ({
             }`}
             required
           >
-            <option value="all">
-              Select a crop type
-            </option>
+            <option value="all">Select a crop type</option>
             <option value="Grains">Grains (e.g., Rice, Wheat)</option>
             <option value="Fruits">Fruits (e.g., Mango, Apple)</option>
             <option value="Vegetables">
@@ -401,18 +399,18 @@ const Step2 = ({
       <div className="flex justify-between pt-4 border-t border-gray-200">
         <button
           onClick={handleBack}
-          className="px-6 py-3 rounded-lg border border-jewel-300 bg-white text-jewel-700 hover:bg-jewel-50 transition-colors shadow-sm"
+          className="px-4 py-2 rounded-lg border border-jewel-300 bg-white text-jewel-700 hover:bg-jewel-50 transition-colors shadow-sm"
         >
           Back
         </button>
         <button
           onClick={handleNext}
           disabled={!isStep2Valid}
-          className={`px-6 py-3 rounded-lg text-white font-medium ${
+          className={`px-4 py-2 rounded-lg text-white font-medium ${
             isStep2Valid
               ? "bg-jewel-500 hover:bg-jewel-600"
               : "bg-gray-400 cursor-not-allowed"
-          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-jewel-500 transition-colors shadow-sm`}
+          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-jewel-500 transition-colors`}
         >
           Next
         </button>
