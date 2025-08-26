@@ -80,13 +80,13 @@ const Sidebar = () => {
         </SidebarSection>
 
         <SidebarSection title="Insights" isCollapsed={isCollapsed}>
-          <SidebarItem
+          {/* <SidebarItem
             icon={<HiTrendingUp />}
             text="Market Trends"
             to="/market-trends"
             isCollapsed={isCollapsed}
             toggleSidebar={toggleSidebar}
-          />
+          /> */}
           {/* <SidebarItem
             icon={<FaChartBar />}
             text="Analytics"

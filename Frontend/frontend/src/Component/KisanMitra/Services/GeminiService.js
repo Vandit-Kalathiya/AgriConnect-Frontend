@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = 'AIzaSyDU7xQMNUiyJ9SEtvDQCd3jmpgfTGo9kg8';
+const GEMINI_API_KEY = 'AIzaSyD9GuEan7yLCCxgqlgX_SO7Zwcnv8ku8Jc';
 
 export const getGeminiResponse = async (messages, language) => {
   try {

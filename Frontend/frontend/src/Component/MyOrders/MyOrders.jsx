@@ -316,7 +316,7 @@ const MyOrders = () => {
         </div>
 
         {isLoading ? (
-          <div className="text-center text-gray-600 text-md md:text-lg">
+          <div className="flex justify-center items-center h-124">
             <Loader />
           </div>
         ) : error ? (

@@ -92,7 +92,7 @@ export const CropListingPage = () => {
         </h1>
 
         {loading && (
-          <div className="text-center text-gray-600 text-md md:text-lg">
+          <div className="flex justify-center items-center min-h-screen">
             <Loader />
           </div>
         )}

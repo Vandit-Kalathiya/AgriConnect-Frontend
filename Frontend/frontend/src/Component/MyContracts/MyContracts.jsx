@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import { getCurrentUser } from "../../../helper";
 import { toast } from "react-toastify";
+import Loader from "../Loader/Loader"
 
 const Contracts = () => {
   const [viewMode, setViewMode] = useState("table");
@@ -342,7 +343,7 @@ const Contracts = () => {
         <div className="bg-white rounded-lg shadow-md overflow-hidden min-h-[400px]">
           {loading ? (
             <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-jewel-500"></div>
+               <Loader />
             </div>
           ) : sortedAndFilteredContracts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 p-6 text-center">

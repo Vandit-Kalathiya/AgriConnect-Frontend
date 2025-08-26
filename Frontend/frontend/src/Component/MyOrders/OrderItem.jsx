@@ -82,6 +82,30 @@ const OrderItem = ({
       }
 
       const blob = await response.blob();
+
+      // fetching farmer details
+      const farmerResponse = await axios.get(
+        `http://localhost:2525/users/${contractRequest.farmerInfo.farmerContact}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      // fetching buyer details
+      const buyerResponse = await axios.get(
+        `http://localhost:2525/users/${contractRequest.buyerInfo.buyerContact}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      
+      await handleUploadContract(blob,farmerResponse.data.uniqueHexAddress,buyerResponse.data.uniqueHexAddress);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -106,6 +130,32 @@ const OrderItem = ({
     } finally {
       setLoading(false);
       setShowConfirmModal(false);
+    }
+  };
+
+  const handleUploadContract = async (pdfBlob, farmerAddress, buyerAddress) => {
+    try {
+      // Prepare FormData with the generated PDF
+      const formData = new FormData();
+      formData.append("file", pdfBlob, "contract.pdf");
+
+      // Call the uploadAgreement API
+      const response = await axios.post(
+        `http://localhost:2526/upload/${farmerAddress}/${buyerAddress}`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      toast.success("Contract uploaded successfully!");
+      console.log("Upload response:", response.data);
+    } catch (err) {
+      toast.error("Failed to upload contract!");
+      console.error("Upload error:", err);
     }
   };
 

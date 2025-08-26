@@ -12,7 +12,6 @@ import Contracts from "./Component/MyContracts/MyContracts";
 import { MantineProvider } from "@mantine/core";
 import ListingForm from "./Component/ListProductForm/ListingForm";
 import WeatherDashboard from "./Component/Weather/WeatherDashboard";
-import MarketTrendsDashboard from "./Component/MarketTrends/MarketTrendsDashboard";
 import UserProfile from "./Component/UserProfile/UserProfile";
 import PaymentProcess from "./Component/Payments/PaymentProcess";
 import AuthPage from "./Component/Auth/AuthPage";
@@ -26,6 +25,11 @@ import Index from "./Component/CropAdvisoryBot/Index";
 import ChatbotButton from "./Component/Dashboard/ChatbotButton";
 import Index_Bot from "./Component/KisanMitra/Pages/Index";
 import QrDetailsPopup from "./Component/MarketPlace/QrDetailsPopup";
+import Index2 from "./Component/MarketTrends/Pages/Index2";
+import Trends from "./Component/MarketTrends/Pages/Trends";
+import Market from "./Component/MarketTrends/Pages/Market";
+import Insights from "./Component/MarketTrends/Pages/Insights";
+import CropDetail from "./Component/MarketTrends/Pages/CropDetail";
 
 
 const Layout = ({ children }) => (
@@ -110,10 +114,11 @@ function App() {
                       <Route path="/list" element={<ListingForm />} />
                       <Route path="/weather" element={<WeatherDashboard />} />
                       <Route path="/crop-advisory" element={<Index />} />
-                      <Route
-                        path="/market-trends"
-                        element={<MarketTrendsDashboard />}
-                      />
+                      <Route path="/market-trends" element={<Index2 />} />
+                      <Route path="/trends" element={<Trends />} />
+                      <Route path="/market" element={<Market />} />
+                      <Route path="/insights" element={<Insights />} />
+                      <Route path="/crop/market/:cropId" element={<CropDetail />} />
                       <Route
                         path="/cold-storage"
                         element={<ColdStoragePage />}

@@ -125,7 +125,8 @@ const Navbar = () => {
     { name: "Dashboard", path: "/dashboard" },
     { name: "Marketplace", path: "/crops" },
     { name: "Crop Advisory", path: "/crop-advisory" },
-    { name: "Contact", path: "/contact" },
+    // { name: "Contact", path: "/contact" },
+    { name: "Market Trends", path: "/market-trends" },
   ];
 
   // console.log("User state:", user);

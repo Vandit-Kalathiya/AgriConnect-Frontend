@@ -430,8 +430,10 @@ const NearbyColdStoragesMap = ({
       );
       const address = res.data.address;
       console.log(address);
-      const district = address.city_district;
+      const district = address.state_district;
       const state = address.state;
+
+      console.log(district,' ,',state);
 
       const response = await axios.get(CUSTOM_API_URL, {
         params: {

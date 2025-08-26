@@ -219,7 +219,7 @@ const WeatherDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center px-4 md:mt-40 md:ml-16 min-h-96">
+      <div className="flex justify-center items-center px-4 md:mt-0 md:ml-16 min-h-screen">
         <Loader />
       </div>
     );

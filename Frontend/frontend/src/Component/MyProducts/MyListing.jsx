@@ -40,7 +40,7 @@ export const MyListing = () => {
           My Crop Listings
         </h1>
         {loading && (
-          <div className="text-center text-gray-600 text-md md:text-lg m-auto">
+          <div className="flex justify-center items-center min-h-screen">
             <Loader />
           </div>
         )}

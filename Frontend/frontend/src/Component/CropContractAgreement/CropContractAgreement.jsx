@@ -197,9 +197,7 @@ const CropContractAgreement = ({ quantity }) => {
           paymentTerms: {
             ...prevFormData.paymentTerms,
             totalValue: `${
-              listingData.finalPrice && listingData.quantity
-                ? (listingData.finalPrice * listingData.quantity).toFixed(2)
-                : "0.00"
+              quantity ? (quantity * listingData.finalPrice).toFixed(2) : "0.00"
             }`,
           },
           additionalNotes: listingData.productDescription
