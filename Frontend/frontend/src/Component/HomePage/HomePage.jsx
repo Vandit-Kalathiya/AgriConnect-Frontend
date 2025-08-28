@@ -104,7 +104,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 font-poppins">
       {/* Header */}
       <header
         className={`fixed w-full z-50 transition-all duration-500 px-16 ${
@@ -173,7 +173,7 @@ const HomePage = () => {
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center relative z-10">
           <div className="max-w-xl">
             <div className="inline-block px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-6 animate-pulse">
-              Trusted by 10,000+ farmers across India
+              Trusted by 1000+ farmers across India
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight mb-6">
               Empowering Farmers with{" "}
@@ -223,7 +223,7 @@ const HomePage = () => {
                   Active Farmers
                 </span>
               </div>
-              <div className="text-3xl font-bold">10,000+</div>
+              <div className="text-3xl font-bold">&nbsp; &nbsp; 1000 +</div>
             </div>
           </div>
         </div>

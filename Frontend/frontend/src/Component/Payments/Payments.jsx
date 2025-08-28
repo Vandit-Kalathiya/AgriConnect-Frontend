@@ -33,10 +33,13 @@ const Payments = () => {
         setUser(currentUser);
 
         // Fetch all payments
-        const response = await axios.get(
-          "http://localhost:2526/api/agreements/all"
+        const buyerResponse = await axios.get(
+          `http://localhost:2526/api/payments/buyer/${currentUser?.uniqueHexAddress}`
         );
-        setPayments(response.data || []);
+        const farmerResponse = await axios.get(
+          `http://localhost:2526/api/payments/farmer/${currentUser?.uniqueHexAddress}`
+        );
+        setPayments([...buyerResponse.data, ...farmerResponse.data]);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError(error.message || "Failed to load payments");
@@ -71,13 +74,15 @@ const Payments = () => {
       .replace(/,/, "");
   };
 
+  console.log(payments);
+
   // Filter and sort transactions
   const filteredTransactions = payments
     .filter(
       (txn) =>
-        (txn.buyer === user?.uniqueHexAddress ||
-          txn.farmer === user?.uniqueHexAddress) &&
-        `${txn.paymentId || ""} ${txn.buyer || ""}`
+        (txn.buyerAddress === user?.uniqueHexAddress ||
+          txn.farmerAddress === user?.uniqueHexAddress) &&
+        `${txn.id || ""} ${txn.buyerAddress || ""}`
           .toLowerCase()
           .includes(searchQuery.toLowerCase())
     )
@@ -89,11 +94,13 @@ const Payments = () => {
       (sum, payment) => sum + (payment.amount || 0),
       0
     );
-    const completedCount = filteredTransactions.filter(
-      (payment) => payment.status === "Signed"
+    const completedCount = filteredTransactions.filter((payment) =>
+      payment.status.includes("completed")
     ).length;
     const successRate =
-      payments.length > 0 ? (completedCount / filteredTransactions.length) * 100 : 0;
+      payments.length > 0
+        ? (completedCount / filteredTransactions.length) * 100
+        : 0;
 
     return {
       totalAmount: totalAmount.toLocaleString("en-US", {
@@ -103,6 +110,12 @@ const Payments = () => {
       completedCount: completedCount.toLocaleString("en-US"),
       successRate: successRate.toFixed(1),
     };
+  };
+
+  const getMaxAmount = () => {
+    return filteredTransactions.reduce((max, payment) => {
+      return Math.max(max, payment.amount || 0);
+    }, 0);
   };
 
   const paymentData = calculatePaymentData();
@@ -174,11 +187,20 @@ const Payments = () => {
                   key={payment.paymentId || index}
                   className="bg-green-600 rounded-t w-8 md:w-10 flex-shrink-0"
                   style={{
-                    height: `${Math.min((payment.amount || 0) / 500, 100)}%`,
+                    // Height in percent for the final rendered div
+                    height: `${Math.min(
+                      ((payment.amount || 0) / getMaxAmount()) * 100,
+                      100
+                    )}%`,
                   }}
+                  // Numeric values in motion props for smooth animation
                   initial={{ height: 0 }}
                   animate={{
-                    height: `${Math.min((payment.amount || 0) / 500, 100)}%`,
+                    height:
+                      Math.min(
+                        ((payment.amount || 0) / getMaxAmount()) * 100,
+                        100
+                      ) + "%",
                   }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   title={`₹${payment.amount || 0}`}
@@ -241,7 +263,7 @@ const Payments = () => {
             <div className="space-y-4">
               {filteredTransactions.map((transaction) => (
                 <motion.div
-                  key={transaction.paymentId || transaction.timestamp}
+                  key={transaction.id || transaction.timestamp}
                   className="border border-green-200 rounded-md p-4 hover:shadow-lg transition-shadow duration-300 bg-green-50"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -250,14 +272,17 @@ const Payments = () => {
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                       <h3 className="text-md md:text-lg font-semibold text-green-800">
-                        {transaction.paymentId || "N/A"}
+                        {transaction.id || "N/A"}
                       </h3>
                       <p className="text-sm text-gray-700">
-                        <strong>Buyer:</strong> {shortenHash(transaction.buyer)}
+                        <strong>Buyer :</strong>{" "}
+                        {shortenHash(transaction.buyerAddress)}
                       </p>
                       <p className="text-sm text-gray-700">
-                        <strong>Date:</strong>{" "}
-                        {getISTDateTime(transaction.timestamp)}
+                        <strong>Date :</strong> {transaction.createdDate}
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <strong>Time :</strong>{" "}
+                        {transaction.createdTime.toString().substring(0, 5)}
                       </p>
                     </div>
                     <div className="text-left sm:text-right">
@@ -270,19 +295,19 @@ const Payments = () => {
                       </p>
                       <span
                         className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                          transaction.status === "Signed"
+                          transaction.status === "completed"
                             ? "bg-green-200 text-green-800"
-                            : transaction.status === "Pending"
+                            : transaction.status.contains("pending")
                             ? "bg-yellow-200 text-yellow-800"
                             : "bg-gray-200 text-gray-800"
                         }`}
                       >
-                        {transaction.status === "Signed"
+                        {transaction.status.includes("completed")
                           ? "Completed"
                           : transaction.status || "Unknown"}
                       </span>
                       <p className="text-xs text-gray-600 mt-1 font-mono truncate">
-                        {shortenHash(transaction.paymentId)}
+                        {shortenHash(transaction.id)}
                       </p>
                     </div>
                   </div>

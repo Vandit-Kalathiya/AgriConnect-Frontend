@@ -41,7 +41,7 @@
 //   const [rejectionReason, setRejectionReason] = useState("");
 //   const [rejectionComment, setRejectionComment] = useState("");
 //   const [redirecting, setRedirecting] = useState(false);
-//   const [contractFile, setContractFile] = useState(null); 
+//   const [contractFile, setContractFile] = useState(null);
 //   const [redirectCountdown, setRedirectCountdown] = useState(5);
 
 //   // Farmer and buyer blockchain addresses (hidden from UI, adjust as needed)
@@ -655,6 +655,22 @@ const PaymentProcess = () => {
             console.log(verifyData);
 
             if (verifyData.success) {
+              const listingId = order?.listingId || verifyData.data.listingId;
+              const quantity = order?.quantity || verifyData.data.quantity;
+              const updateListingStatus = await axios.put(
+                `http://localhost:2527/listings/${listingId}/archived/${quantity}`
+              );
+              if (!updateListingStatus.status === 200) {
+                const errorText = await updateListingStatus.text();
+                toast.error(
+                  `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
+                );
+                throw new Error(
+                  `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
+                );
+              } else {
+                toast.success("Listing updated successfully");
+              }
               setPaymentCompleted(true);
               toast.success(verifyData.message);
               window.location.href = "http://localhost:5000/my-orders";

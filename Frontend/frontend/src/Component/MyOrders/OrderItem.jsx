@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaCheckCircle,
   FaHourglassHalf,
@@ -7,8 +7,18 @@ import {
   FaUndo,
   FaMoneyCheckAlt,
   FaExclamationTriangle,
+  FaUser,
+  FaPhone,
+  FaMapMarkerAlt,
+  FaUserAstronaut,
+  FaCalendarAlt,
+  FaBoxOpen,
+  FaRupeeSign,
+  FaBarcode,
+  FaCreditCard,
+  FaShippingFast,
 } from "react-icons/fa";
-import { XCircle, ThumbsUp } from "react-feather";
+import { XCircle, ThumbsUp, Package, Clock } from "react-feather";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -29,6 +39,36 @@ const OrderItem = ({
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [farmerDetails, setFarmerDetails] = useState(null);
+  const [loadingFarmer, setLoadingFarmer] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Fetch farmer details when component mounts (only for buyers)
+  useEffect(() => {
+    const fetchFarmerDetails = async () => {
+      if (!isFarmer && order.farmerAddress) {
+        setLoadingFarmer(true);
+        try {
+          const response = await axios.get(
+            `http://localhost:2525/users/unique/${order.farmerAddress}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              withCredentials: true,
+            }
+          );
+          setFarmerDetails(response.data);
+        } catch (error) {
+          console.error("Error fetching farmer details:", error);
+        } finally {
+          setLoadingFarmer(false);
+        }
+      }
+    };
+
+    fetchFarmerDetails();
+  }, [order.farmerAddress, isFarmer]);
 
   // Function to approve delivery with loading state
   const approveDelivery = async (orderId) => {
@@ -83,7 +123,6 @@ const OrderItem = ({
 
       const blob = await response.blob();
 
-      // fetching farmer details
       const farmerResponse = await axios.get(
         `http://localhost:2525/users/${contractRequest.farmerInfo.farmerContact}`,
         {
@@ -94,7 +133,6 @@ const OrderItem = ({
         }
       );
 
-      // fetching buyer details
       const buyerResponse = await axios.get(
         `http://localhost:2525/users/${contractRequest.buyerInfo.buyerContact}`,
         {
@@ -104,8 +142,12 @@ const OrderItem = ({
           withCredentials: true,
         }
       );
-      
-      await handleUploadContract(blob,farmerResponse.data.uniqueHexAddress,buyerResponse.data.uniqueHexAddress);
+
+      await handleUploadContract(
+        blob,
+        farmerResponse.data.uniqueHexAddress,
+        buyerResponse.data.uniqueHexAddress
+      );
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -120,7 +162,6 @@ const OrderItem = ({
       console.log("Contract PDF generated successfully");
 
       toast.success("Contract PDF Generated Successfully");
-      // setContractGenerated(true);
 
       toast.success("Delivery successfully approved!");
       fetchOrders();
@@ -135,11 +176,9 @@ const OrderItem = ({
 
   const handleUploadContract = async (pdfBlob, farmerAddress, buyerAddress) => {
     try {
-      // Prepare FormData with the generated PDF
       const formData = new FormData();
       formData.append("file", pdfBlob, "contract.pdf");
 
-      // Call the uploadAgreement API
       const response = await axios.post(
         `http://localhost:2526/upload/${farmerAddress}/${buyerAddress}`,
         formData,
@@ -159,18 +198,63 @@ const OrderItem = ({
     }
   };
 
+  // Get status badge configuration
+  const getStatusBadge = (status) => {
+    const statusConfigs = {
+      created: { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
+      paid_pending_delivery: {
+        bg: "bg-blue-100",
+        text: "text-blue-700",
+        icon: FaCreditCard,
+      },
+      delivered: {
+        bg: "bg-indigo-100",
+        text: "text-indigo-700",
+        icon: FaShippingFast,
+      },
+      completed: {
+        bg: "bg-green-100",
+        text: "text-green-700",
+        icon: FaCheckCircle,
+      },
+      return_requested: {
+        bg: "bg-orange-100",
+        text: "text-orange-700",
+        icon: FaUndo,
+      },
+      return_confirmed: {
+        bg: "bg-purple-100",
+        text: "text-purple-700",
+        icon: FaUndo,
+      },
+      refunded: {
+        bg: "bg-red-100",
+        text: "text-red-700",
+        icon: FaMoneyCheckAlt,
+      },
+    };
+
+    return (
+      statusConfigs[status] || {
+        bg: "bg-gray-100",
+        text: "text-gray-700",
+        icon: FaHourglassHalf,
+      }
+    );
+  };
+
   // Confirmation Modal
   const ConfirmationModal = () => {
     return (
-      <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+      <div className="fixed inset-0 backdrop-blur-md bg-black/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
+        <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl transform transition-all duration-300 scale-100">
           <div className="flex items-center text-amber-600 mb-4">
             <FaExclamationTriangle size={24} className="mr-2" />
-            <h3 className="text-lg font-bold">Confirm Delivery Approval</h3>
+            <h3 className="text-xl font-bold">Confirm Delivery Approval</h3>
           </div>
 
-          <div className="border-t border-b py-4 my-4">
-            <p className="text-gray-700 mb-4">
+          <div className="border-t border-b border-gray-200 py-4 my-4">
+            <p className="text-gray-700 mb-4 font-medium">
               By approving this delivery, you confirm that:
             </p>
             <ul className="list-disc pl-5 text-gray-600 space-y-2 mb-4">
@@ -186,24 +270,26 @@ const OrderItem = ({
                 once completed
               </li>
             </ul>
-            <p className="text-sm text-gray-500 italic">
+            <p className="text-sm text-gray-500 italic bg-gray-50 p-3 rounded-lg">
               If there are any issues with your order, please reject the
               delivery instead.
             </p>
           </div>
 
-          <div className="flex justify-end space-x-3 mt-4">
+          <div className="flex justify-end space-x-3 mt-6">
             <button
               onClick={() => setShowConfirmModal(false)}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              className="px-5 py-2.5 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-all duration-200 font-medium"
             >
               Cancel
             </button>
             <button
               onClick={() => approveDelivery(order.id)}
               disabled={loading}
-              className={`px-4 py-2 rounded-lg bg-green-600 text-white flex items-center ${
-                loading ? "opacity-70 cursor-not-allowed" : "hover:bg-green-700"
+              className={`px-5 py-2.5 rounded-lg bg-gradient-to-r from-green-600 to-green-700 text-white font-medium flex items-center shadow-lg ${
+                loading
+                  ? "opacity-70 cursor-not-allowed"
+                  : "hover:from-green-700 hover:to-green-800 transform hover:scale-105 transition-all duration-200"
               }`}
             >
               {loading ? (
@@ -248,16 +334,18 @@ const OrderItem = ({
       case "created":
         return isFarmer
           ? {
-              text: "Wait for buyer to make payment...",
+              text: "Awaiting Payment",
               disabled: true,
-              icon: FaArrowRight,
+              icon: Clock,
               isFarmerAction: true,
+              gradient: "from-gray-400 to-gray-500",
             }
           : {
               text: "Make Payment",
               disabled: false,
-              icon: FaArrowRight,
+              icon: FaCreditCard,
               isFarmerAction: false,
+              gradient: "from-blue-600 to-blue-700",
             };
       case "paid_pending_delivery":
         return isFarmer
@@ -266,33 +354,38 @@ const OrderItem = ({
               disabled: false,
               icon: FaTruck,
               isFarmerAction: true,
+              gradient: "from-green-600 to-green-700",
             }
           : {
               text: "Awaiting Delivery",
               disabled: true,
               icon: FaTruck,
               isFarmerAction: false,
+              gradient: "from-gray-400 to-gray-500",
             };
       case "delivered":
         return isFarmer
           ? {
-              text: "Delivery Verified",
+              text: "Delivery Confirmed",
               disabled: true,
               icon: FaCheckCircle,
               isFarmerAction: false,
+              gradient: "from-gray-400 to-gray-500",
             }
           : {
               text: "Verify Delivery",
               disabled: true,
               icon: FaCheckCircle,
               isFarmerAction: false,
+              gradient: "from-green-600 to-green-700",
             };
       case "completed":
         return {
-          text: "Completed",
+          text: "Order Completed",
           disabled: true,
           icon: FaCheckCircle,
           isFarmerAction: false,
+          gradient: "from-gray-400 to-gray-500",
         };
       case "return_requested":
         return isFarmer
@@ -301,12 +394,14 @@ const OrderItem = ({
               disabled: false,
               icon: FaUndo,
               isFarmerAction: true,
+              gradient: "from-orange-600 to-orange-700",
             }
           : {
               text: "Return Requested",
               disabled: true,
               icon: FaUndo,
               isFarmerAction: false,
+              gradient: "from-gray-400 to-gray-500",
             };
       case "return_confirmed":
         return isFarmer
@@ -315,12 +410,14 @@ const OrderItem = ({
               disabled: true,
               icon: FaUndo,
               isFarmerAction: false,
+              gradient: "from-gray-400 to-gray-500",
             }
           : {
-              text: "Take Refund",
+              text: "Claim Refund",
               disabled: false,
               icon: FaMoneyCheckAlt,
               isFarmerAction: false,
+              gradient: "from-purple-600 to-purple-700",
             };
       case "refunded":
         return {
@@ -328,6 +425,7 @@ const OrderItem = ({
           disabled: true,
           icon: FaMoneyCheckAlt,
           isFarmerAction: false,
+          gradient: "from-gray-400 to-gray-500",
         };
       default:
         return {
@@ -335,91 +433,216 @@ const OrderItem = ({
           disabled: true,
           icon: FaHourglassHalf,
           isFarmerAction: false,
+          gradient: "from-gray-400 to-gray-500",
         };
     }
   };
 
   const buttonConfig = getButtonConfig(order);
+  const statusBadge = getStatusBadge(order.status);
+  const StatusIcon = statusBadge.icon;
 
   return (
     <>
       {showConfirmModal && <ConfirmationModal />}
 
-      <li className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-        <div className="flex flex-col md:flex-row">
-          <div className="relative w-full md:w-32 h-32 md:h-full bg-green-100">
-            <img
-              src={image || "/placeholder-image.jpg"}
-              alt={listing?.productType || "Product"}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="flex-1 p-4 md:p-5 flex flex-col md:flex-row md:items-center">
-            <div className="flex-1">
-              <div className="flex items-center mb-2">
-                <span
-                  className={`flex items-center px-2 py-1 rounded-full text-xs font-semibold mr-2 ${
-                    order.status === "completed" || order.status === "refunded"
-                      ? "text-green-600 bg-green-50"
-                      : order.status === "created" ||
-                        order.status === "return_confirmed"
-                      ? "text-yellow-600 bg-yellow-50"
-                      : "text-blue-600 bg-blue-50"
-                  }`}
-                >
-                  {order.status === "completed" ||
-                  order.status === "refunded" ? (
-                    <FaCheckCircle className="mr-1" />
-                  ) : order.status === "created" ||
-                    order.status === "return_confirmed" ? (
-                    <FaHourglassHalf className="mr-1" />
-                  ) : (
-                    <FaTruck className="mr-1" />
-                  )}
-                  {order.status.replace(/_/g, " ")}
-                </span>
-                <span className="text-gray-500 text-sm">
-                  {new Date(order.createdDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
+      <li className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100">
+        <div className="flex flex-col lg:flex-row">
+          {/* Enhanced Image Section */}
+          <div className="relative w-full lg:w-64 h-48 lg:h-auto bg-gradient-to-br from-green-50 to-green-100 overflow-hidden">
+            {!imageError && image ? (
+              <img
+                src={image}
+                alt={listing?.productName || "Product"}
+                className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="text-center">
+                  <Package className="mx-auto text-green-300 mb-2" size={48} />
+                  <p className="text-green-600 font-medium text-sm">
+                    {listing?.productType || "Agricultural Product"}
+                  </p>
+                </div>
               </div>
-              <h3 className="text-lg md:text-xl font-bold text-green-800 mb-1">
-                {listing?.productType || "Loading..."}
-              </h3>
-              <div className="flex items-center mb-3 md:mb-0">
-                <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium mr-3">
-                  {order?.quantity} {listing?.unitOfQuantity}
+            )}
+
+            {/* Status Badge Overlay */}
+            <div
+              className={`absolute top-3 left-3 ${statusBadge.bg} ${statusBadge.text} px-3 py-1.5 rounded-full text-xs font-bold flex items-center shadow-md backdrop-blur-sm bg-opacity-90`}
+            >
+              <StatusIcon className="mr-1.5" size={14} />
+              {order.status.replace(/_/g, " ").toUpperCase()}
+            </div>
+          </div>
+
+          <div className="flex-1 p-6">
+            {/* Header Section */}
+            <div className="flex flex-col lg:flex-row justify-between items-start mb-4">
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold text-gray-800 mb-1">
+                  {listing?.productName || "Loading..."}
+                </h3>
+                <p className="text-green-600 font-medium mb-3">
+                  {listing?.productType || "Loading..."}
+                </p>
+
+                {/* Price and Quantity Pills */}
+                <div className="flex flex-wrap gap-3">
+                  <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg flex items-center shadow-md">
+                    <FaBoxOpen className="mr-2" size={16} />
+                    <span className="font-bold">
+                      {order?.quantity} {listing?.unitOfQuantity}
+                    </span>
+                  </div>
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg flex items-center shadow-md">
+                    <FaRupeeSign className="mr-2" size={16} />
+                    <span className="font-bold">
+                      {order.amount.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-lg font-bold text-green-900">
-                  ₹{" "}
-                  {order.amount.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </div>
+              </div>
+
+              {/* Date Section */}
+              <div className="flex items-center text-gray-500 text-sm mt-3 lg:mt-0">
+                <FaCalendarAlt className="mr-2" />
+                {new Date(order.createdDate).toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
               </div>
             </div>
-            <div className="mt-4 md:mt-0">
+
+            {/* Order Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-1 p-2 bg-gray-50 rounded-xl">
+              <div className="flex items-start">
+                <FaBarcode className="text-gray-400 mr-2 mt-1" size={16} />
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Order ID</p>
+                  <p className="text-sm font-mono text-gray-700">
+                    {order.id.slice(0, 8)}...{order.id.slice(-4)}
+                  </p>
+                </div>
+              </div>
+
+              {order.razorpayPaymentId && (
+                <div className="flex items-start">
+                  <FaCreditCard className="text-gray-400 mr-2 mt-1" size={16} />
+                  <div>
+                    <p className="text-xs text-gray-500 font-medium">
+                      Payment ID
+                    </p>
+                    <p className="text-sm font-mono text-gray-700">
+                      {order.razorpayPaymentId.slice(0, 12)}...
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {order.trackingNumber && (
+                <div className="flex items-start">
+                  <FaShippingFast
+                    className="text-gray-400 mr-2 mt-1"
+                    size={16}
+                  />
+                  <div>
+                    <p className="text-xs text-gray-500 font-medium">
+                      Tracking
+                    </p>
+                    <p className="text-sm font-mono text-blue-600">
+                      {order.trackingNumber}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Farmer/Buyer Details Section */}
+            {!isFarmer && (
+              <div className="mb-2 p-1 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                <div className="flex items-center mb-1">
+                  <div className="p-2 bg-green-100 rounded-full mr-3">
+                    <FaUserAstronaut className="text-green-600" size={18} />
+                  </div>
+                  <span className="font-semibold text-gray-800">
+                    Farmer Information
+                  </span>
+                </div>
+
+                {loadingFarmer ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-green-500 border-t-transparent"></div>
+                    <span className="text-sm text-gray-500">
+                      Loading farmer details...
+                    </span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-1 px-2">
+                    {farmerDetails?.username && (
+                      <div className="flex items-center text-gray-700">
+                        <FaUser className="mr-2 text-green-500" size={14} />
+                        <span className="text-sm font-medium">
+                          {farmerDetails.username}
+                        </span>
+                      </div>
+                    )}
+                    {(farmerDetails?.phoneNumber ||
+                      listing?.contactOfFarmer) && (
+                      <div className="flex items-center text-gray-700">
+                        <FaPhone className="mr-2 text-green-500" size={14} />
+                        <span className="text-sm">
+                          {farmerDetails?.phoneNumber ||
+                            listing?.contactOfFarmer}
+                        </span>
+                      </div>
+                    )}
+                    {farmerDetails?.location && (
+                      <div className="flex items-center text-gray-700">
+                        <FaMapMarkerAlt
+                          className="mr-2 text-green-500"
+                          size={14}
+                        />
+                        <span className="text-sm">
+                          {farmerDetails.location}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center text-gray-600">
+                      <div className="text-xs font-mono bg-white px-2 py-1 rounded">
+                        Address: {order.farmerAddress.slice(0, 10)}...
+                        {order.farmerAddress.slice(-6)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
               {order.status === "delivered" && !isFarmer ? (
                 <>
                   <button
                     onClick={() => setShowConfirmModal(true)}
                     disabled={loading}
-                    className={`w-full md:w-auto px-5 py-3 text-sm font-medium rounded-lg shadow-md transition-all duration-300 flex items-center justify-center 
+                    className={`flex-1 px-6 py-3 font-semibold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 text-white
                       ${
                         loading
-                          ? "bg-green-500 cursor-not-allowed"
-                          : "bg-green-600 hover:bg-green-700 transform hover:-translate-y-0.5"
-                      } 
-                      text-white mb-2`}
+                          ? "opacity-70 cursor-not-allowed"
+                          : "hover:from-green-700 hover:to-green-800 transform hover:scale-105 hover:shadow-xl"
+                      }`}
                   >
                     {loading ? (
                       <>
                         <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
@@ -438,11 +661,11 @@ const OrderItem = ({
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           ></path>
                         </svg>
-                        Approving Delivery...
+                        Processing...
                       </>
                     ) : (
                       <>
-                        <FaCheckCircle className="mr-2" />
+                        <ThumbsUp className="mr-2" size={18} />
                         Approve Delivery
                       </>
                     )}
@@ -450,15 +673,14 @@ const OrderItem = ({
                   <button
                     onClick={() => handleOpenRejectModal(order.id)}
                     disabled={loading}
-                    className={`w-full md:w-auto px-5 py-3 text-sm font-medium rounded-lg shadow-md m-auto transition-all duration-300 flex items-center justify-center 
+                    className={`flex-1 px-6 py-3 font-semibold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center bg-gradient-to-r from-red-600 to-red-700 text-white
                       ${
                         loading
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-red-600 hover:bg-red-700 transform hover:-translate-y-0.5"
-                      } 
-                      text-white`}
+                          ? "opacity-70 cursor-not-allowed"
+                          : "hover:from-red-700 hover:to-red-800 transform hover:scale-105 hover:shadow-xl"
+                      }`}
                   >
-                    <XCircle className="mr-2" size={16} />
+                    <XCircle className="mr-2" size={18} />
                     Reject Delivery
                   </button>
                 </>
@@ -487,13 +709,16 @@ const OrderItem = ({
                     }
                   }}
                   disabled={buttonConfig.disabled || loading}
-                  className={`w-full md:w-auto px-5 py-3 text-sm font-medium rounded-lg shadow-md transition-all duration-300 flex items-center justify-center ${
-                    buttonConfig.disabled || loading
-                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                      : "bg-green-600 text-white hover:bg-green-700 transform hover:-translate-y-1"
-                  }`}
+                  className={`w-full px-6 py-3 font-semibold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center text-white bg-gradient-to-r ${
+                    buttonConfig.gradient
+                  }
+                    ${
+                      buttonConfig.disabled || loading
+                        ? "opacity-50 cursor-not-allowed"
+                        : "transform hover:scale-105 hover:shadow-xl"
+                    }`}
                 >
-                  <buttonConfig.icon className="mr-2" />
+                  <buttonConfig.icon className="mr-2" size={18} />
                   {buttonConfig.text}
                 </button>
               )}

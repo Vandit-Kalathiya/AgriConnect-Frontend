@@ -345,18 +345,18 @@ const CropContractAgreement = ({ quantity }) => {
       );
       toast.success("Order Created!");
 
-      const updateListingStatus = await axios.put(
-        `http://localhost:2527/listings/${listingId}/archived/${formData.cropDetails.quantity}`
-      );
-      if (!updateListingStatus.status === 200) {
-        const errorText = await updateListingStatus.text();
-        toast.error(
-          `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
-        );
-        throw new Error(
-          `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
-        );
-      }
+      // const updateListingStatus = await axios.put(
+      //   `http://localhost:2527/listings/${listingId}/archived/${formData.cropDetails.quantity}`
+      // );
+      // if (!updateListingStatus.status === 200) {
+      //   const errorText = await updateListingStatus.text();
+      //   toast.error(
+      //     `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
+      //   );
+      //   throw new Error(
+      //     `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
+      //   );
+      // }
       navigate("/my-orders", { state: listing });
     } catch (err) {
       setError(err.response?.data || "Failed to upload contract");
