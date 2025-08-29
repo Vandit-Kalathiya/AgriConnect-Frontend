@@ -90,6 +90,7 @@ const CropDetailPage = () => {
         isOrganic: listing.isOrganic || false,
         isSustainable: listing.isSustainable || true,
         status: listing.status || "active",
+        availabilityDate: listing.availabilityDate || listing.harvestedDate,
       };
 
       setCropData(mappedCropData);

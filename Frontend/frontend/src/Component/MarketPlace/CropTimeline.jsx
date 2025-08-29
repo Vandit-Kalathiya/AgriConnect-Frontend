@@ -3,6 +3,7 @@ import { Calendar, Clock, Truck, ChevronRight } from "lucide-react";
 
 const CropTimeline = ({ harvestDate, availabilityDate }) => {
   // Parse dates for calculation (assuming format is DD/MM/YYYY or similar)
+  console.log(availabilityDate)
   const parseDateString = (dateStr) => {
     try {
       const parts = dateStr.split("/");

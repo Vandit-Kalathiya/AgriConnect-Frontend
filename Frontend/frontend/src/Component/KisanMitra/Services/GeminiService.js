@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = 'AIzaSyD9GuEan7yLCCxgqlgX_SO7Zwcnv8ku8Jc';
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 export const getGeminiResponse = async (messages, language) => {
   try {
