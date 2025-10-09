@@ -23,7 +23,7 @@ const AuthPage = () => {
   }, [location.state]);
 
   return (
-    <div className="flex min-h-screen overflow-hidden w-full">
+    <div className="flex min-h-screen overflow-hidden w-full font-poppins">
       {/* left section with blurred image and centered message */}
       <div className="relative w-1/2 hidden md:block">
         <div className="absolute inset-0 bg-black/20 z-10"></div>
