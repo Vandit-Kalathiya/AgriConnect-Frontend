@@ -54,7 +54,7 @@ const Login = ({ onNavigateToSignUp }) => {
       );
       if (response.status === 200) {
         setShowOtp(true);
-        toast.success("OTP sent successfully!");
+        toast.success(response.data);
       }
     } catch (err) {
       const errorMessage =
