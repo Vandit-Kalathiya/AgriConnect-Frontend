@@ -25,23 +25,17 @@ const Sidebar = () => {
 
   return (
     <aside
-      className={`bg-white h-screen fixed top-0 left-0 shadow-md border-r border-slate-300 transition-all duration-300 z-40 ${
+      className={`bg-white/95 backdrop-blur-md h-screen fixed top-0 left-0 shadow-xl border-r border-slate-200/50 transition-all duration-500 ease-in-out z-40 ${
         isCollapsed ? "w-20" : "w-64"
-      }`}
+      } hover:shadow-2xl`}
+      style={{
+        backdropFilter: 'blur(12px)',
+        borderRight: '1px solid rgba(148, 163, 184, 0.2)',
+      }}
     >
-      {/* Toggle Button */}
-      <div className="p-4 flex justify-between items-center mt-20">
-        <button
-          onClick={toggleSidebar}
-          className="text-gray-600 hover:text-jewel-700 focus:outline-none cursor-pointer pl-2.5"
-        >
-          {isCollapsed ? <FaBars size={24} /> : <FaTimes size={24} />}
-        </button>
-      </div>
-
       {/* Sidebar Content */}
-      <div className={`${isCollapsed ? "space-y-4" : "space-y-2"}`}>
-        <SidebarSection title="Market" isCollapsed={isCollapsed}>
+      <div className={`${isCollapsed ? "space-y-4" : "space-y-3"} overflow-y-auto scrollbar-thin scrollbar-thumb-jewel-300 scrollbar-track-transparent hover:scrollbar-thumb-jewel-400 transition-all duration-300`} style={{ maxHeight: 'calc(100vh - 80px)', marginTop: '80px' }}>
+        <SidebarSection title="Market" isCollapsed={isCollapsed} toggleSidebar={toggleSidebar}>
           <SidebarItem
             icon={<FaThLarge />}
             text="Dashboard"
@@ -79,7 +73,7 @@ const Sidebar = () => {
           />
         </SidebarSection>
 
-        <SidebarSection title="Insights" isCollapsed={isCollapsed}>
+        <SidebarSection title="Insights" isCollapsed={isCollapsed} toggleSidebar={toggleSidebar}>
           {/* <SidebarItem
             icon={<HiTrendingUp />}
             text="Market Trends"
@@ -103,7 +97,7 @@ const Sidebar = () => {
           />
         </SidebarSection>
 
-        <SidebarSection title="Operations" isCollapsed={isCollapsed}>
+        <SidebarSection title="Operations" isCollapsed={isCollapsed} toggleSidebar={toggleSidebar}>
           <SidebarItem
             icon={<RiContractLine />}
             text="My Contracts"
@@ -131,10 +125,39 @@ const Sidebar = () => {
   );
 };
 
-const SidebarSection = ({ title, children, isCollapsed }) => (
-  <div className={`${isCollapsed ? "px-4 py-2" : "px-4 py-2"}`}>
-    {!isCollapsed && <div className="text-gray-500 text-sm mb-2">{title}</div>}
-    <ul className={isCollapsed ? "space-y-4" : "space-y-2"}>{children}</ul>
+const SidebarSection = ({ title, children, isCollapsed, toggleSidebar }) => (
+  <div className={`${isCollapsed ? "px-3 py-3" : "px-4 py-3"} transition-all duration-300 ease-in-out`}>
+    {/* Section header with toggle button for first section */}
+    {title === "Market" && (
+      <div className="flex items-center justify-between mb-3">
+        {!isCollapsed && (
+          <div className="text-gray-500 text-sm font-medium tracking-wide uppercase opacity-70 transition-all duration-300 ease-in-out transform">
+            {title}
+          </div>
+        )}
+        <button
+          onClick={toggleSidebar}
+          className={`text-gray-600 hover:text-jewel-700 focus:outline-none cursor-pointer transition-all duration-300 ease-in-out hover:scale-110 hover:bg-jewel-50 rounded-lg p-2 active:scale-95 ${
+            isCollapsed ? "mx-auto" : "ml-auto"
+          }`}
+        >
+          <div className="transition-transform duration-300 ease-in-out">
+            {isCollapsed ? <FaBars size={20} /> : <FaTimes size={20} />}
+          </div>
+        </button>
+      </div>
+    )}
+    
+    {/* Regular section header for other sections */}
+    {title !== "Market" && !isCollapsed && (
+      <div className="text-gray-500 text-sm mb-3 font-medium tracking-wide uppercase opacity-70 transition-all duration-300 ease-in-out transform">
+        {title}
+      </div>
+    )}
+    
+    <ul className={`${isCollapsed ? "space-y-3" : "space-y-1"} transition-all duration-300 ease-in-out`}>
+      {children}
+    </ul>
   </div>
 );
 
@@ -146,20 +169,38 @@ const SidebarItem = ({ icon, text, to, isCollapsed, toggleSidebar }) => {
   };
 
   return (
-    <li>
+    <li className="group">
       <NavLink
         to={to}
         onClick={handleClick}
         className={({ isActive }) =>
-          `flex items-center gap-3 px-4 py-3 transition-colors duration-200 ${
+          `flex items-center gap-3 mx-2 px-3 py-3 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 ${
             isActive
-              ? "bg-jewel-500 text-white rounded-lg"
-              : "text-gray-800 hover:bg-jewel-700 hover:text-white rounded-lg"
-          } ${isCollapsed ? "justify-center" : ""}`
+              ? "bg-gradient-to-r from-jewel-500 to-jewel-600 text-white rounded-xl shadow-lg shadow-jewel-500/25"
+              : "text-gray-700 hover:bg-gradient-to-r hover:from-jewel-50 hover:to-jewel-100 hover:text-jewel-700 rounded-xl hover:shadow-md"
+          } ${isCollapsed ? "justify-center" : ""} relative overflow-hidden`
         }
       >
-        <span className="text-lg">{icon}</span>
-        {!isCollapsed && <span className="text-sm md:text-md">{text}</span>}
+        {/* Background animation effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-jewel-400 to-jewel-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300 ease-in-out rounded-xl"></div>
+        
+        <span className={`text-lg transition-all duration-300 ease-in-out relative z-10 ${isCollapsed ? 'transform group-hover:scale-110' : ''}`}>
+          {icon}
+        </span>
+        
+        {!isCollapsed && (
+          <span className="text-sm md:text-base font-medium transition-all duration-300 ease-in-out relative z-10 group-hover:translate-x-1">
+            {text}
+          </span>
+        )}
+        
+        {/* Tooltip for collapsed state */}
+        {isCollapsed && (
+          <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-in-out whitespace-nowrap z-50 shadow-lg">
+            {text}
+            <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900"></div>
+          </div>
+        )}
       </NavLink>
     </li>
   );
