@@ -18,26 +18,26 @@ export const CropListingPage = () => {
       setCurrentUser(user);
       return user;
     } catch (err) {
-      console.error("Failed to fetch current user:", err);
+      setError("Failed to fetch current user");
     }
   };
 
   useEffect(() => {
-    fetchUser()
-  },[])
+    fetchUser();
+  }, []);
 
   const fetchAllListings = async () => {
-    setLoading(true); 
+    setLoading(true);
 
     try {
       const response = await axios.get(`${BASE_URL}/listings/all/active`, {
         withCredentials: true,
       });
 
-      const user = await getCurrentUser(); 
+      const user = await getCurrentUser();
 
       const listings = response.data.filter(
-        (listing) => listing.contactOfFarmer !== user.phoneNumber 
+        (listing) => listing.contactOfFarmer !== user.phoneNumber
       );
 
       // Fetch images for each listing (if needed)
@@ -78,7 +78,6 @@ export const CropListingPage = () => {
       setLoading(false); // Ensure loading is stopped in all cases
     }
   };
-
 
   useEffect(() => {
     fetchAllListings();

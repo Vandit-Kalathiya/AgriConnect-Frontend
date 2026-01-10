@@ -1,4 +1,3 @@
-// WeatherForecast.jsx
 import React, { useState, useEffect } from "react";
 import {
   FaSun,
@@ -17,9 +16,8 @@ const WeatherForecast = () => {
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
-  const API_KEY = "3919f2231e07934b2048b0f97d3d5040"; // Replace with your API key
+  const API_KEY = "3919f2231e07934b2048b0f97d3d5040";
 
-  // Fetch weather based on coordinates
   const fetchWeather = async (lat, lon) => {
     try {
       setLoading(true);
@@ -44,7 +42,6 @@ const WeatherForecast = () => {
     }
   };
 
-  // Get user's location
   const getLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -64,7 +61,6 @@ const WeatherForecast = () => {
     }
   };
 
-  // Weather icon mapping
   const getWeatherIcon = (condition) => {
     const iconClass = "text-5xl md:text-6xl transition-all duration-300";
     switch (condition.toLowerCase()) {
@@ -93,12 +89,10 @@ const WeatherForecast = () => {
     }
   };
 
-  // Initial fetch
   useEffect(() => {
     getLocation();
   }, []);
 
-  // Refresh weather
   const handleRefresh = () => {
     if (location) {
       fetchWeather(location.lat, location.lon);
@@ -107,18 +101,10 @@ const WeatherForecast = () => {
     }
   };
 
-  // Loading state
   if (loading) {
-    // return (
-    //   <div className="bg-white p-6 rounded-xl shadow-lg flex justify-center items-center h-72">
-    //     <div className="animate-spin rounded-full h-10 w-10 border-4 border-green-600 border-t-transparent"></div>
-    //   </div>
-    // );
-
-    return <Loader />
+    return <Loader />;
   }
 
-  // Error state
   if (error) {
     return (
       <div className="bg-white p-6 rounded-xl shadow-lg h-72 flex flex-col items-center justify-center">
@@ -188,7 +174,6 @@ const WeatherForecast = () => {
         </div>
       </div>
 
-      {/* Quick Tips */}
       <div className="mt-4 pt-4 border-t border-gray-200">
         <p className="text-sm text-gray-600 italic">
           {weather.condition === "Rain"
@@ -201,16 +186,5 @@ const WeatherForecast = () => {
     </div>
   );
 };
-
-// Add these to your CSS or Tailwind config
-const customAnimations = `
-  @keyframes spin-slow {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  .animate-spin-slow {
-    animation: spin-slow 3s linear infinite;
-  }
-`;
 
 export default WeatherForecast;

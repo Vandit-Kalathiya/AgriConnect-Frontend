@@ -1,4 +1,3 @@
-// CropCard.jsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
@@ -6,7 +5,6 @@ import axios from "axios";
 
 const CropCard = ({ crop }) => {
   const [images, setImages] = useState([]);
-  console.log(crop);
 
   const getImage = async () => {
     const imageUrl = `http://localhost:2527/image/${crop.images[0].id}`;
@@ -54,10 +52,6 @@ const CropCard = ({ crop }) => {
                   {crop.status.charAt(0).toUpperCase() + crop.status.slice(1)}
                 </div>
               )}
-              {/* <span className="flex items-center text-yellow-500 text-xs md:text-sm">
-                <FaStar className="mr-1" />
-                {crop.rating.toFixed(1)}
-              </span> */}
             </div>
             <p className="text-md md:text-lg font-bold text-gray-900 mb-1 md:mb-2">
               ₹{crop.finalPrice}{" "}

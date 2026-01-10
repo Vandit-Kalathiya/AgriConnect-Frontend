@@ -52,7 +52,6 @@ const Navbar = () => {
   const fetchUser = async () => {
     try {
       const user1 = await getCurrentUser();
-      // console.log("Fetched user:", user1);
       setUser(user1);
 
       // Fetch profile picture
@@ -87,7 +86,6 @@ const Navbar = () => {
         setSignature(URL.createObjectURL(signatureBlob));
       }
     } catch (error) {
-      console.error("Error fetching user or images:", error);
       toast.error("Failed to load user data or images");
     }
   };
@@ -95,7 +93,6 @@ const Navbar = () => {
   useEffect(() => {
     fetchUser();
 
-    // Cleanup URLs to prevent memory leaks
     return () => {
       if (profilePicture) URL.revokeObjectURL(profilePicture);
       if (signature) URL.revokeObjectURL(signature);
@@ -113,7 +110,6 @@ const Navbar = () => {
       toast.success("Logged out successfully");
       navigate("/");
     } catch (error) {
-      console.error("There was an error logging out:", error);
       toast.error("Logout failed. Please try again.");
     }
   };
@@ -125,11 +121,8 @@ const Navbar = () => {
     { name: "Dashboard", path: "/dashboard" },
     { name: "Marketplace", path: "/crops" },
     { name: "Crop Advisory", path: "/crop-advisory" },
-    // { name: "Contact", path: "/contact" },
     { name: "Market Trends", path: "/market-trends" },
   ];
-
-  // console.log("User state:", user);
 
   return (
     <>

@@ -80,10 +80,8 @@ const RainfallAdvisory = () => {
           state
         )}&month=${encodeURIComponent(month)}`
       );
-      console.log("Rainfall Response:", response.data);
-      setRainfallPrediction(response.data.predicted_rainfall); // Expecting a number (e.g., rainfall in mm)
+      setRainfallPrediction(response.data.predicted_rainfall);
     } catch (error) {
-      console.error("Error fetching rainfall prediction:", error);
       setError("Failed to fetch rainfall prediction. Please try again.");
       // Mock data for testing
       setRainfallPrediction(120); // Example: 120 mm

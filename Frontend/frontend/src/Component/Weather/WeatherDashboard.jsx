@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Line } from "react-chartjs-2";
 import axios from "axios";
 import {
@@ -26,7 +26,6 @@ import {
 } from "react-icons/wi";
 import { FaRegCompass, FaSearch, FaMapMarkerAlt } from "react-icons/fa";
 import Loader from "../Loader/Loader";
-import RainfallAdvisory from "./RainfallAdvisory"; // Import the new component
 
 ChartJS.register(
   CategoryScale,
@@ -56,8 +55,7 @@ const WeatherDashboard = () => {
             position.coords.longitude
           );
         },
-        (err) => {
-          console.error("Geolocation error:", err);
+        () => {
           setCity("Anand");
         }
       );
@@ -67,7 +65,9 @@ const WeatherDashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (city) fetchWeatherData();
+    if (city) {
+      fetchWeatherData();
+    }
   }, [city]);
 
   const fetchWeatherByCoords = async (lat, lon) => {
@@ -89,7 +89,6 @@ const WeatherDashboard = () => {
       setWeatherData(weatherResponse.data);
       setError(null);
     } catch (error) {
-      console.error("Error fetching weather by coords:", error);
       setError("Unable to fetch weather data. Using default city.");
       setCity("Anand");
     } finally {
@@ -111,7 +110,6 @@ const WeatherDashboard = () => {
       setWeatherData(weatherResponse.data);
       setError(null);
     } catch (error) {
-      console.error("Error fetching weather data:", error);
       setError("City not found. Please enter a valid city name.");
       setWeatherData(null);
     } finally {
@@ -130,7 +128,6 @@ const WeatherDashboard = () => {
       );
       setCitySuggestions(response.data);
     } catch (error) {
-      console.error("Error fetching city suggestions:", error);
       setCitySuggestions([]);
     }
   };
@@ -422,7 +419,7 @@ const WeatherDashboard = () => {
             </div>
 
             {/* Rainfall Advisory */}
-            <RainfallAdvisory />
+            {/* <RainfallAdvisory /> */}
           </div>
 
           {/* Middle and Right Section */}

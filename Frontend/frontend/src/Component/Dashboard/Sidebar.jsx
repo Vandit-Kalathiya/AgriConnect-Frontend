@@ -28,14 +28,18 @@ const Sidebar = () => {
       className={`bg-white/95 backdrop-blur-md h-screen fixed top-0 left-0 shadow-xl border-r border-slate-200/50 transition-all duration-500 ease-in-out z-40 ${
         isCollapsed ? "w-20" : "w-64"
       } hover:shadow-2xl`}
-      style={{
-        backdropFilter: 'blur(12px)',
-        borderRight: '1px solid rgba(148, 163, 184, 0.2)',
-      }}
     >
-      {/* Sidebar Content */}
-      <div className={`${isCollapsed ? "space-y-4" : "space-y-3"} overflow-y-auto scrollbar-thin scrollbar-thumb-jewel-300 scrollbar-track-transparent hover:scrollbar-thumb-jewel-400 transition-all duration-300`} style={{ maxHeight: 'calc(100vh - 80px)', marginTop: '80px' }}>
-        <SidebarSection title="Market" isCollapsed={isCollapsed} toggleSidebar={toggleSidebar}>
+      <div
+        className={`${
+          isCollapsed ? "space-y-4" : "space-y-3"
+        } overflow-y-auto scrollbar-thin scrollbar-thumb-jewel-300 scrollbar-track-transparent hover:scrollbar-thumb-jewel-400 transition-all duration-300 mt-20`}
+        style={{ maxHeight: "calc(100vh - 80px)" }}
+      >
+        <SidebarSection
+          title="Market"
+          isCollapsed={isCollapsed}
+          toggleSidebar={toggleSidebar}
+        >
           <SidebarItem
             icon={<FaThLarge />}
             text="Dashboard"
@@ -73,7 +77,11 @@ const Sidebar = () => {
           />
         </SidebarSection>
 
-        <SidebarSection title="Insights" isCollapsed={isCollapsed} toggleSidebar={toggleSidebar}>
+        <SidebarSection
+          title="Insights"
+          isCollapsed={isCollapsed}
+          toggleSidebar={toggleSidebar}
+        >
           {/* <SidebarItem
             icon={<HiTrendingUp />}
             text="Market Trends"
@@ -97,7 +105,11 @@ const Sidebar = () => {
           />
         </SidebarSection>
 
-        <SidebarSection title="Operations" isCollapsed={isCollapsed} toggleSidebar={toggleSidebar}>
+        <SidebarSection
+          title="Operations"
+          isCollapsed={isCollapsed}
+          toggleSidebar={toggleSidebar}
+        >
           <SidebarItem
             icon={<RiContractLine />}
             text="My Contracts"
@@ -126,7 +138,11 @@ const Sidebar = () => {
 };
 
 const SidebarSection = ({ title, children, isCollapsed, toggleSidebar }) => (
-  <div className={`${isCollapsed ? "px-3 py-3" : "px-4 py-3"} transition-all duration-300 ease-in-out`}>
+  <div
+    className={`${
+      isCollapsed ? "px-3 py-3" : "px-4 py-3"
+    } transition-all duration-300 ease-in-out`}
+  >
     {/* Section header with toggle button for first section */}
     {title === "Market" && (
       <div className="flex items-center justify-between mb-3">
@@ -147,15 +163,19 @@ const SidebarSection = ({ title, children, isCollapsed, toggleSidebar }) => (
         </button>
       </div>
     )}
-    
+
     {/* Regular section header for other sections */}
     {title !== "Market" && !isCollapsed && (
       <div className="text-gray-500 text-sm mb-3 font-medium tracking-wide uppercase opacity-70 transition-all duration-300 ease-in-out transform">
         {title}
       </div>
     )}
-    
-    <ul className={`${isCollapsed ? "space-y-3" : "space-y-1"} transition-all duration-300 ease-in-out`}>
+
+    <ul
+      className={`${
+        isCollapsed ? "space-y-3" : "space-y-1"
+      } transition-all duration-300 ease-in-out`}
+    >
       {children}
     </ul>
   </div>
@@ -183,17 +203,21 @@ const SidebarItem = ({ icon, text, to, isCollapsed, toggleSidebar }) => {
       >
         {/* Background animation effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-jewel-400 to-jewel-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300 ease-in-out rounded-xl"></div>
-        
-        <span className={`text-lg transition-all duration-300 ease-in-out relative z-10 ${isCollapsed ? 'transform group-hover:scale-110' : ''}`}>
+
+        <span
+          className={`text-lg transition-all duration-300 ease-in-out relative z-10 ${
+            isCollapsed ? "transform group-hover:scale-110" : ""
+          }`}
+        >
           {icon}
         </span>
-        
+
         {!isCollapsed && (
           <span className="text-sm md:text-base font-medium transition-all duration-300 ease-in-out relative z-10 group-hover:translate-x-1">
             {text}
           </span>
         )}
-        
+
         {/* Tooltip for collapsed state */}
         {isCollapsed && (
           <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-in-out whitespace-nowrap z-50 shadow-lg">

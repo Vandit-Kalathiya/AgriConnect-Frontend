@@ -89,7 +89,6 @@ const UserProfile = () => {
         farmDetails: { ...formData.farmDetails, [field]: value },
       });
     } else if (name !== "phoneNumber") {
-      // Skip phoneNumber updates here
       setFormData({ ...formData, [name]: value });
     }
     if (value.trim() && errors[name]) {

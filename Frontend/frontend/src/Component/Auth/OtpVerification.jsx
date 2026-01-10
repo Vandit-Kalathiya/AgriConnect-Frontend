@@ -15,7 +15,6 @@ const OtpVerification = ({
   const [canResend, setCanResend] = useState(false);
   const timerRef = useRef(null);
 
-  // Start countdown timer
   useEffect(() => {
     if (timer > 0) {
       timerRef.current = setInterval(() => {
@@ -31,12 +30,11 @@ const OtpVerification = ({
     };
   }, [timer]);
 
-  // Auto-submit when OTP is complete
   useEffect(() => {
     if (otp.length === 6 && !isLoading) {
       handleSubmit();
     }
-  }, [otp]);
+  }, [otp, isLoading]);
 
   const handleSubmit = async () => {
     if (otp.length !== 6) {
@@ -48,7 +46,6 @@ const OtpVerification = ({
     try {
       await onSubmit(otp);
     } catch (err) {
-      console.error("OTP verification failed:", err);
       toast.error("OTP verification failed. Please try again.");
     } finally {
       setIsLoading(false);
@@ -61,7 +58,6 @@ const OtpVerification = ({
       setCanResend(false);
       setOtp("");
       toast.success("OTP resent successfully!");
-      // You can add actual resend API call here if needed
     }
   };
 

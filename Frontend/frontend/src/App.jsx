@@ -31,7 +31,6 @@ import Market from "./Component/MarketTrends/Pages/Market";
 import Insights from "./Component/MarketTrends/Pages/Insights";
 import CropDetail from "./Component/MarketTrends/Pages/CropDetail";
 
-
 const Layout = ({ children }) => (
   <div className="flex flex-col h-screen font-poppins">
     <Navbar />
@@ -56,13 +55,10 @@ const PublicRoute = ({ children }) => {
 
 function App() {
   const isAuthenticated = !!getUsernameFromToken();
-  // console.log("Is authenticated:", isAuthenticated);
 
   return (
     <MantineProvider>
       <ToastContainer />
-      {/* <BrowserRouter> */}
-      {/* <ToastContainer> */}
       <Routes>
         {/* Public routes: Only accessible when not logged in */}
         <Route
@@ -73,24 +69,8 @@ function App() {
             </PublicRoute>
           }
         />
-        {/* <Route
-            path="/register"
-            element={
-              <PublicRoute>
-                <AuthPage />
-              </PublicRoute>
-            }
-          /> */}
-        <Route
-          path="/"
-          element={
-            // <PublicRoute>
-            <HomePage />
-            // </PublicRoute>
-          }
-        />
+        <Route path="/" element={<HomePage />} />
 
-        {/* Protected routes: Only accessible when logged in */}
         <Route
           path="*"
           element={
@@ -118,7 +98,10 @@ function App() {
                       <Route path="/trends" element={<Trends />} />
                       <Route path="/market" element={<Market />} />
                       <Route path="/insights" element={<Insights />} />
-                      <Route path="/crop/market/:cropId" element={<CropDetail />} />
+                      <Route
+                        path="/crop/market/:cropId"
+                        element={<CropDetail />}
+                      />
                       <Route
                         path="/cold-storage"
                         element={<ColdStoragePage />}
@@ -131,9 +114,6 @@ function App() {
                         element={<PaymentProcess />}
                       />
                       <Route path="/support" element={<Index_Bot />} />
-
-                      {/* Default route */}
-                      {/* <Route path="/" element={<Dashboard />} /> */}
                     </Routes>
                   </main>
                 </div>
@@ -143,8 +123,6 @@ function App() {
         />
       </Routes>
       <ChatbotButton />
-      {/* </ToastContainer> */}
-      {/* </BrowserRouter> */}
     </MantineProvider>
   );
 }

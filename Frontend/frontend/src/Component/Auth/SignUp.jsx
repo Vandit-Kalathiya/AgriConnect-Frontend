@@ -3,6 +3,7 @@ import OtpVerification from "./OtpVerification";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { BASE_URL } from "../../../helper";
 
 const SignUp = ({ onNavigateToLogin }) => {
   const [formData, setFormData] = useState({
@@ -15,7 +16,6 @@ const SignUp = ({ onNavigateToLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Validation functions
   const validateUsername = (username) => {
     if (!username.trim()) return "Username is required";
     if (username.length < 3) return "Username must be at least 3 characters";
@@ -45,7 +45,6 @@ const SignUp = ({ onNavigateToLogin }) => {
       phoneNumber: validatePhoneNumber(formData.phoneNumber),
     };
 
-    // Remove empty error messages
     Object.keys(newErrors).forEach((key) => {
       if (!newErrors[key]) delete newErrors[key];
     });
@@ -56,7 +55,6 @@ const SignUp = ({ onNavigateToLogin }) => {
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error for this field when user starts typing
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -99,11 +97,9 @@ const SignUp = ({ onNavigateToLogin }) => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:2525/auth/register",
-        formData,
-        { withCredentials: true }
-      );
+      const response = await axios.post(`${BASE_URL}/auth/register`, formData, {
+        withCredentials: true,
+      });
       if (response.status === 200) {
         setShowOtp(true);
         setErrors({});
@@ -124,20 +120,19 @@ const SignUp = ({ onNavigateToLogin }) => {
   const handleCreateAccount = async (otp) => {
     try {
       const response = await axios.post(
-        `http://localhost:2525/auth/r/verify-otp/${formData.phoneNumber}/${otp}`,
+        `${BASE_URL}/auth/r/verify-otp/${formData.phoneNumber}/${otp}`,
         formData,
         { withCredentials: true }
       );
 
       if (response.status === 201) {
         const loginResponse = await axios.post(
-          "http://localhost:2525/auth/login/after/register",
+          `${BASE_URL}/auth/login/after/register`,
           { phoneNumber: formData.phoneNumber },
           { withCredentials: true }
         );
 
         if (loginResponse.status === 200) {
-          console.log(loginResponse.data);
           setFormData({ username: "", address: "", phoneNumber: "" });
           setShowOtp(false);
           toast.success("Registration successful!");

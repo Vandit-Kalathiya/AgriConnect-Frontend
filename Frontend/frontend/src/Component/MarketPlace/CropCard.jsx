@@ -8,12 +8,6 @@ const CropCard = ({ crop }) => {
   const [error, setError] = useState(null);
   const [images, setImages] = useState([]);
 
-  // Log the crop object to verify its structure
-  // console.log("Crop Data:", crop);
-
-  // console.log(crop.lastUpdatedDate);
-  
-
   useEffect(() => {
     fetchImages();
   }, []);
@@ -38,7 +32,6 @@ const CropCard = ({ crop }) => {
       setImages(imageUrls);
     } catch (err) {
       setError("Failed to load images");
-      console.error(err);
     } finally {
       setLoading(false);
     }

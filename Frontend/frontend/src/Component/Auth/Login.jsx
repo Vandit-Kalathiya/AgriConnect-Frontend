@@ -3,6 +3,7 @@ import OtpVerification from "./OtpVerification";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { BASE_URL } from "../../../helper";
 
 const Login = ({ onNavigateToSignUp }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -13,18 +14,14 @@ const Login = ({ onNavigateToSignUp }) => {
 
   // Validate phone number format
   const validatePhoneNumber = (number) => {
-    // Remove all non-digit characters
     const cleaned = number.replace(/\D/g, "");
-    // Check if it's 10 digits (adjust based on your country requirements)
     return cleaned.length === 10;
   };
 
   const handlePhoneNumberChange = (e) => {
     const value = e.target.value;
-    // Only allow numbers and limit to 10 digits
     const cleaned = value.replace(/\D/g, "").slice(0, 10);
     setPhoneNumber(cleaned);
-    // Clear error when user starts typing
     if (error) setError("");
   };
 
@@ -33,7 +30,6 @@ const Login = ({ onNavigateToSignUp }) => {
   };
 
   const handleGetOtp = async () => {
-    // Validation checks
     if (!phoneNumber.trim()) {
       setError("Please enter your phone number");
       return;
@@ -48,10 +44,7 @@ const Login = ({ onNavigateToSignUp }) => {
     setError("");
 
     try {
-      const response = await axios.post(
-        "http://localhost:2525/auth/login",
-        jwtRequest
-      );
+      const response = await axios.post(`${BASE_URL}/auth/login`, jwtRequest);
       if (response.status === 200) {
         setShowOtp(true);
         toast.success(response.data);
@@ -77,12 +70,11 @@ const Login = ({ onNavigateToSignUp }) => {
   const handleLogin = async (otp) => {
     try {
       const response = await axios.post(
-        `http://localhost:2525/auth/verify-otp/${phoneNumber}/${otp}`,
+        `${BASE_URL}/auth/verify-otp/${phoneNumber}/${otp}`,
         {},
         { withCredentials: true }
       );
       if (response.status === 200) {
-        console.log(response.data);
         const { jwtToken, role } = response.data;
         setPhoneNumber("");
         setShowOtp(false);

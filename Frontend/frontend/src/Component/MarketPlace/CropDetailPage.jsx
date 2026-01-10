@@ -39,7 +39,6 @@ const CropDetailPage = () => {
   const fetchUserProfile = async () => {
     try {
       const response = await getCurrentUser();
-      // console.log(response);
       if (response && response.phoneNumber) {
         setUserPhone(response.phoneNumber);
       }

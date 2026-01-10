@@ -10,7 +10,7 @@ const ProfileForm = ({
   errors,
   onInputChange,
   userData,
-  onPhoneNumberVerified, // New prop to update phone number after OTP verification
+  onPhoneNumberVerified, 
 }) => {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [otpValue, setOtpValue] = useState("");
@@ -29,12 +29,10 @@ const ProfileForm = ({
     try {
       const res = await axios.post(
         `${BASE_URL}/auth/otp/send?phoneNumber=${tempPhoneNumber}`
-        );
-        console.log(res);
+      );
       setIsOtpSent(true);
       toast.success("OTP sent to your phone number!");
     } catch (error) {
-      console.error("Error sending OTP:", error);
       toast.error("Failed to send OTP. Please try again.");
     }
   };
@@ -48,8 +46,7 @@ const ProfileForm = ({
             Authorization: "Bearer " + getTokenFromCookie(),
           },
         }
-        );
-        console.log(response);
+      );
       if (response.data) {
         onPhoneNumberVerified(tempPhoneNumber);
         setIsOtpSent(false);
@@ -61,7 +58,6 @@ const ProfileForm = ({
         setOtpError("Invalid OTP. Please try again.");
       }
     } catch (error) {
-      console.error("Error verifying OTP:", error);
       setOtpError("Failed to verify OTP. Please try again.");
     }
   };

@@ -25,14 +25,12 @@ const Payments = () => {
       setError(null);
 
       try {
-        // Fetch current user
         const currentUser = await getCurrentUser();
         if (!currentUser?.uniqueHexAddress) {
           throw new Error("User not logged in or missing uniqueHexAddress");
         }
         setUser(currentUser);
 
-        // Fetch all payments
         const buyerResponse = await axios.get(
           `http://localhost:2526/api/payments/buyer/${currentUser?.uniqueHexAddress}`
         );
@@ -74,9 +72,6 @@ const Payments = () => {
       .replace(/,/, "");
   };
 
-  console.log(payments);
-
-  // Filter and sort transactions
   const filteredTransactions = payments
     .filter(
       (txn) =>

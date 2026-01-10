@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import CropCard from "./CropCard";
 import axios from "axios";
 import { getCurrentUser } from "../../../helper";
-import Loader  from "../Loader/Loader";
+import Loader from "../Loader/Loader";
 
 export const MyListing = () => {
   const [listings, setListings] = useState([]);
@@ -19,9 +19,7 @@ export const MyListing = () => {
         }
       );
       setLoading(true);
-      console.log("Fetched listings:", response.data);
       setListings(response.data);
-      
     } catch (error) {
       console.error("Error fetching listings:", error);
     } finally {
