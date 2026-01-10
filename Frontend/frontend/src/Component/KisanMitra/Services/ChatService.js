@@ -1,4 +1,5 @@
 import { getGeminiResponse, createAgriculturalPrompt } from './GeminiService';
+import { isAgriculturalQuery, getOutOfScopeResponse } from './KeywordFilterService';
 
 const responseCache = new Map();
 
@@ -7,6 +8,12 @@ export const getChatResponse = async (messages, language) => {
     const lastUserMessage = messages.filter(m => m.type === 'user').pop();
     if (!lastUserMessage) {
       throw new Error('No user message found');
+    }
+    
+    // Check if the query is agricultural using client-side filtering
+    if (!isAgriculturalQuery(lastUserMessage.text, language)) {
+      // Return out-of-scope response immediately without calling API
+      return { text: getOutOfScopeResponse(language) };
     }
     
     const cacheKey = `${lastUserMessage.text}_${language}`;
