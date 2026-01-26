@@ -47,13 +47,21 @@ const Login = ({ onNavigateToSignUp }) => {
       const response = await axios.post(`${BASE_URL}/auth/login`, jwtRequest);
       if (response.status === 200) {
         setShowOtp(true);
-        toast.success(response.data);
+        toast.success(typeof response.data === 'string' ? response.data : 'OTP sent successfully!');
       }
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.response?.data ||
-        "Failed to send OTP. Please try again.";
+      let errorMessage = "Failed to send OTP. Please try again.";
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -82,12 +90,21 @@ const Login = ({ onNavigateToSignUp }) => {
         navigate("/dashboard");
       }
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.response?.data ||
-        "Failed to verify OTP. Please try again.";
+      let errorMessage = "Failed to verify OTP. Please try again.";
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
       toast.error(errorMessage);
+      throw err; // Re-throw so OtpVerification component knows it failed
     }
   };
 
@@ -135,7 +152,9 @@ const Login = ({ onNavigateToSignUp }) => {
               clipRule="evenodd"
             />
           </svg>
-          <p className="text-red-700 text-sm">{error}</p>
+          <p className="text-red-700 text-sm">
+            {typeof error === 'string' ? error : error?.message || 'An error occurred'}
+          </p>
         </div>
       )}
 

@@ -3,8 +3,9 @@ import CropCard from "./CropCard";
 import axios from "axios";
 import Loader from "../Loader/Loader";
 import { getCurrentUser } from "../../../helper";
+import { API_CONFIG } from "../../config/apiConfig";
 
-const BASE_URL = "http://localhost:2527"; // Adjust to your backend URL
+const BASE_URL = API_CONFIG.MARKET_ACCESS; // Adjust to your backend URL
 
 export const CropListingPage = () => {
   const [listings, setListings] = useState([]);

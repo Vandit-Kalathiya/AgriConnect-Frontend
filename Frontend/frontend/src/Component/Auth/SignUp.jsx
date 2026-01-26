@@ -106,10 +106,18 @@ const SignUp = ({ onNavigateToLogin }) => {
         toast.success("OTP sent successfully!");
       }
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.response?.data ||
-        "Failed to send OTP. Please try again.";
+      let errorMessage = "Failed to send OTP. Please try again.";
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       setErrors({ general: errorMessage });
       toast.error(errorMessage);
     } finally {
@@ -133,19 +141,27 @@ const SignUp = ({ onNavigateToLogin }) => {
         );
 
         if (loginResponse.status === 200) {
-          setFormData({ username: "", address: "", phoneNumber: "" });
-          setShowOtp(false);
           toast.success("Registration successful!");
-          navigate("/dashboard");
+          // Use replace to force a full page reload with new auth state
+          window.location.replace("/dashboard");
         }
       }
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.response?.data ||
-        "Failed to verify OTP or complete registration";
+      let errorMessage = "Failed to verify OTP or complete registration";
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       setErrors({ general: errorMessage });
       toast.error(errorMessage);
+      throw err; // Re-throw so OtpVerification component knows it failed
     }
   };
 
@@ -196,7 +212,9 @@ const SignUp = ({ onNavigateToLogin }) => {
               clipRule="evenodd"
             />
           </svg>
-          <p className="text-red-700 text-sm">{errors.general}</p>
+          <p className="text-red-700 text-sm">
+            {typeof errors.general === 'string' ? errors.general : errors.general?.message || 'An error occurred'}
+          </p>
         </div>
       )}
 

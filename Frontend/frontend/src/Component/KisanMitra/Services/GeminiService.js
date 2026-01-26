@@ -2,35 +2,55 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 export const getGeminiResponse = async (messages, language) => {
   try {
+    // Check if API key is available
+    if (!GEMINI_API_KEY || GEMINI_API_KEY.trim() === '') {
+      console.error('Gemini API key is not configured');
+      throw new Error('API key not configured');
+    }
+
     const lastUserMessage = messages.filter(m => m.type === 'user').pop();
     
-    // Always use the agricultural prompt for the latest user message
+    // Build conversation history with proper context
     let conversationHistory;
-    if (lastUserMessage) {
-      // Create enhanced prompt for the latest user message
-      const enhancedPrompt = createAgriculturalPrompt(lastUserMessage.text, language);
+    if (messages.length > 1) {
+      // Multi-turn conversation: maintain context
+      console.log(`💬 Building conversation with ${messages.length} messages for context`);
       
-      // Map all messages but replace the last user message with enhanced prompt
+      // Enhance the FIRST user message with agricultural context
       conversationHistory = messages.map((msg, index) => {
-        if (msg.type === 'user' && index === messages.length - 1) {
+        if (msg.type === 'user' && index === 0) {
+          // First message gets full prompt
           return {
             role: 'user',
-            parts: [{ text: enhancedPrompt }]
+            parts: [{ text: createAgriculturalPrompt(msg.text, language) }]
+          };
+        } else if (msg.type === 'user' && index === messages.length - 1) {
+          // Last message: add context reminder but keep it concise
+          const contextReminder = language === 'hi'
+            ? `[पिछली बातचीत को ध्यान में रखते हुए उत्तर दें]\n\n${msg.text}`
+            : `[Considering our previous conversation, please answer]\n\n${msg.text}`;
+          
+          return {
+            role: 'user',
+            parts: [{ text: contextReminder }]
           };
         }
+        
+        // Other messages pass through normally
         return {
           role: msg.type === 'user' ? 'user' : 'model',
           parts: [{ text: msg.text }]
         };
       });
     } else {
-      conversationHistory = messages.map(msg => ({
-        role: msg.type === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.text }]
-      }));
+      // Single message: use enhanced prompt
+      conversationHistory = [{
+        role: 'user',
+        parts: [{ text: createAgriculturalPrompt(lastUserMessage.text, language) }]
+      }];
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -105,6 +125,14 @@ export const createAgriculturalPrompt = (userMessage, language) => {
 
   return `You are Kisan Mitra, a specialized agricultural assistant exclusively designed to help farmers and provide farming guidance.
 
+    🧠 CONVERSATIONAL CONTEXT AWARENESS 🧠
+    IMPORTANT: You are part of an ongoing conversation. 
+    - Remember and reference previous messages in the conversation
+    - If the user asks follow-up questions (e.g., "tell me more", "what about varieties", "how to do it"), refer to the previous topic discussed
+    - Maintain continuity in your responses
+    - If the user asks a vague question, infer from context what they're asking about
+    - Example: If you just discussed wheat farming and user asks "what about fertilizers?", understand they mean wheat fertilizers
+
     🤝 GREETING AND CONVERSATION HANDLING 🤝
     For greetings and basic conversational interactions (hi, hello, namaste, how are you, etc.):
     - Respond warmly and introduce yourself as Kisan Mitra
@@ -169,6 +197,13 @@ export const createAgriculturalPrompt = (userMessage, language) => {
     - Simple, farmer-friendly language
     - Actionable, practical advice
     - Region-specific recommendations when possible
+    - Reference previous conversation when relevant
+
+    🔄 **For Follow-up Questions**:
+    - Understand context from previous messages
+    - Provide deeper detail on the topic being discussed
+    - Connect your answer to what was already shared
+    - Be patient and thorough
 
     User Question: ${userMessage}`;
 };

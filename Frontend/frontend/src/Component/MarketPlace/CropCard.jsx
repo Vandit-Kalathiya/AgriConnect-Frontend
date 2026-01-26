@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import axios from "axios";
+import { API_CONFIG } from "../../config/apiConfig";
 
 const CropCard = ({ crop }) => {
   const [loading, setLoading] = useState(true); // Track loading state
@@ -16,7 +17,7 @@ const CropCard = ({ crop }) => {
     try {
       setLoading(true);
       const imagePromises = crop.images.map((image) => {
-        const imageUrl = `http://localhost:2527/image/${image.id}`;
+        const imageUrl = `${API_CONFIG.MARKET_ACCESS}/image/${image.id}`;
         return axios
           .get(imageUrl, {
             withCredentials: true,

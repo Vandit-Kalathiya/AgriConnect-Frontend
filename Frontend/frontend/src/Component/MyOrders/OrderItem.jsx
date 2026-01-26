@@ -22,6 +22,7 @@ import { XCircle, ThumbsUp, Package, Clock } from "react-feather";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { API_CONFIG } from "../../config/apiConfig";
 
 const OrderItem = ({
   order,
@@ -50,7 +51,7 @@ const OrderItem = ({
         setLoadingFarmer(true);
         try {
           const response = await axios.get(
-            `http://localhost:2525/users/unique/${order.farmerAddress}`,
+            `${API_CONFIG.IDENTITY_SERVICE}/users/unique/${order.farmerAddress}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -75,7 +76,7 @@ const OrderItem = ({
     setLoading(true);
     try {
       const response2 = await axios.post(
-        `http://localhost:2526/api/payments/verify-delivery/${orderId}`,
+        `${API_CONFIG.CONTRACT_FARMING}/api/payments/verify-delivery/${orderId}`,
         {},
         { withCredentials: true }
       );
@@ -83,7 +84,7 @@ const OrderItem = ({
       const agreementId = order.agreementId;
 
       const fetchResponse = await axios.get(
-        `http://localhost:2526/agreements/get/${agreementId}`,
+        `${API_CONFIG.CONTRACT_FARMING}/agreements/get/${agreementId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -105,14 +106,17 @@ const OrderItem = ({
         additionalNotes: fetchedAgreementDetails.additionalNotes,
       };
 
-      const response = await fetch("http://localhost:2529/contracts/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/pdf",
-        },
-        body: JSON.stringify(contractRequest),
-      });
+      const response = await fetch(
+        `${API_CONFIG.GENERATE_AGREEMENT}/contracts/generate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/pdf",
+          },
+          body: JSON.stringify(contractRequest),
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -124,7 +128,7 @@ const OrderItem = ({
       const blob = await response.blob();
 
       const farmerResponse = await axios.get(
-        `http://localhost:2525/users/${contractRequest.farmerInfo.farmerContact}`,
+        `${API_CONFIG.MAIN_BACKEND}/users/${contractRequest.farmerInfo.farmerContact}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -134,7 +138,7 @@ const OrderItem = ({
       );
 
       const buyerResponse = await axios.get(
-        `http://localhost:2525/users/${contractRequest.buyerInfo.buyerContact}`,
+        `${API_CONFIG.MAIN_BACKEND}/users/${contractRequest.buyerInfo.buyerContact}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -163,6 +167,19 @@ const OrderItem = ({
 
       toast.success("Contract PDF Generated Successfully");
 
+      const listingId = order.listingId;
+      const quantity = order.quantity;
+
+      const updateListingStatus = await axios.put(
+        `${API_CONFIG.MARKET_ACCESS}/listings/${listingId}/purchased/${quantity}`
+      );
+
+      if (updateListingStatus.status === 200) {
+        toast.success("Listing status updated to PURCHASED");
+      } else {
+        toast.error("Failed to update listing status to PURCHASED");
+      }
+
       toast.success("Delivery successfully approved!");
       fetchOrders();
     } catch (error) {
@@ -180,7 +197,7 @@ const OrderItem = ({
       formData.append("file", pdfBlob, "contract.pdf");
 
       const response = await axios.post(
-        `http://localhost:2526/upload/${farmerAddress}/${buyerAddress}`,
+        `${API_CONFIG.CONTRACT_FARMING}/upload/${farmerAddress}/${buyerAddress}`,
         formData,
         {
           withCredentials: true,
@@ -473,7 +490,7 @@ const OrderItem = ({
               className={`absolute top-3 left-3 ${statusBadge.bg} ${statusBadge.text} px-3 py-1.5 rounded-full text-xs font-bold flex items-center shadow-md backdrop-blur-sm bg-opacity-90`}
             >
               <StatusIcon className="mr-1.5" size={14} />
-              {order.status.replace(/_/g, " ").toUpperCase()}
+              {order.status}
             </div>
           </div>
 

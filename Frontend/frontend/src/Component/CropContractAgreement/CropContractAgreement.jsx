@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { API_CONFIG } from "../../config/apiConfig";
 import { getCurrentUser } from "../../../helper";
 import PartyInformation from "./PartyInformation";
 import CropDetails from "./CropDetails";
@@ -109,10 +110,10 @@ const CropContractAgreement = ({ quantity }) => {
   const fetchListingById = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:2527/listings/get/${listingId}`,
+        `${API_CONFIG.MARKET_ACCESS}/listings/get/${listingId}`,
         {
           withCredentials: true,
-        }
+        },
       );
       console.log("Listing details:", response.data);
       setListing(response.data);
@@ -125,10 +126,10 @@ const CropContractAgreement = ({ quantity }) => {
   const fetchFarmerDetails = async (farmerContact) => {
     try {
       const response = await axios.get(
-        `http://localhost:2525/users/${farmerContact}`,
+        `${API_CONFIG.MAIN_BACKEND}/users/${farmerContact}`,
         {
           withCredentials: true,
-        }
+        },
       );
       console.log("Farmer details:", response.data);
       setFarmer(response.data);
@@ -258,7 +259,9 @@ const CropContractAgreement = ({ quantity }) => {
 
     submitData.append(
       "agreementDetails",
-      new Blob([JSON.stringify(agreementDetails)], { type: "application/json" })
+      new Blob([JSON.stringify(agreementDetails)], {
+        type: "application/json",
+      }),
     );
 
     if (farmerSignature) {
@@ -270,14 +273,14 @@ const CropContractAgreement = ({ quantity }) => {
 
     try {
       const saveResponse = await axios.post(
-        "http://localhost:2526/agreements/save",
+        `${API_CONFIG.CONTRACT_FARMING}/agreements/save`,
         submitData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
           withCredentials: true,
-        }
+        },
       );
 
       console.log("Contract saved successfully:", saveResponse.data);
@@ -329,7 +332,7 @@ const CropContractAgreement = ({ quantity }) => {
       listingId,
       amount: parseFloat(
         formData.cropDetails.pricePerUnit.split(" ")[0] *
-          formData.cropDetails.quantity
+          formData.cropDetails.quantity,
       ),
       quantity: formData.cropDetails.quantity,
       agreementId: agreementId,
@@ -337,26 +340,25 @@ const CropContractAgreement = ({ quantity }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:2526/orders/create",
+        `${API_CONFIG.CONTRACT_FARMING}/orders/create`,
         orderRequest,
         {
           withCredentials: true,
-        }
+        },
       );
       toast.success("Order Created!");
 
-      // const updateListingStatus = await axios.put(
-      //   `http://localhost:2527/listings/${listingId}/archived/${formData.cropDetails.quantity}`
-      // );
-      // if (!updateListingStatus.status === 200) {
-      //   const errorText = await updateListingStatus.text();
-      //   toast.error(
-      //     `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
-      //   );
-      //   throw new Error(
-      //     `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`
-      //   );
-      // }
+      const updateListingStatus = await axios.put(
+        `${API_CONFIG.MARKET_ACCESS}/listings/${listingId}/archived/${formData.cropDetails.quantity}`,
+      );
+      if (updateListingStatus.status === 200) {
+        toast.success("Listing status updated to ARCHIVED");
+      } else {
+        const errorText = await updateListingStatus.text();
+        toast.error(
+          `Failed to update listing status: ${updateListingStatus.status} - ${errorText}`,
+        );
+      }
       navigate("/my-orders", { state: listing });
     } catch (err) {
       setError(err.response?.data || "Failed to upload contract");

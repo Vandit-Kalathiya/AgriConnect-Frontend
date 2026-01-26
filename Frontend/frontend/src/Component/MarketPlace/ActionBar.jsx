@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import TermsAndConditionsModal from "../TermsAndConditions/TermsAndConditionsModal";
 import CropContractAgreement from "../CropContractAgreement/CropContractAgreement";
 import axios from "axios";
+import { API_CONFIG } from "../../config/apiConfig";
 
 const ActionBar = ({ crop, userPhone }) => {
   const [quantity, setQuantity] = useState(crop.quantity);
@@ -52,7 +53,7 @@ const ActionBar = ({ crop, userPhone }) => {
   const handleCall = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:2525/auth/otp/initiate?phoneNumber=${crop.contact}`,
+        `${API_CONFIG.MAIN_BACKEND}/auth/otp/initiate?phoneNumber=${crop.contact}`,
         {},
         { withCredentials: true }
       );

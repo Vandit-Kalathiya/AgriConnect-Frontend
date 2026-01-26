@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Line } from "react-chartjs-2";
 import axios from "axios";
+import { OPENWEATHER_API_KEY } from "../../config/apiConfig";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -44,7 +45,7 @@ const WeatherDashboard = () => {
   const [citySuggestions, setCitySuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const API_KEY = "3919f2231e07934b2048b0f97d3d5040";
+  const API_KEY = OPENWEATHER_API_KEY;
 
   useEffect(() => {
     if (navigator.geolocation) {

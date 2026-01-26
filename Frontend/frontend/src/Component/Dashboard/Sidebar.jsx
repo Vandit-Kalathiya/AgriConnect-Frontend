@@ -127,7 +127,7 @@ const Sidebar = () => {
           <SidebarItem
             icon={<FaShoppingCart />}
             text="My Orders"
-            to="/my-orders"
+            to="/orders"
             isCollapsed={isCollapsed}
             toggleSidebar={toggleSidebar}
           />

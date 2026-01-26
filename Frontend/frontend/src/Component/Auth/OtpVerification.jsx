@@ -14,6 +14,8 @@ const OtpVerification = ({
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const timerRef = useRef(null);
+  const isSubmittingRef = useRef(false); // Prevent double submission
+  const hasAutoSubmittedRef = useRef(false); // Track if auto-submit already happened
 
   useEffect(() => {
     if (timer > 0) {
@@ -30,23 +32,38 @@ const OtpVerification = ({
     };
   }, [timer]);
 
+  // Auto-submit when 6 digits are entered (only once)
   useEffect(() => {
-    if (otp.length === 6 && !isLoading) {
+    if (otp.length === 6 && !isLoading && !isSubmittingRef.current && !hasAutoSubmittedRef.current) {
+      hasAutoSubmittedRef.current = true; // Mark that auto-submit happened
       handleSubmit();
     }
-  }, [otp, isLoading]);
+  }, [otp]);
 
   const handleSubmit = async () => {
+    // Prevent double submission
+    if (isSubmittingRef.current) {
+      console.log("Submission already in progress, skipping...");
+      return;
+    }
+
     if (otp.length !== 6) {
       toast.error("Please enter complete 6-digit OTP");
       return;
     }
 
+    isSubmittingRef.current = true; // Set flag immediately
     setIsLoading(true);
+    
     try {
       await onSubmit(otp);
+      // Success - onSubmit will handle navigation
     } catch (err) {
+      console.error("OTP verification error:", err);
       toast.error("OTP verification failed. Please try again.");
+      // Reset flags on error so user can retry
+      isSubmittingRef.current = false;
+      hasAutoSubmittedRef.current = false;
     } finally {
       setIsLoading(false);
     }
@@ -57,12 +74,15 @@ const OtpVerification = ({
       setTimer(60);
       setCanResend(false);
       setOtp("");
+      // Reset submission flags for new OTP
+      isSubmittingRef.current = false;
+      hasAutoSubmittedRef.current = false;
       toast.success("OTP resent successfully!");
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !isLoading && otp.length === 6) {
+    if (e.key === "Enter" && !isLoading && !isSubmittingRef.current && otp.length === 6) {
       handleSubmit();
     }
   };
@@ -99,7 +119,9 @@ const OtpVerification = ({
               clipRule="evenodd"
             />
           </svg>
-          <p className="text-red-700 text-sm">{error}</p>
+          <p className="text-red-700 text-sm">
+            {typeof error === 'string' ? error : error?.message || 'An error occurred'}
+          </p>
         </div>
       )}
 
@@ -159,12 +181,13 @@ const OtpVerification = ({
 
       <button
         className={`w-full py-3 rounded-md transition duration-200 mb-3 font-medium flex items-center justify-center ${
-          isLoading || otp.length !== 6
+          isLoading || otp.length !== 6 || isSubmittingRef.current
             ? "bg-gray-300 text-gray-500 cursor-not-allowed"
             : "bg-[#45a25e] text-white hover:bg-[#34854a]"
         }`}
         onClick={handleSubmit}
         disabled={isLoading || otp.length !== 6}
+        type="button"
       >
         {isLoading ? (
           <>

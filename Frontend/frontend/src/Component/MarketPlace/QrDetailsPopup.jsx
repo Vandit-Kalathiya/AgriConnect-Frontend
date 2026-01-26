@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_CONFIG } from "../../config/apiConfig";
 import { X } from "lucide-react";
 
 const QrDetailsPopup = () => {
@@ -14,7 +15,7 @@ const QrDetailsPopup = () => {
     const fetchCropData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:2527/listings/get/${id}`,
+          `${API_CONFIG.MARKET_ACCESS}/listings/get/${id}`,
           {
             withCredentials: true,
           }

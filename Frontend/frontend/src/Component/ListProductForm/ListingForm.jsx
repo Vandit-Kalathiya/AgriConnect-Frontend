@@ -7,8 +7,9 @@ import Step4 from "./Step4";
 import { getCurrentUser } from "../../../helper";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { API_CONFIG } from "../../config/apiConfig";
 
-const BASE_URL = "http://localhost:2527"; // Replace with your actual backend URL
+const BASE_URL = API_CONFIG.MARKET_ACCESS; // Replace with your actual backend URL
 
 const ListingForm = () => {
   const [step, setStep] = useState(1);

@@ -646,6 +646,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_CONFIG } from "../../config/apiConfig";
 import { getCurrentUser } from "../../../helper";
 import Loader from "../Loader/Loader";
 import LocationControl from "./LocationControl";
@@ -705,7 +706,7 @@ const ColdStoragePage = () => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:2529/coldStorage/bookings?farmerId=${farmerId}`
+        `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/bookings?farmerId=${farmerId}`
       );
       setBookings(response.data);
     } catch (error) {
@@ -731,7 +732,7 @@ const ColdStoragePage = () => {
         coldStorageName: bookingForm.coldStorageName,
       };
       const response = await axios.post(
-        "http://localhost:2529/coldStorage/book",
+        `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/book`,
         bookingData
       );
       setBookingStatus({
@@ -753,7 +754,7 @@ const ColdStoragePage = () => {
       setBookingStatus({
         type: "error",
         message:
-          "Booking failed: " +  
+          "Booking failed: " +
           (error.response?.data?.message || "Unknown error"),
       });
     }
@@ -767,7 +768,7 @@ const ColdStoragePage = () => {
   const confirmApproveBooking = async () => {
     try {
       await axios.put(
-        `http://localhost:2529/coldStorage/approve/${selectedBookingId}`
+        `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/approve/${selectedBookingId}`
       );
       setIsApproveModalOpen(false);
       fetchBookings(user.id);

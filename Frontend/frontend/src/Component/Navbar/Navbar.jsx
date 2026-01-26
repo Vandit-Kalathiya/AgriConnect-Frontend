@@ -63,7 +63,7 @@ const Navbar = () => {
             headers: {
               Authorization: "Bearer " + getTokenFromCookie(),
             },
-          }
+          },
         );
         const profileBlob = new Blob([profileResponse.data], {
           type: "image/jpeg",
@@ -78,7 +78,7 @@ const Navbar = () => {
             headers: {
               Authorization: "Bearer " + getTokenFromCookie(),
             },
-          }
+          },
         );
         const signatureBlob = new Blob([signatureResponse.data], {
           type: "image/jpeg",
@@ -258,7 +258,7 @@ const Navbar = () => {
                     <span>My Wishlist</span>
                   </Link>
                   <Link
-                    to="/my-orders"
+                    to="/orders"
                     className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <FaShoppingCart className="text-blue-600" />

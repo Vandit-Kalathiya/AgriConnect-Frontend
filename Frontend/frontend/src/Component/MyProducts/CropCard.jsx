@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import axios from "axios";
+import { API_CONFIG } from "../../config/apiConfig";
 
 const CropCard = ({ crop }) => {
   const [images, setImages] = useState([]);
 
   const getImage = async () => {
-    const imageUrl = `http://localhost:2527/image/${crop.images[0].id}`;
+    const imageUrl = `${API_CONFIG.MARKET_ACCESS}/image/${crop.images[0].id}`;
     await axios
       .get(imageUrl, {
         withCredentials: true,

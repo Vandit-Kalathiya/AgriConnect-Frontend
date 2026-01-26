@@ -1524,13 +1524,6 @@
 //   );
 // };
 
-
-
-
-
-
-
-
 import React, { useEffect, useState } from "react";
 import leafImg from "../../assets/leaf.png";
 import { useNavigate, useParams } from "react-router-dom";
@@ -1656,7 +1649,7 @@ export const CropContractAgreement = () => {
         `http://localhost:2527/listings/get/${listingId}`,
         {
           withCredentials: true,
-        }
+        },
       );
       console.log("Listing details:", response.data);
 
@@ -1719,7 +1712,7 @@ export const CropContractAgreement = () => {
         `http://localhost:2525/users/${farmerContact}`,
         {
           withCredentials: true,
-        }
+        },
       );
       console.log("Farmer details:", response.data);
       return response.data;
@@ -1748,11 +1741,11 @@ export const CropContractAgreement = () => {
     formDataToSave.append("cropDetails", JSON.stringify(formData.cropDetails));
     formDataToSave.append(
       "deliveryTerms",
-      JSON.stringify(formData.deliveryTerms)
+      JSON.stringify(formData.deliveryTerms),
     );
     formDataToSave.append(
       "paymentTerms",
-      JSON.stringify(formData.paymentTerms)
+      JSON.stringify(formData.paymentTerms),
     );
     formDataToSave.append("additionalNotes", formData.additionalNotes);
 
@@ -1798,7 +1791,9 @@ export const CropContractAgreement = () => {
 
     submitData.append(
       "agreementDetails",
-      new Blob([JSON.stringify(agreementDetails)], { type: "application/json" })
+      new Blob([JSON.stringify(agreementDetails)], {
+        type: "application/json",
+      }),
     );
 
     if (farmerSignature) {
@@ -1818,7 +1813,7 @@ export const CropContractAgreement = () => {
             "Content-Type": "multipart/form-data",
           },
           withCredentials: true,
-        }
+        },
       );
 
       console.log("Contract saved successfully:", saveResponse.data);
@@ -1836,7 +1831,7 @@ export const CropContractAgreement = () => {
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       const fetchedAgreementDetails = fetchResponse.data;
@@ -1865,7 +1860,7 @@ export const CropContractAgreement = () => {
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
-          `Failed to generate PDF: ${response.status} - ${errorText}`
+          `Failed to generate PDF: ${response.status} - ${errorText}`,
         );
       }
 
@@ -1875,7 +1870,7 @@ export const CropContractAgreement = () => {
       link.href = url;
       link.download = `AgriConnect_Contract_${contractRequest.farmerInfo.farmerName.replace(
         /\s+/g,
-        "_"
+        "_",
       )}_${contractRequest.buyerInfo.buyerName.replace(/\s+/g, "_")}.pdf`;
       document.body.appendChild(link);
       link.click();
@@ -1924,10 +1919,10 @@ export const CropContractAgreement = () => {
         {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
-        }
+        },
       );
       alert(
-        `Contract uploaded successfully!\nPDF Hash: ${response.data.pdfHash}\nTransaction Hash: ${response.data.txHash}`
+        `Contract uploaded successfully!\nPDF Hash: ${response.data.pdfHash}\nTransaction Hash: ${response.data.txHash}`,
       );
       navigate("/my-orders");
     } catch (err) {
@@ -2905,7 +2900,6 @@ export const CropContractAgreement = () => {
   );
 };
 
-
 import React, { useEffect, useState } from "react";
 import leafImg from "../../assets/leaf.png";
 import { useNavigate, useParams } from "react-router-dom";
@@ -3033,7 +3027,7 @@ export const CropContractAgreement = () => {
         `http://localhost:2527/listings/get/${listingId}`,
         {
           withCredentials: true,
-        }
+        },
       );
       console.log("Listing details:", response.data);
 
@@ -3097,7 +3091,7 @@ export const CropContractAgreement = () => {
         `http://localhost:2525/users/${farmerContact}`,
         {
           withCredentials: true,
-        }
+        },
       );
       console.log("Farmer details:", response.data);
       return response.data;
@@ -3126,11 +3120,11 @@ export const CropContractAgreement = () => {
     formDataToSave.append("cropDetails", JSON.stringify(formData.cropDetails));
     formDataToSave.append(
       "deliveryTerms",
-      JSON.stringify(formData.deliveryTerms)
+      JSON.stringify(formData.deliveryTerms),
     );
     formDataToSave.append(
       "paymentTerms",
-      JSON.stringify(formData.paymentTerms)
+      JSON.stringify(formData.paymentTerms),
     );
     formDataToSave.append("additionalNotes", formData.additionalNotes);
 
@@ -3176,7 +3170,9 @@ export const CropContractAgreement = () => {
 
     submitData.append(
       "agreementDetails",
-      new Blob([JSON.stringify(agreementDetails)], { type: "application/json" })
+      new Blob([JSON.stringify(agreementDetails)], {
+        type: "application/json",
+      }),
     );
 
     if (farmerSignature) {
@@ -3196,7 +3192,7 @@ export const CropContractAgreement = () => {
             "Content-Type": "multipart/form-data",
           },
           withCredentials: true,
-        }
+        },
       );
 
       console.log("Contract saved successfully:", saveResponse.data);
@@ -3214,7 +3210,7 @@ export const CropContractAgreement = () => {
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       const fetchedAgreementDetails = fetchResponse.data;
@@ -3243,7 +3239,7 @@ export const CropContractAgreement = () => {
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
-          `Failed to generate PDF: ${response.status} - ${errorText}`
+          `Failed to generate PDF: ${response.status} - ${errorText}`,
         );
       }
 
@@ -3253,7 +3249,7 @@ export const CropContractAgreement = () => {
       link.href = url;
       link.download = `AgriConnect_Contract_${contractRequest.farmerInfo.farmerName.replace(
         /\s+/g,
-        "_"
+        "_",
       )}_${contractRequest.buyerInfo.buyerName.replace(/\s+/g, "_")}.pdf`;
       document.body.appendChild(link);
       link.click();
@@ -3302,10 +3298,10 @@ export const CropContractAgreement = () => {
         {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
-        }
+        },
       );
       alert(
-        `Contract uploaded successfully!\nPDF Hash: ${response.data.pdfHash}\nTransaction Hash: ${response.data.txHash}`
+        `Contract uploaded successfully!\nPDF Hash: ${response.data.pdfHash}\nTransaction Hash: ${response.data.txHash}`,
       );
       navigate("/my-orders");
     } catch (err) {
@@ -4289,4 +4285,3 @@ export const CropContractAgreement = () => {
     </div>
   );
 };
-

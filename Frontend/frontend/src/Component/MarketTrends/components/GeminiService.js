@@ -1,12 +1,12 @@
 import { toast } from "sonner";
 
-const API_KEY = 'AIzaSyDU7xQMNUiyJ9SEtvDQCd3jmpgfTGo9kg8';
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
 
 export const generateCropAnalysis = async (cropName) => {
   try {
     console.log(`Generating analysis for ${cropName}...`);
-    
+
     const cachedData = localStorage.getItem(`cropAnalysis_${cropName}`);
     if (cachedData) {
       try {
@@ -20,7 +20,7 @@ export const generateCropAnalysis = async (cropName) => {
         console.log("Cache parse error, will fetch fresh data");
       }
     }
-    
+
     const prompt = `
       Generate a detailed market analysis for ${cropName} in the Indian agricultural market. 
       Include the following information:
@@ -80,17 +80,17 @@ export const generateCropAnalysis = async (cropName) => {
 
     const data = await response.json();
     console.log("Received data from Gemini:", data);
-    
+
     const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
+
     if (!responseText) {
       console.error("Invalid response format:", data);
       throw new Error('Invalid response format from Gemini API');
     }
 
-    const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || 
-                     responseText.match(/{[\s\S]*?}/);
-                      
+    const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) ||
+      responseText.match(/{[\s\S]*?}/);
+
     if (!jsonMatch) {
       console.error("Could not extract JSON from response:", responseText);
       const fallbackData = createFallbackDataFromText(responseText, cropName);
@@ -100,14 +100,14 @@ export const generateCropAnalysis = async (cropName) => {
 
     const jsonString = jsonMatch[1] || jsonMatch[0];
     console.log("Extracted JSON string:", jsonString);
-    
+
     try {
       const parsedData = JSON.parse(jsonString.trim());
       console.log("Successfully parsed data:", parsedData);
-      
+
       const sanitizedData = sanitizeResponse(parsedData, cropName);
       cacheAnalysisData(cropName, sanitizedData);
-      
+
       return sanitizedData;
     } catch (parseError) {
       console.error("JSON parse error:", parseError, "for string:", jsonString);
@@ -117,7 +117,7 @@ export const generateCropAnalysis = async (cropName) => {
     }
   } catch (error) {
     console.error('Error generating crop analysis:', error);
-    
+
     const cachedData = localStorage.getItem(`cropAnalysis_${cropName}`);
     if (cachedData) {
       try {
@@ -128,10 +128,10 @@ export const generateCropAnalysis = async (cropName) => {
         console.log("Cache parse error for fallback");
       }
     }
-    
+
     const fallbackData = createFallbackData(cropName);
     cacheAnalysisData(cropName, fallbackData);
-    
+
     return fallbackData;
   }
 };
@@ -150,7 +150,7 @@ const cacheAnalysisData = (cropName, data) => {
 const sanitizeResponse = (data, cropName) => {
   const sanitized = {
     predictions: data.predictions || `Market analysis for ${cropName} is currently being processed.`,
-    recommendations: Array.isArray(data.recommendations) ? data.recommendations : 
+    recommendations: Array.isArray(data.recommendations) ? data.recommendations :
       [`Consider market trends before planting ${cropName}`, `Monitor weather conditions for optimal ${cropName} growth`, `Follow best practices for ${cropName} cultivation`],
     marketInsights: data.marketInsights || `Detailed market insights for ${cropName} will be available soon.`,
     priceAnalysis: {
@@ -160,30 +160,30 @@ const sanitizeResponse = (data, cropName) => {
       forecast: typeof data.priceAnalysis?.forecast === 'number' ? data.priceAnalysis.forecast : generateRandomPrice(cropName, 1)
     }
   };
-  
+
   return sanitized;
 };
 
 const createFallbackDataFromText = (text, cropName) => {
   console.log("Creating fallback data from text");
-  
-  const predictions = extractSentence(text, ['trend', 'market', 'current', 'status']) || 
+
+  const predictions = extractSentence(text, ['trend', 'market', 'current', 'status']) ||
     `The ${cropName} market is showing typical seasonal patterns with moderate demand.`;
-  
+
   const recommendations = extractRecommendations(text) || [
     `Monitor market prices before harvesting ${cropName}`,
     `Consider proper storage techniques for ${cropName} to maximize shelf life`,
     `Follow recommended agricultural practices for ${cropName} cultivation`
   ];
-  
+
   const marketInsights = extractSentence(text, ['insight', 'opportunity', 'export', 'demand']) ||
     `${cropName} has moderate demand in domestic markets with some seasonal fluctuations.`;
-  
+
   const current = extractNumber(text, ['current price', 'average price', 'market price']) || generateRandomPrice(cropName);
   const previous = extractNumber(text, ['previous price', 'last month', 'earlier price']) || generateRandomPrice(cropName, -1);
   const change = extractNumber(text, ['change', 'increase', 'decrease', 'percent']) || generateRandomChange();
   const forecast = extractNumber(text, ['forecast', 'expected', 'predicted', 'next month']) || generateRandomPrice(cropName, 1);
-  
+
   return {
     predictions,
     recommendations,
@@ -199,9 +199,9 @@ const createFallbackDataFromText = (text, cropName) => {
 
 const createFallbackData = (cropName) => {
   console.log("Creating complete fallback data for", cropName);
-  
+
   const cropCategory = categorizeCrop(cropName);
-  
+
   return {
     predictions: getCropPrediction(cropName, cropCategory),
     recommendations: getCropRecommendations(cropName, cropCategory),
@@ -218,7 +218,7 @@ const createFallbackData = (cropName) => {
 function extractSentence(text, keywords) {
   const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 10);
   for (const keyword of keywords) {
-    const matchingSentence = sentences.find(s => 
+    const matchingSentence = sentences.find(s =>
       s.toLowerCase().includes(keyword.toLowerCase())
     );
     if (matchingSentence) return matchingSentence.trim();
@@ -232,15 +232,15 @@ function extractRecommendations(text) {
     /[•●■]\s+(.*?)(?=[•●■]|$)/gs,
     /recommend(?:ation|ed|ing).*?([^.!?]+[.!?])/gi
   ];
-  
+
   for (const pattern of recPatterns) {
     const matches = Array.from(text.matchAll(pattern))
       .map(m => m[1]?.trim())
       .filter(Boolean);
-    
+
     if (matches.length >= 2) return matches.slice(0, 3);
   }
-  
+
   return null;
 }
 
@@ -257,23 +257,23 @@ function extractNumber(text, contextKeywords) {
 
 function categorizeCrop(cropName) {
   const cropLower = cropName.toLowerCase();
-  
+
   const vegetables = ['tomato', 'potato', 'onion', 'cabbage', 'carrot', 'brinjal', 'cauliflower', 'capsicum', 'cucumber', 'peas', 'spinach', 'okra', 'ladyfinger', 'bottle gourd', 'bitter gourd', 'chilli'];
   const fruits = ['mango', 'apple', 'banana', 'orange', 'grapes', 'watermelon', 'papaya', 'pineapple', 'guava', 'litchi', 'pomegranate', 'strawberry', 'kiwi', 'coconut'];
   const grains = ['rice', 'wheat', 'maize', 'corn', 'barley', 'jowar', 'bajra', 'ragi', 'oats', 'sorghum', 'millet'];
   const spices = ['turmeric', 'chilli', 'cumin', 'coriander', 'cardamom', 'pepper', 'saffron', 'clove', 'cinnamon', 'ginger', 'garlic'];
-  
+
   if (vegetables.some(v => cropLower.includes(v))) return 'vegetable';
   if (fruits.some(f => cropLower.includes(f))) return 'fruit';
   if (grains.some(g => cropLower.includes(g))) return 'grain';
   if (spices.some(s => cropLower.includes(s))) return 'spice';
-  
+
   return 'other';
 }
 
 function generateRandomPrice(cropName, monthOffset = 0) {
   const category = categorizeCrop(cropName);
-  
+
   const baseRanges = {
     'vegetable': [15, 60],
     'fruit': [40, 200],
@@ -281,18 +281,18 @@ function generateRandomPrice(cropName, monthOffset = 0) {
     'spice': [100, 500],
     'other': [30, 150]
   };
-  
+
   const [min, max] = baseRanges[category];
-  
+
   let basePrice = min + Math.random() * (max - min);
   basePrice = Math.round(basePrice * 100) / 100;
-  
+
   if (monthOffset !== 0) {
     const variation = (Math.random() * 0.15 + 0.05) * (Math.random() > 0.5 ? 1 : -1);
     basePrice = basePrice * (1 + variation);
     basePrice = Math.round(basePrice * 100) / 100;
   }
-  
+
   return basePrice;
 }
 
@@ -329,7 +329,7 @@ function getCropPrediction(cropName, category) {
       `Market indicators for ${cropName} suggest steady conditions with normal price volatility.`
     ]
   };
-  
+
   const categoryPredictions = predictions[category] || predictions.other;
   return categoryPredictions[Math.floor(Math.random() * categoryPredictions.length)];
 }
@@ -367,7 +367,7 @@ function getCropRecommendations(cropName, category) {
       `Diversify marketing channels for ${cropName} to reduce dependency on a single buyer.`
     ]
   };
-  
+
   const categoryRecommendations = recommendations[category] || recommendations.other;
   const shuffled = [...categoryRecommendations].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 3);
@@ -396,7 +396,7 @@ function getCropMarketInsights(cropName, category) {
       `${cropName} prices reflect normal seasonal patterns with gradual adjustments based on production estimates. Direct marketing initiatives provide opportunities for better farmer realization. E-NAM platform integration is helping improve price discovery for ${cropName} in regulated markets.`
     ]
   };
-  
+
   const categoryInsights = insights[category] || insights.other;
   return categoryInsights[Math.floor(Math.random() * categoryInsights.length)];
 }
@@ -444,15 +444,15 @@ export const generateRecommendations = async (cropType = 'general') => {
     const data = await response.json();
     console.log("Received recommendation data from Gemini:", data);
     const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
+
     if (!responseText) {
       throw new Error('Invalid response format from Gemini API');
     }
 
-    const jsonMatch = responseText.match(/\[([\s\S]*?)\]/) || 
-                     responseText.match(/```json\n([\s\S]*?)\n```/) ||
-                     responseText.match(/```\n([\s\S]*?)\n```/);
-                      
+    const jsonMatch = responseText.match(/\[([\s\S]*?)\]/) ||
+      responseText.match(/```json\n([\s\S]*?)\n```/) ||
+      responseText.match(/```\n([\s\S]*?)\n```/);
+
     if (jsonMatch) {
       const jsonString = jsonMatch[0];
       try {
@@ -472,21 +472,21 @@ export const generateRecommendations = async (cropType = 'general') => {
 
 function extractRecommendationsFromText(text) {
   const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
-  
-  const recommendationLines = lines.filter(line => 
+
+  const recommendationLines = lines.filter(line =>
     /^(\d+\.|\*|•|-)/.test(line)
   );
-  
+
   if (recommendationLines.length >= 3) {
     return recommendationLines
       .map(line => line.replace(/^(\d+\.|\*|•|-)/, '').trim())
       .slice(0, 3);
   }
-  
+
   const sentences = text.split(/[.!?]+/)
     .map(s => s.trim())
     .filter(s => s.length > 15);
-  
+
   return sentences.slice(0, 3);
 }
 
@@ -496,7 +496,7 @@ function getFallbackRecommendations(cropType) {
     "Stay updated with weather forecasts and government agricultural advisories to plan your farming activities effectively.",
     "Explore government subsidies and support programs available for farmers in your region for financial assistance."
   ];
-  
+
   const seasonalRecommendations = {
     'winter': [
       "Protect sensitive crops from frost damage by using proper covering techniques during cold nights.",
@@ -529,10 +529,10 @@ function getFallbackRecommendations(cropType) {
       "Implement soil testing and targeted fertilizer application to optimize input costs for grain production."
     ]
   };
-  
+
   const currentMonth = new Date().getMonth();
   let recommendationsToUse;
-  
+
   if (cropType.toLowerCase().includes('fruit')) {
     recommendationsToUse = seasonalRecommendations.fruits;
   } else if (cropType.toLowerCase().includes('vegetable')) {
@@ -548,6 +548,6 @@ function getFallbackRecommendations(cropType) {
       recommendationsToUse = seasonalRecommendations.monsoon;
     }
   }
-  
+
   return recommendationsToUse || generalRecommendations;
 }

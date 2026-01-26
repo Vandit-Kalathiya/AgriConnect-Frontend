@@ -54,8 +54,6 @@ const PublicRoute = ({ children }) => {
 };
 
 function App() {
-  const isAuthenticated = !!getUsernameFromToken();
-
   return (
     <MantineProvider>
       <ToastContainer />
@@ -71,53 +69,224 @@ function App() {
         />
         <Route path="/" element={<HomePage />} />
 
+        {/* Protected routes with layout */}
         <Route
-          path="*"
+          path="/dashboard"
           element={
             <PrivateRoute>
-              <div className="flex flex-col h-screen font-poppins">
-                <Navbar />
-                <div className="flex flex-1 relative">
-                  <Sidebar />
-                  <main className="flex-1 ml-16 md:ml-0">
-                    <Routes>
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/crops" element={<CropListingPage />} />
-                      <Route path="/crop/:id" element={<CropDetailPage />} />
-                      <Route
-                        path="/qr-details/:id"
-                        element={<QrDetailsPopup />}
-                      />
-                      <Route path="/my-listing" element={<MyListing />} />
-                      <Route path="/my-payments" element={<Payments />} />
-                      <Route path="/my-contracts" element={<Contracts />} />
-                      <Route path="/list" element={<ListingForm />} />
-                      <Route path="/weather" element={<WeatherDashboard />} />
-                      <Route path="/crop-advisory" element={<Index />} />
-                      <Route path="/market-trends" element={<Index2 />} />
-                      <Route path="/trends" element={<Trends />} />
-                      <Route path="/market" element={<Market />} />
-                      <Route path="/insights" element={<Insights />} />
-                      <Route
-                        path="/crop/market/:cropId"
-                        element={<CropDetail />}
-                      />
-                      <Route
-                        path="/cold-storage"
-                        element={<ColdStoragePage />}
-                      />
-                      <Route path="/agriprice" element={<Agriprice />} />
-                      <Route path="/profile" element={<UserProfile />} />
-                      <Route path="/my-orders" element={<MyOrders />} />
-                      <Route
-                        path="/payment-process"
-                        element={<PaymentProcess />}
-                      />
-                      <Route path="/support" element={<Index_Bot />} />
-                    </Routes>
-                  </main>
-                </div>
-              </div>
+              <Layout>
+                <Dashboard />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/crops"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <CropListingPage />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/crop/:id"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <CropDetailPage />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/qr-details/:id"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <QrDetailsPopup />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/my-listing"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <MyListing />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/my-payments"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Payments />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/my-contracts"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Contracts />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/list"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <ListingForm />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/weather"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <WeatherDashboard />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/crop-advisory"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Index />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/market-trends"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Index2 />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/trends"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Trends />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/market"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Market />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/insights"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Insights />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/crop/market/:cropId"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <CropDetail />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/cold-storage"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <ColdStoragePage />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/agriprice"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Agriprice />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <UserProfile />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <MyOrders />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/my-orders"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <MyOrders />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/payment-process"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <PaymentProcess />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/support"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Index_Bot />
+              </Layout>
             </PrivateRoute>
           }
         />

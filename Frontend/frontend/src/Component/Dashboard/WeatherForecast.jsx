@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { OPENWEATHER_API_KEY } from "../../config/apiConfig";
 import {
   FaSun,
   FaCloud,
@@ -16,7 +18,7 @@ const WeatherForecast = () => {
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
-  const API_KEY = "3919f2231e07934b2048b0f97d3d5040";
+  const API_KEY = OPENWEATHER_API_KEY;
 
   const fetchWeather = async (lat, lon) => {
     try {

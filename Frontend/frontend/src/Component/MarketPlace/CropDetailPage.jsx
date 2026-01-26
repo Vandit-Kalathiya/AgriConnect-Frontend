@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { API_CONFIG } from "../../config/apiConfig";
 import {
   ArrowLeft,
   Loader,
@@ -61,7 +62,7 @@ const CropDetailPage = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:2527/listings/get/${id}`,
+        `${API_CONFIG.MARKET_ACCESS}/listings/get/${id}`,
         {
           withCredentials: true,
         }
@@ -96,7 +97,7 @@ const CropDetailPage = () => {
 
       const imagePromises = listing.images.map((image) =>
         axios
-          .get(`http://localhost:2527/image/${image.id}`, {
+          .get(`${API_CONFIG.MARKET_ACCESS}/image/${image.id}`, {
             withCredentials: true,
             responseType: "blob",
           })

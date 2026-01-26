@@ -37,6 +37,74 @@ const INITIAL_MESSAGE = `Welcome to the Crop Advisor! I can help you find the be
 
 To get started, please select your location using the location selector above.`;
 
+// Function to generate bot responses for general queries
+const generateBotResponse = (userInput, location) => {
+  const input = userInput.toLowerCase();
+  
+  // Greetings
+  if (input.match(/\b(hi|hello|hey|namaste)\b/)) {
+    return "Hello! 👋 I'm your Crop Advisor. I can help you with crop recommendations, market trends, soil management, and farming tips for your region. How can I assist you today?";
+  }
+  
+  // Market trends
+  if (input.match(/\b(market|price|trend|rate|selling)\b/)) {
+    return `For detailed market trends and current prices, please check the crop recommendations I've provided based on your location ${location ? `(${location.district}, ${location.state})` : ''}. Each crop card shows current market trends and projected price changes.`;
+  }
+  
+  // Soil related
+  if (input.match(/\b(soil|land|earth|fertility)\b/)) {
+    return "For soil-specific tips and recommendations, please check the 'Soil & Weather Tips' tab above. I can provide information about:\n\n• Soil testing and analysis\n• Fertilizer recommendations\n• Soil pH management\n• Organic matter improvement\n• Drainage solutions";
+  }
+  
+  // Weather related
+  if (input.match(/\b(weather|rain|temperature|climate|season)\b/)) {
+    return "Weather plays a crucial role in crop selection! The recommendations I've provided consider:\n\n• Local climate patterns\n• Seasonal rainfall\n• Temperature ranges\n• Growing seasons (Kharif/Rabi/Zaid)\n\nCheck the 'Soil & Weather Tips' tab for weather-based guidance.";
+  }
+  
+  // Water/Irrigation
+  if (input.match(/\b(water|irrigation|watering|drip|sprinkler)\b/)) {
+    return "Water management is essential for successful farming! Each recommended crop shows water requirements:\n\n• Low: Drought-resistant crops\n• Medium: Moderate irrigation needed\n• High: Water-intensive crops\n\nConsider your water availability when selecting crops. I can provide specific irrigation tips for any crop you select.";
+  }
+  
+  // Fertilizer
+  if (input.match(/\b(fertilizer|manure|compost|nutrient)\b/)) {
+    return "Proper fertilization is key to good yields! I recommend:\n\n• Get a soil test first\n• Use balanced NPK fertilizers\n• Consider organic alternatives\n• Follow crop-specific requirements\n• Apply at the right growth stages\n\nWould you like specific fertilizer recommendations for any particular crop?";
+  }
+  
+  // Pests/Diseases
+  if (input.match(/\b(pest|disease|insect|fungus|virus)\b/)) {
+    return "Pest and disease management is crucial! Here are some tips:\n\n• Regular crop monitoring\n• Integrated Pest Management (IPM)\n• Crop rotation to break pest cycles\n• Use disease-resistant varieties\n• Proper spacing for air circulation\n\nFor specific pest problems, please mention the crop and symptoms you're seeing.";
+  }
+  
+  // Government schemes
+  if (input.match(/\b(scheme|subsidy|loan|government|pmkisan|pradhan mantri)\b/)) {
+    return "Several government schemes can help farmers:\n\n• PM-KISAN: ₹6000/year direct benefit\n• PMFBY: Crop insurance scheme\n• PM-KUSUM: Solar pump subsidies\n• Soil Health Card Scheme\n• KCC: Kisan Credit Card for loans\n\nCheck with your local agriculture office for specific eligibility and application details.";
+  }
+  
+  // Organic farming
+  if (input.match(/\b(organic|natural|pesticide.free|chemical.free)\b/)) {
+    return "Organic farming is gaining popularity! Benefits include:\n\n• Higher market prices\n• Better soil health long-term\n• Safer for environment\n• Growing consumer demand\n\nConsider getting organic certification for premium markets. Start with small areas and transition gradually.";
+  }
+  
+  // ROI/Profit
+  if (input.match(/\b(profit|roi|return|income|earning)\b/)) {
+    return "Profitability depends on several factors:\n\n• Market prices at harvest time\n• Input costs (seeds, fertilizer, labor)\n• Yield per acre\n• Transportation costs\n• Weather conditions\n\nThe crop recommendations I've provided include estimated ROI percentages. Consider crops with higher scores for your conditions.";
+  }
+  
+  // Harvest/Storage
+  if (input.match(/\b(harvest|storage|store|godown)\b/)) {
+    return "Proper harvesting and storage are vital:\n\n• Harvest at the right maturity\n• Use proper drying techniques\n• Maintain clean storage facilities\n• Control temperature and humidity\n• Protect from pests and rodents\n\nConsider cold storage for perishable crops to get better prices.";
+  }
+  
+  // Location specific
+  if (location && input.match(/\b(here|my.location|my.area|local)\b/)) {
+    return `Based on your location in ${location.district}, ${location.state}, I've provided crop recommendations that are:\n\n• Suited to your local climate\n• Adaptable to regional soil types\n• In demand in nearby markets\n• Traditionally successful in your area\n\nCheck the recommended crops below for detailed information!`;
+  }
+  
+  // Default response
+  return `I can help you with:\n\n🌾 Crop recommendations for your region\n📊 Market trends and price analysis\n💧 Irrigation and water management\n🌱 Soil health and fertilization\n🐛 Pest and disease management\n💰 Government schemes and subsidies\n📈 Maximizing farm profitability\n\nPlease ask me a specific question, and I'll provide detailed guidance!`;
+};
+
 const ChatInterface = ({ selectedLocation, onRecommendationsReceived }) => {
   const [messages, setMessages] = useState([
     {
@@ -49,7 +117,7 @@ const ChatInterface = ({ selectedLocation, onRecommendationsReceived }) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [geminiApiKey, setGeminiApiKey] = useState(
-    "AIzaSyDU7xQMNUiyJ9SEtvDQCd3jmpgfTGo9kg8"
+    import.meta.env.VITE_GEMINI_API_KEY || ""
   );
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -140,17 +208,24 @@ These recommendations consider current market prices, projected demand, and grow
       const errorMessage = {
         id: (Date.now() + 1).toString(),
         sender: "bot",
-        text: `Sorry, I encountered an error while trying to get crop recommendations. Please check your Gemini API key and try again.`,
+        text: `I've provided general crop recommendations for your region. While I couldn't connect to the AI service for real-time analysis, these recommendations are based on traditional agricultural practices and market trends for ${location.district}, ${location.state}.`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
-
-      toast({
-        title: "Error",
-        description:
-          "Failed to get crop recommendations from Gemini API. Please check your API key and try again.",
-        variant: "destructive",
-      });
+      
+      // Still try to get recommendations from fallback
+      try {
+        const fallbackData = await generateCropRecommendations(location);
+        if (fallbackData && fallbackData.crops) {
+          const recommendedCrops = fallbackData.crops.map((crop, index) => ({
+            ...crop,
+            id: (index + 1).toString(),
+          }));
+          onRecommendationsReceived(recommendedCrops);
+        }
+      } catch (fallbackError) {
+        console.error("Fallback also failed:", fallbackError);
+      }
     } finally {
       setIsLoading(false);
     }

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
-import CropCard from "./CropCard";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getCurrentUser } from "../../../helper";
+import CropCard from "./CropCard";
 import Loader from "../Loader/Loader";
+import { API_CONFIG } from "../../config/apiConfig";
 
 export const MyListing = () => {
   const [listings, setListings] = useState([]);
@@ -13,12 +14,13 @@ export const MyListing = () => {
     const userContact = user.phoneNumber;
     try {
       const response = await axios.get(
-        `http://localhost:2527/listings/user/${userContact}`,
+        `${API_CONFIG.MARKET_ACCESS}/listings/user/${userContact}`,
         {
           withCredentials: true,
         }
       );
       setLoading(true);
+      console.log(response.data);
       setListings(response.data);
     } catch (error) {
       console.error("Error fetching listings:", error);

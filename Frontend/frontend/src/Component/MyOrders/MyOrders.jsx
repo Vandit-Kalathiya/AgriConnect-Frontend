@@ -9,10 +9,13 @@ import {
   FaSort,
   FaSortUp,
   FaSortDown,
+  FaStore,
+  FaShoppingBag,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getCurrentUser } from "../../../helper";
+import { API_CONFIG } from "../../config/apiConfig";
 import Loader from "../Loader/Loader";
 import OrderList from "./OrderList";
 import TrackingModal from "./TrackingModal";
@@ -29,6 +32,9 @@ const MyOrders = () => {
   const [error, setError] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
+  
+  // Role filter: 'buyer' or 'seller'
+  const [roleFilter, setRoleFilter] = useState("buyer");
 
   // Modal states
   const [showTrackingModal, setShowTrackingModal] = useState(false);
@@ -76,11 +82,11 @@ const MyOrders = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:2526/orders/u/${user.uniqueHexAddress}`,
+        `${API_CONFIG.CONTRACT_FARMING}/orders/u/${user.uniqueHexAddress}`,
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
-        }
+        },
       );
 
       const fetchedOrders = response.data;
@@ -90,7 +96,7 @@ const MyOrders = () => {
         fetchListingById(order.listingId).then((listing) => ({
           orderId: order.id,
           listing,
-        }))
+        })),
       );
 
       const listingsData = await Promise.all(listingPromises);
@@ -108,7 +114,7 @@ const MyOrders = () => {
                 orderId,
                 blobUrl,
               }))
-            : Promise.resolve({ orderId, blobUrl: null })
+            : Promise.resolve({ orderId, blobUrl: null }),
       );
 
       const imagesData = await Promise.all(imagePromises);
@@ -129,9 +135,12 @@ const MyOrders = () => {
 
   const fetchImage = async (imageId) => {
     try {
-      const res = await axios.get(`http://localhost:2527/image/${imageId}`, {
-        responseType: "blob",
-      });
+      const res = await axios.get(
+        `${API_CONFIG.MARKET_ACCESS}/image/${imageId}`,
+        {
+          responseType: "blob",
+        },
+      );
       return URL.createObjectURL(res.data);
     } catch (err) {
       console.error("Failed to fetch image:", err);
@@ -142,8 +151,8 @@ const MyOrders = () => {
   const fetchListingById = async (listingId) => {
     try {
       const response = await axios.get(
-        `http://localhost:2527/listings/get/${listingId}`,
-        { withCredentials: true }
+        `${API_CONFIG.MARKET_ACCESS}/listings/get/${listingId}`,
+        { withCredentials: true },
       );
       return response.data;
     } catch (err) {
@@ -160,6 +169,21 @@ const MyOrders = () => {
   const filteredAndSortedOrders = useMemo(() => {
     let filtered = [...orders];
 
+    // Role filter - FIRST filter by buyer/seller
+    if (currentUser) {
+      if (roleFilter === "buyer") {
+        // Show orders where user is the buyer (NOT the farmer)
+        filtered = filtered.filter(
+          (order) => order.farmerAddress !== currentUser.uniqueHexAddress
+        );
+      } else if (roleFilter === "seller") {
+        // Show orders where user is the farmer/seller
+        filtered = filtered.filter(
+          (order) => order.farmerAddress === currentUser.uniqueHexAddress
+        );
+      }
+    }
+
     // Tab filter
     switch (activeTab) {
       case "pending_payment":
@@ -172,12 +196,12 @@ const MyOrders = () => {
             "delivered",
             "return_requested",
             "return_confirmed",
-          ].includes(order.status)
+          ].includes(order.status),
         );
         break;
       case "completed":
         filtered = filtered.filter((order) =>
-          ["completed", "refunded"].includes(order.status)
+          ["completed", "refunded"].includes(order.status),
         );
         break;
       default:
@@ -205,24 +229,24 @@ const MyOrders = () => {
     // Date range filter
     if (dateRange.start) {
       filtered = filtered.filter(
-        (order) => new Date(order.createdDate) >= new Date(dateRange.start)
+        (order) => new Date(order.createdDate) >= new Date(dateRange.start),
       );
     }
     if (dateRange.end) {
       filtered = filtered.filter(
-        (order) => new Date(order.createdDate) <= new Date(dateRange.end)
+        (order) => new Date(order.createdDate) <= new Date(dateRange.end),
       );
     }
 
     // Price range filter
     if (priceRange.min) {
       filtered = filtered.filter(
-        (order) => order.amount >= parseFloat(priceRange.min)
+        (order) => order.amount >= parseFloat(priceRange.min),
       );
     }
     if (priceRange.max) {
       filtered = filtered.filter(
-        (order) => order.amount <= parseFloat(priceRange.max)
+        (order) => order.amount <= parseFloat(priceRange.max),
       );
     }
 
@@ -269,34 +293,64 @@ const MyOrders = () => {
     sortBy,
     sortOrder,
     listings,
+    roleFilter,
+    currentUser,
   ]);
 
-  // Calculate status counts
+  // Calculate status counts based on role filter
   const statusCounts = useMemo(() => {
-    const counts = { all: orders.length };
-    orders.forEach((order) => {
+    let roleFilteredOrders = orders;
+    
+    if (currentUser) {
+      if (roleFilter === "buyer") {
+        roleFilteredOrders = orders.filter(
+          (order) => order.farmerAddress !== currentUser.uniqueHexAddress
+        );
+      } else if (roleFilter === "seller") {
+        roleFilteredOrders = orders.filter(
+          (order) => order.farmerAddress === currentUser.uniqueHexAddress
+        );
+      }
+    }
+    
+    const counts = { all: roleFilteredOrders.length };
+    roleFilteredOrders.forEach((order) => {
       counts[order.status] = (counts[order.status] || 0) + 1;
     });
     return counts;
-  }, [orders]);
+  }, [orders, roleFilter, currentUser]);
 
-  // Get tab counts
+  // Get tab counts based on role filter
   const getTabCount = (tabKey) => {
+    let roleFilteredOrders = orders;
+    
+    if (currentUser) {
+      if (roleFilter === "buyer") {
+        roleFilteredOrders = orders.filter(
+          (order) => order.farmerAddress !== currentUser.uniqueHexAddress
+        );
+      } else if (roleFilter === "seller") {
+        roleFilteredOrders = orders.filter(
+          (order) => order.farmerAddress === currentUser.uniqueHexAddress
+        );
+      }
+    }
+    
     switch (tabKey) {
       case "pending_payment":
-        return orders.filter((o) => o.status === "created").length;
+        return roleFilteredOrders.filter((o) => o.status === "created").length;
       case "in_progress":
-        return orders.filter((o) =>
+        return roleFilteredOrders.filter((o) =>
           [
             "paid_pending_delivery",
             "delivered",
             "return_requested",
             "return_confirmed",
-          ].includes(o.status)
+          ].includes(o.status),
         ).length;
       case "completed":
-        return orders.filter((o) =>
-          ["completed", "refunded"].includes(o.status)
+        return roleFilteredOrders.filter((o) =>
+          ["completed", "refunded"].includes(o.status),
         ).length;
       default:
         return 0;
@@ -325,16 +379,16 @@ const MyOrders = () => {
     try {
       if (newStatus === "delivered") {
         await axios.post(
-          `http://localhost:2526/api/payments/confirm-delivery/${orderId}/${deliveryData.trackingNumber}`,
+          `${API_CONFIG.CONTRACT_FARMING}/api/payments/confirm-delivery/${orderId}/${deliveryData.trackingNumber}`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
         toast.success("Delivery confirmed successfully!");
       } else if (newStatus === "return_confirmed") {
         await axios.post(
-          `http://localhost:2526/api/payments/confirm-return/${orderId}`,
+          `${API_CONFIG.CONTRACT_FARMING}/api/payments/confirm-return/${orderId}`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
         toast.success("Return confirmed successfully!");
       }
@@ -354,9 +408,9 @@ const MyOrders = () => {
     setIsProcessingPayment(true);
     try {
       await axios.post(
-        `http://localhost:2526/api/payments/reject-delivery/${orderId}`,
+        `${API_CONFIG.CONTRACT_FARMING}/api/payments/reject-delivery/${orderId}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
       toast.success("Refund processed successfully!");
       fetchOrders();
@@ -406,8 +460,8 @@ const MyOrders = () => {
       }
 
       const finalRes = await axios.post(
-        `http://localhost:2526/api/payments/request-return/${order.id}/abcd`,
-        { withCredentials: true }
+        `${API_CONFIG.CONTRACT_FARMING}/api/payments/request-return/${order.id}/abcd`,
+        { withCredentials: true },
       );
       const res = finalRes.data;
       if (res.success) {
@@ -434,9 +488,9 @@ const MyOrders = () => {
     try {
       const order = orders.find((o) => o.id === selectedOrderId);
       const res = await axios.post(
-        `http://localhost:2526/api/payments/verify-delivery/${order.pdfHash}`,
+        `${API_CONFIG.CONTRACT_FARMING}/api/payments/verify-delivery/${order.pdfHash}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       if (res.status === 200) {
@@ -459,9 +513,9 @@ const MyOrders = () => {
     <div className="bg-gray-50 py-8 md:py-12 px-4 md:px-6 lg:px-8 ml-0 md:ml-20 mt-16 md:mt-20 min-h-screen">
       <div className="max-w-full md:max-w-6xl mx-auto">
         {/* Header with Enhanced Controls */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <h1 className="text-2xl md:text-3xl font-bold text-green-800 flex items-center">
-            <FaShoppingCart className="mr-3 text-green-600" /> My Orders
+            <FaShoppingCart className="mr-3 text-green-600" /> Orders
           </h1>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
@@ -497,6 +551,95 @@ const MyOrders = () => {
             </button>
           </div>
         </div>
+
+        {/* Role Filter Toggle - Buyer vs Seller */}
+        <div className="bg-white rounded-xl shadow-lg mb-4 p-2 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-sm text-gray-600 px-2">
+              <FaShoppingCart className="text-gray-400" />
+              <span className="hidden sm:inline font-medium">View as:</span>
+            </div>
+            <div className="flex bg-gray-100 rounded-lg p-1 gap-2">
+              <button
+                onClick={() => {
+                  setRoleFilter("buyer");
+                  setActiveTab("pending_payment");
+                }}
+                className={`flex items-center px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                  roleFilter === "buyer"
+                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md transform scale-105"
+                    : "text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <FaShoppingBag className="mr-2" size={16} />
+                <span>My Purchases</span>
+                <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-white/20 font-bold">
+                  {orders.filter(
+                    (o) => currentUser && o.farmerAddress !== currentUser.uniqueHexAddress
+                  ).length}
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  setRoleFilter("seller");
+                  setActiveTab("pending_payment");
+                }}
+                className={`flex items-center px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                  roleFilter === "seller"
+                    ? "bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md transform scale-105"
+                    : "text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <FaStore className="mr-2" size={16} />
+                <span>My Sales</span>
+                <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-white/20 font-bold">
+                  {orders.filter(
+                    (o) => currentUser && o.farmerAddress === currentUser.uniqueHexAddress
+                  ).length}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Context Banner */}
+        {!isLoading && orders.length > 0 && (
+          <div
+            className={`mb-6 p-4 rounded-lg border-l-4 ${
+              roleFilter === "buyer"
+                ? "bg-blue-50 border-blue-500"
+                : "bg-green-50 border-green-500"
+            }`}
+          >
+            <div className="flex items-center">
+              {roleFilter === "buyer" ? (
+                <>
+                  <FaShoppingBag className="text-blue-600 mr-3" size={20} />
+                  <div>
+                    <p className="text-sm font-semibold text-blue-800">
+                      Purchase Orders
+                    </p>
+                    <p className="text-xs text-blue-600 mt-0.5">
+                      Viewing products you've bought from farmers
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <FaStore className="text-green-600 mr-3" size={20} />
+                  <div>
+                    <p className="text-sm font-semibold text-green-800">
+                      Sales Orders
+                    </p>
+                    <p className="text-xs text-green-600 mt-0.5">
+                      Viewing products you've sold to buyers
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Advanced Filters Panel */}
         {showFilters && (
@@ -714,6 +857,7 @@ const MyOrders = () => {
               completedCount={getTabCount("completed")}
               handleFarmerAction={handleFarmerAction}
               fetchOrders={fetchOrders}
+              roleFilter={roleFilter}
               // Additional props for enhanced functionality
               hasActiveFilters={hasActiveFilters}
               totalOrders={orders.length}

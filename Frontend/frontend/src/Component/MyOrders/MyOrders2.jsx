@@ -19,17 +19,19 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getCurrentUser } from "../../../helper";
 import { XCircle, ThumbsUp } from "react-feather";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import Loader from "../Loader/Loader";
+import { API_CONFIG } from "../../config/apiConfig";
+import { useCursorPagination, buildPaginationParams } from "../../hooks/useCursorPagination";
+import PaginationControls from "../Common/PaginationControls";
+import LoadMoreButton from "../Common/LoadMoreButton";
 
 const MyOrders = () => {
-  const [orders, setOrders] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [listings, setListings] = useState({});
   const [images, setImages] = useState({});
   const [activeTab, setActiveTab] = useState("all");
-  const [error, setError] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [paginationMode, setPaginationMode] = useState("paginated"); // "paginated" or "loadMore"
   const navigate = useNavigate();
 
   // Filter states
@@ -40,6 +42,51 @@ const MyOrders = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState("desc");
+
+  // Fetch function for cursor pagination
+  const fetchOrdersPaginated = async (cursor = null, limit = 20) => {
+    try {
+      const user = currentUser || await getCurrentUser();
+      if (!user?.uniqueHexAddress) {
+        throw new Error("User not logged in");
+      }
+      
+      if (!currentUser) {
+        setCurrentUser(user);
+      }
+
+      const params = buildPaginationParams(cursor, limit, sortOrder === "desc" ? "DESC" : "ASC");
+      
+      const response = await axios.get(
+        `${API_CONFIG.CONTRACT_FARMING}/orders/u/${user.uniqueHexAddress}/paginated?${params}`,
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+
+      return response.data; // Returns { data: [...], metadata: {...} }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      throw error;
+    }
+  };
+
+  // Use cursor pagination hook
+  const {
+    data: orders,
+    metadata,
+    isLoading,
+    error,
+    loadFirstPage,
+    loadNextPage,
+    loadPrevPage,
+    loadMore,
+    refresh,
+    hasNextPage,
+    hasPrevPage,
+    currentPage,
+  } = useCursorPagination(fetchOrdersPaginated, 20);
 
   // Modal states
   const [showTrackingModal, setShowTrackingModal] = useState(false);
@@ -77,9 +124,12 @@ const MyOrders = () => {
 
   const fetchImage = async (imageId) => {
     try {
-      const res = await axios.get(`http://localhost:2527/image/${imageId}`, {
-        responseType: "blob",
-      });
+      const res = await axios.get(
+        `${API_CONFIG.MARKET_ACCESS}/image/${imageId}`,
+        {
+          responseType: "blob",
+        }
+      );
       return URL.createObjectURL(res.data);
     } catch (err) {
       console.error("Failed to fetch image:", err);
@@ -90,7 +140,7 @@ const MyOrders = () => {
   const fetchListingById = async (listingId) => {
     try {
       const response = await axios.get(
-        `http://localhost:2527/listings/get/${listingId}`,
+        `${API_CONFIG.MARKET_ACCESS}/listings/get/${listingId}`,
         { withCredentials: true }
       );
       return response.data;
@@ -100,31 +150,12 @@ const MyOrders = () => {
     }
   };
 
-  const fetchOrders = async () => {
-    setIsLoading(true);
-    setError(null);
+  // Fetch listings and images whenever orders change
+  useEffect(() => {
+    const fetchListingsAndImages = async () => {
+      if (orders.length === 0) return;
 
-    const user = await getCurrentUser();
-    if (!user || !user.id) {
-      setError("User not logged in or ID not found");
-      setIsLoading(false);
-      return;
-    }
-    setCurrentUser(user);
-
-    try {
-      const response = await axios.get(
-        `http://localhost:2526/orders/u/${user.uniqueHexAddress}`,
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        }
-      );
-
-      const fetchedOrders = response.data;
-      setOrders(fetchedOrders);
-
-      const listingPromises = fetchedOrders.map((order) =>
+      const listingPromises = orders.map((order) =>
         fetchListingById(order.listingId).then((listing) => ({
           orderId: order.id,
           listing,
@@ -156,17 +187,14 @@ const MyOrders = () => {
       }, {});
 
       setImages(newImages);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      setError(error.response?.data || "Failed to fetch orders.");
-      setOrders([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
 
+    fetchListingsAndImages();
+  }, [orders]);
+
+  // Load first page on mount
   useEffect(() => {
-    fetchOrders();
+    loadFirstPage();
   }, []);
 
   // Memoized filtered and sorted orders
@@ -429,14 +457,14 @@ const MyOrders = () => {
     try {
       if (newStatus === "delivered") {
         await axios.post(
-          `http://localhost:2526/api/payments/confirm-delivery/${pdfHash}/${trackingNumber}`,
+          `${API_CONFIG.CONTRACT_FARMING}/api/payments/confirm-delivery/${pdfHash}/${trackingNumber}`,
           { trackingNumber },
           { withCredentials: true }
         );
         toast.success("Delivery confirmed successfully!");
       } else if (newStatus === "return_confirmed") {
         await axios.post(
-          `http://localhost:2526/api/payments/confirm-return/${pdfHash}`,
+          `${API_CONFIG.CONTRACT_FARMING}/api/payments/confirm-return/${pdfHash}`,
           {},
           { withCredentials: true }
         );
@@ -445,7 +473,7 @@ const MyOrders = () => {
       setShowTrackingModal(false);
       setTrackingNumber("");
       setSelectedOrderId(null);
-      fetchOrders();
+      refresh(); // Refresh current page
     } catch (error) {
       console.error("Error updating order status:", error);
       toast.error("Failed to update order status");
@@ -455,12 +483,12 @@ const MyOrders = () => {
   const handleBuyerRefund = async (pdfHash) => {
     try {
       await axios.post(
-        `http://localhost:2526/api/payments/reject-delivery/${pdfHash}`,
+        `${API_CONFIG.CONTRACT_FARMING}/api/payments/reject-delivery/${pdfHash}`,
         {},
         { withCredentials: true }
       );
       toast.success("Refund processed successfully!");
-      fetchOrders();
+      refresh(); // Refresh current page
     } catch (error) {
       console.error("Error processing refund:", error);
       toast.error("Failed to process refund");
@@ -499,12 +527,12 @@ const MyOrders = () => {
     try {
       const order = orders.find((o) => o.id === selectedOrderId);
       await axios.post(
-        `http://localhost:2526/api/payments/request-return/${order.pdfHash}/abcd`,
+        `${API_CONFIG.CONTRACT_FARMING}/api/payments/request-return/${order.pdfHash}/abcd`,
         { withCredentials: true }
       );
       toast.success("Delivery rejection submitted successfully");
       handleCloseRejectModal();
-      fetchOrders();
+      refresh(); // Refresh current page
     } catch (error) {
       console.error("Error rejecting delivery:", error);
       toast.error("Failed to reject delivery");
@@ -520,7 +548,7 @@ const MyOrders = () => {
     try {
       const order = orders.find((o) => o.id === selectedOrderId);
       const res = await axios.post(
-        `http://localhost:2526/api/payments/verify-delivery/${order.pdfHash}`,
+        `${API_CONFIG.CONTRACT_FARMING}/api/payments/verify-delivery/${order.pdfHash}`,
         {},
         { withCredentials: true }
       );
@@ -532,7 +560,7 @@ const MyOrders = () => {
           setShowVerifyModal(false);
           setVerificationComplete(false);
           navigate("/my-payments");
-          fetchOrders();
+          refresh(); // Refresh current page
         }, 2500);
       }
     } catch (error) {
@@ -559,6 +587,31 @@ const MyOrders = () => {
             <FaShoppingCart className="mr-3 text-green-600" /> My Orders
           </h1>
           <div className="flex flex-col sm:flex-row gap-3">
+            {/* Pagination Mode Toggle */}
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setPaginationMode("paginated")}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  paginationMode === "paginated"
+                    ? "bg-green-600 text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-200"
+                }`}
+                title="Navigate with Previous/Next buttons"
+              >
+                Pages
+              </button>
+              <button
+                onClick={() => setPaginationMode("loadMore")}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  paginationMode === "loadMore"
+                    ? "bg-green-600 text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-200"
+                }`}
+                title="Load more items infinitely"
+              >
+                Load More
+              </button>
+            </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center px-4 py-2 rounded-lg border transition-all duration-300 ${
@@ -766,9 +819,9 @@ const MyOrders = () => {
           <div className="text-center py-12">
             <FaShoppingCart className="text-red-500 text-5xl mx-auto mb-4 opacity-50" />
             <h3 className="text-xl font-semibold text-red-700 mb-2">Error</h3>
-            <p className="text-md text-gray-600 max-w-md mx-auto">{error}</p>
+            <p className="text-md text-gray-600 max-w-md mx-auto">{error?.message || error}</p>
             <button
-              onClick={fetchOrders}
+              onClick={loadFirstPage}
               className="mt-4 bg-green-600 text-white py-2 px-4 rounded-full hover:bg-green-700 transition-all"
             >
               Retry
@@ -1014,6 +1067,33 @@ const MyOrders = () => {
                     );
                   })}
                 </ul>
+              )}
+
+              {/* Pagination Controls */}
+              {filteredAndSortedOrders.length > 0 && paginationMode === "paginated" && (
+                <PaginationControls
+                  hasNext={hasNextPage}
+                  hasPrev={hasPrevPage}
+                  onNext={loadNextPage}
+                  onPrev={loadPrevPage}
+                  onRefresh={refresh}
+                  isLoading={isLoading}
+                  currentPage={currentPage}
+                  returnedCount={metadata.returnedCount || orders.length}
+                  pageSize={metadata.pageSize || 20}
+                  color="green"
+                />
+              )}
+
+              {/* Load More Button */}
+              {filteredAndSortedOrders.length > 0 && paginationMode === "loadMore" && (
+                <LoadMoreButton
+                  onLoadMore={loadMore}
+                  hasMore={hasNextPage}
+                  isLoading={isLoading}
+                  color="green"
+                  loadedCount={orders.length}
+                />
               )}
             </div>
           </>

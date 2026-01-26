@@ -9,44 +9,69 @@ import {
   FaEye,
 } from "react-icons/fa";
 import { getCurrentUser } from "../../../helper";
+import { API_CONFIG } from "../../config/apiConfig";
 import { toast } from "react-toastify";
-import Loader from "../Loader/Loader"
+import Loader from "../Loader/Loader";
+import { useCursorPagination, buildPaginationParams } from "../../hooks/useCursorPagination";
+import PaginationControls from "../Common/PaginationControls";
+import LoadMoreButton from "../Common/LoadMoreButton";
 
 const Contracts = () => {
   const [viewMode, setViewMode] = useState("table");
   const [sortField, setSortField] = useState("createDate");
   const [sortOrder, setSortOrder] = useState("desc"); // Default to newest first
   const [filterStatus, setFilterStatus] = useState("All");
-  const [contracts, setContracts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedContract, setSelectedContract] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [paginationMode, setPaginationMode] = useState("paginated");
+  const [currentUser, setCurrentUser] = useState(null);
 
-  const fetchContracts = async () => {
-    setLoading(true);
+  // Fetch function for cursor pagination
+  const fetchContractsPaginated = async (cursor = null, limit = 20) => {
     try {
-      const user = await getCurrentUser();
-      if (!user) {
-        setLoading(false);
-        return;
+      const user = currentUser || await getCurrentUser();
+      if (!user?.uniqueHexAddress) {
+        throw new Error("User not logged in");
       }
+
+      if (!currentUser) {
+        setCurrentUser(user);
+      }
+
+      const params = buildPaginationParams(cursor, limit, sortOrder === "desc" ? "DESC" : "ASC");
+      
       const response = await axios.get(
-        `http://localhost:2526/user/agreements/${user.uniqueHexAddress}`,
+        `${API_CONFIG.CONTRACT_FARMING}/user/agreements/${user.uniqueHexAddress}/paginated?${params}`,
         { withCredentials: true }
       );
-      console.log("Contracts: ", response.data);
-      setContracts(response.data);
+
+      return response.data; // Returns { data: [...], metadata: {...} }
     } catch (error) {
       console.error("Error fetching contracts:", error);
-      toast.error("Failed to load contracts. Please try again later.");
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
 
+  // Use cursor pagination hook
+  const {
+    data: contracts,
+    metadata,
+    isLoading: loading,
+    error: paginationError,
+    loadFirstPage,
+    loadNextPage,
+    loadPrevPage,
+    loadMore,
+    refresh,
+    hasNextPage,
+    hasPrevPage,
+    currentPage,
+  } = useCursorPagination(fetchContractsPaginated, 20);
+
+  // Load first page on mount
   useEffect(() => {
-    fetchContracts();
+    loadFirstPage();
   }, []);
 
   const sortContracts = (data) => {
@@ -303,6 +328,32 @@ const Contracts = () => {
                 <option value="Completed">Completed</option>
                 <option value="Expired">Expired</option>
               </select>
+              
+              {/* Pagination Mode Toggle */}
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setPaginationMode("paginated")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    paginationMode === "paginated"
+                      ? "bg-jewel-600 text-white shadow-md"
+                      : "text-gray-600 hover:bg-gray-200"
+                  }`}
+                  title="Navigate with Previous/Next buttons"
+                >
+                  Pages
+                </button>
+                <button
+                  onClick={() => setPaginationMode("loadMore")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    paginationMode === "loadMore"
+                      ? "bg-jewel-600 text-white shadow-md"
+                      : "text-gray-600 hover:bg-gray-200"
+                  }`}
+                  title="Load more items infinitely"
+                >
+                  Load More
+                </button>
+              </div>
             </div>
 
             <div className="w-full md:w-64">
@@ -335,7 +386,7 @@ const Contracts = () => {
           <div className="text-sm text-gray-600">
             {loading
               ? "Loading contracts..."
-              : `Showing ${sortedAndFilteredContracts.length} of ${contracts.length} contracts`}
+              : `Showing ${sortedAndFilteredContracts.length} of ${metadata.returnedCount || contracts.length} contracts (Page ${currentPage})`}
           </div>
         </div>
 
@@ -343,7 +394,35 @@ const Contracts = () => {
         <div className="bg-white rounded-lg shadow-md overflow-hidden min-h-[400px]">
           {loading ? (
             <div className="flex items-center justify-center h-64">
-               <Loader />
+              <Loader />
+            </div>
+          ) : paginationError ? (
+            <div className="flex flex-col items-center justify-center h-64 p-6 text-center">
+              <div className="text-red-400 mb-2">
+                <svg
+                  className="w-16 h-16 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-medium text-red-700">
+                Failed to load contracts
+              </h3>
+              <p className="text-red-600 mt-1">{paginationError?.message || paginationError}</p>
+              <button
+                onClick={loadFirstPage}
+                className="mt-4 px-4 py-2 bg-jewel-600 text-white rounded-md hover:bg-jewel-700 transition-colors"
+              >
+                Retry
+              </button>
             </div>
           ) : sortedAndFilteredContracts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 p-6 text-center">
@@ -521,6 +600,34 @@ const Contracts = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {!loading && sortedAndFilteredContracts.length > 0 && (
+            <div className="px-6 pb-6">
+              {paginationMode === "paginated" ? (
+                <PaginationControls
+                  hasNext={hasNextPage}
+                  hasPrev={hasPrevPage}
+                  onNext={loadNextPage}
+                  onPrev={loadPrevPage}
+                  onRefresh={refresh}
+                  isLoading={loading}
+                  currentPage={currentPage}
+                  returnedCount={metadata.returnedCount || contracts.length}
+                  pageSize={metadata.pageSize || 20}
+                  color="blue"
+                />
+              ) : (
+                <LoadMoreButton
+                  onLoadMore={loadMore}
+                  hasMore={hasNextPage}
+                  isLoading={loading}
+                  color="blue"
+                  loadedCount={contracts.length}
+                />
+              )}
             </div>
           )}
         </div>
