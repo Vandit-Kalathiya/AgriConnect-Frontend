@@ -1,0 +1,247 @@
+@import "tailwindcss";
+
+@theme {
+  --color-jewel-50: #f3faf4;
+  --color-jewel-100: #e3f5e7;
+  --color-jewel-200: #c8ead1;
+  --color-jewel-300: #9cd9ac;
+  --color-jewel-400: #69bf80;
+  --color-jewel-500: #45a25e;
+  --color-jewel-600: #34854a;
+  --color-jewel-700: #2e6f40;
+  --color-jewel-800: #275434;
+  --color-jewel-900: #21462c;
+  --color-jewel-950: #0e2515;
+
+  --font-poppins: "Poppins", sans-serif;
+
+  /* Container settings (equivalent to container in v3) */
+  --container-padding: 2rem;
+  --container-max-width-2xl: 1400px;
+
+  /* Font families */
+  --font-sans: "Inter var", sans-serif;
+  --font-display: "SF Pro Display", "Inter var", sans-serif;
+
+  /* Custom colors */
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* Border radius */
+  --radius: 0.5rem; /* Base radius variable */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  /* Keyframes */
+  --keyframes-accordion-down: {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  --keyframes-accordion-up: {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+  --keyframes-fade-in: {
+    "0%" {
+      opacity: 0;
+    }
+    "100%" {
+      opacity: 1;
+    }
+  }
+  --keyframes-fade-up: {
+    "0%" {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    "100%" {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  --keyframes-pulse-slow: {
+    "0%, 100%" {
+      opacity: 1;
+    }
+    "50%" {
+      opacity: 0.8;
+    }
+  }
+  --keyframes-float: {
+    "0%, 100%" {
+      transform: translateY(0);
+    }
+    "50%" {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Animations */
+  --animation-accordion-down: accordion-down 0.2s ease-out;
+  --animation-accordion-up: accordion-up 0.2s ease-out;
+  --animation-fade-in: fade-in 0.5s ease-out;
+  --animation-fade-up: fade-up 0.5s ease-out;
+  --animation-pulse-slow: pulse-slow 4s ease-in-out infinite;
+  --animation-float: float 6s ease-in-out infinite;
+
+  /* Backdrop blur */
+  --backdrop-blur-xs: 2px;
+}
+
+/* Tailwind doesn't support custom animations out of the box, so add these to your CSS */
+@keyframes spin-leaf {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes spin-leaf-reverse {
+  0% {
+    transform: rotate(360deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(0.8);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+.animate-spin-leaf {
+  animation: spin-leaf infinite linear;
+}
+
+.animate-spin-leaf-reverse {
+  animation: spin-leaf-reverse infinite linear;
+}
+
+.map-container {
+  width: 100%;
+  height: 500px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .map-container {
+    height: 600px;
+  }
+}
+@media (min-width: 1024px) {
+  .map-container {
+    height: 700px;
+  }
+}
+.marker {
+  width: 24px;
+  height: 24px;
+  background-color: #4caf50;
+  border-radius: 50%;
+  border: 2px solid white;
+  cursor: pointer;
+}
+.marker:hover {
+  background-color: #45a049;
+}
+.popup {
+  padding: 16px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 300px;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Custom scrollbar styles for sidebar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(69, 162, 94, 0.3);
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(69, 162, 94, 0.5);
+}
+
+/* Smooth scroll behavior */
+.scrollbar-thin {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced backdrop blur support */
+@supports (backdrop-filter: blur(12px)) {
+  .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* Fallback for browsers that don't support backdrop-filter */
+@supports not (backdrop-filter: blur(12px)) {
+  .backdrop-blur-md {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+}
