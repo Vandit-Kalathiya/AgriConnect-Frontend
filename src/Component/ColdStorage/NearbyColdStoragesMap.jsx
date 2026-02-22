@@ -14,10 +14,9 @@
 // import { MdLocationOn } from "react-icons/md";
 // import axios from "axios";
 
-// const MAPBOX_API_KEY =
-//   "pk.eyJ1IjoidmFuZGl0MTgiLCJhIjoiY204MDk3eWt4MHZlNjJqcjZma2xrcnVhciJ9.0tAvX_Ii5qtbAGDiyxfT_w";
+// const MAPBOX_API_KEY = import.meta.env.VITE_MAPBOX_API_KEY;
 // const CUSTOM_API_URL = "http://localhost:2529/coldStorage/nearby/d/s";
-// const GOOGLE_MAPS_API_KEY = "AIzaSyBipDUAGdtYGXbH5NyqYLnvI9TopPmfP1M";
+// const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 // const NearbyColdStoragesMap = ({
 //   liveLocation,
@@ -402,10 +401,9 @@ import { BsListUl } from "react-icons/bs";
 import { AiOutlineClose } from "react-icons/ai";
 import axios from "axios";
 
-const MAPBOX_API_KEY =
-  "pk.eyJ1IjoidmFuZGl0MTgiLCJhIjoiY204MDk3eWt4MHZlNjJqcjZma2xrcnVhciJ9.0tAvX_Ii5qtbAGDiyxfT_w";
+const MAPBOX_API_KEY = import.meta.env.VITE_MAPBOX_API_KEY;
 const CUSTOM_API_URL = "http://localhost:2529/coldStorage/nearby/d/s";
-const GOOGLE_MAPS_API_KEY = "AIzaSyBipDUAGdtYGXbH5NyqYLnvI9TopPmfP1M";
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const NearbyColdStoragesMap = ({
   liveLocation,
