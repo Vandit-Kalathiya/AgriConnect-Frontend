@@ -400,9 +400,10 @@ import { BiCurrentLocation } from "react-icons/bi";
 import { BsListUl } from "react-icons/bs";
 import { AiOutlineClose } from "react-icons/ai";
 import axios from "axios";
+import { API_CONFIG } from "../../config/apiConfig";
 
 const MAPBOX_API_KEY = import.meta.env.VITE_MAPBOX_API_KEY;
-const CUSTOM_API_URL = "http://localhost:2529/coldStorage/nearby/d/s";
+const CUSTOM_API_URL = `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/nearby/d/s`;
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const NearbyColdStoragesMap = ({

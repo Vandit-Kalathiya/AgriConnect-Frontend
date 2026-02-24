@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { API_CONFIG } from './src/config/apiConfig.js';
 
-export const BASE_URL = "http://localhost:2525";
+export const BASE_URL = API_CONFIG.MAIN_BACKEND;
 
 // Function to get the username from the token
 export const getUsernameFromToken = () => {

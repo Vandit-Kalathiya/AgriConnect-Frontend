@@ -1530,6 +1530,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios"; // Import axios for API calls
 import { getCurrentUser } from "../../../helper";
 import { Upload, FileText, CheckCircle } from "lucide-react";
+import { API_CONFIG } from "../../config/apiConfig";
 
 export const CropContractAgreement = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -1646,7 +1647,7 @@ export const CropContractAgreement = () => {
   const fetchListingById = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:2527/listings/get/${listingId}`,
+        `${API_CONFIG.MARKET_ACCESS}/listings/get/${listingId}`,
         {
           withCredentials: true,
         },
@@ -1709,7 +1710,7 @@ export const CropContractAgreement = () => {
   const fetchFarmerDetails = async (farmerContact) => {
     try {
       const response = await axios.get(
-        `http://localhost:2525/users/${farmerContact}`,
+        `${API_CONFIG.MAIN_BACKEND}/users/${farmerContact}`,
         {
           withCredentials: true,
         },
@@ -1806,7 +1807,7 @@ export const CropContractAgreement = () => {
     try {
       // Step 1: Save the contract
       const saveResponse = await axios.post(
-        "http://localhost:2526/agreements/save",
+        `${API_CONFIG.CONTRACT_FARMING}/agreements/save`,
         submitData,
         {
           headers: {
@@ -1825,7 +1826,7 @@ export const CropContractAgreement = () => {
       }
 
       const fetchResponse = await axios.get(
-        `http://localhost:2526/agreements/get/${agreementId}`,
+        `${API_CONFIG.CONTRACT_FARMING}/agreements/get/${agreementId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -1848,7 +1849,7 @@ export const CropContractAgreement = () => {
         additionalNotes: fetchedAgreementDetails.additionalNotes,
       };
 
-      const response = await fetch("http://localhost:2529/contracts/generate", {
+      const response = await fetch(`${API_CONFIG.GENERATE_AGREEMENT}/contracts/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1909,12 +1910,10 @@ export const CropContractAgreement = () => {
 
     const uploadData = new FormData();
     uploadData.append("file", contractFile);
-    uploadData.append("farmerAddress", far.uniqueHexAddress);
-    uploadData.append("buyerAddress", buy.uniqueHexAddress);
 
     try {
       const response = await axios.post(
-        "http://localhost:2526/api/agreements/upload",
+        `${API_CONFIG.CONTRACT_FARMING}/upload/${far.uniqueHexAddress}/${buy.uniqueHexAddress}`,
         uploadData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -2906,6 +2905,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios"; // Import axios for API calls
 import { getCurrentUser } from "../../../helper";
 import { Upload, FileText, CheckCircle } from "lucide-react";
+import { API_CONFIG } from "../../config/apiConfig";
 
 export const CropContractAgreement = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -3024,7 +3024,7 @@ export const CropContractAgreement = () => {
   const fetchListingById = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:2527/listings/get/${listingId}`,
+        `${API_CONFIG.MARKET_ACCESS}/listings/get/${listingId}`,
         {
           withCredentials: true,
         },
@@ -3088,7 +3088,7 @@ export const CropContractAgreement = () => {
   const fetchFarmerDetails = async (farmerContact) => {
     try {
       const response = await axios.get(
-        `http://localhost:2525/users/${farmerContact}`,
+        `${API_CONFIG.MAIN_BACKEND}/users/${farmerContact}`,
         {
           withCredentials: true,
         },
@@ -3185,7 +3185,7 @@ export const CropContractAgreement = () => {
     try {
       // Step 1: Save the contract
       const saveResponse = await axios.post(
-        "http://localhost:2526/agreements/save",
+        `${API_CONFIG.CONTRACT_FARMING}/agreements/save`,
         submitData,
         {
           headers: {
@@ -3204,7 +3204,7 @@ export const CropContractAgreement = () => {
       }
 
       const fetchResponse = await axios.get(
-        `http://localhost:2526/agreements/get/${agreementId}`,
+        `${API_CONFIG.CONTRACT_FARMING}/agreements/get/${agreementId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -3227,7 +3227,7 @@ export const CropContractAgreement = () => {
         additionalNotes: fetchedAgreementDetails.additionalNotes,
       };
 
-      const response = await fetch("http://localhost:2529/contracts/generate", {
+      const response = await fetch(`${API_CONFIG.GENERATE_AGREEMENT}/contracts/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3288,12 +3288,10 @@ export const CropContractAgreement = () => {
 
     const uploadData = new FormData();
     uploadData.append("file", contractFile);
-    uploadData.append("farmerAddress", far.uniqueHexAddress);
-    uploadData.append("buyerAddress", buy.uniqueHexAddress);
 
     try {
       const response = await axios.post(
-        "http://localhost:2526/api/agreements/upload",
+        `${API_CONFIG.CONTRACT_FARMING}/upload/${far.uniqueHexAddress}/${buy.uniqueHexAddress}`,
         uploadData,
         {
           headers: { "Content-Type": "multipart/form-data" },

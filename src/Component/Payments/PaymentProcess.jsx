@@ -160,7 +160,7 @@ const PaymentProcess = () => {
               }
               setPaymentCompleted(true);
               toast.success(verifyData.message);
-              window.location.href = "http://localhost:5000/my-orders";
+              window.location.href = `${import.meta.env.VITE_APP_URL || 'http://localhost:5000'}/my-orders`;
             } else {
               toast.error("Payment verification failed.");
             }
