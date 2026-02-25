@@ -11,6 +11,7 @@ import Payments from "./Component/Payments/Payments";
 import Contracts from "./Component/MyContracts/MyContracts";
 import { MantineProvider } from "@mantine/core";
 import ListingForm from "./Component/ListProductForm/ListingForm";
+import UpdateListingForm from "./Component/ListProductForm/UpdateListingForm";
 import WeatherDashboard from "./Component/Weather/WeatherDashboard";
 import UserProfile from "./Component/UserProfile/UserProfile";
 import PaymentProcess from "./Component/Payments/PaymentProcess";
@@ -34,7 +35,7 @@ import CropDetail from "./Component/MarketTrends/Pages/CropDetail";
 const Layout = ({ children }) => (
   <div className="flex flex-col h-screen font-poppins">
     <Navbar />
-    <div className="flex flex-1 relative">
+    <div className="flex flex-1 relative -mt-2">
       <Sidebar />
       <main className="flex-1 ml-16 md:ml-0">{children}</main>
     </div>
@@ -146,6 +147,16 @@ function App() {
             <PrivateRoute>
               <Layout>
                 <ListingForm />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/update-listing/:id"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <UpdateListingForm />
               </Layout>
             </PrivateRoute>
           }

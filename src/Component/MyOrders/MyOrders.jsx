@@ -510,7 +510,7 @@ const MyOrders = () => {
   };
 
   return (
-    <div className="bg-gray-50 py-8 md:py-12 px-4 md:px-6 lg:px-8 ml-0 md:ml-20 mt-16 md:mt-20 min-h-screen">
+    <div className="bg-gray-50 py-8 md:py-12 px-4 md:px-6 lg:px-8 ml-0 md:ml-20 mt-16 md:mt-18 min-h-screen">
       <div className="max-w-full md:max-w-6xl mx-auto">
         {/* Header with Enhanced Controls */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">

@@ -1,746 +1,1094 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import leafImg from "../../assets/leaf.png";
 import HeroImg from "../../assets/2.png";
-import { useNavigate } from "react-router-dom";
 import ProduceList from "../../assets/process1.jpeg";
 import ConnectWith from "../../assets/process2.jpeg";
 import SecurePayment from "../../assets/process3.jpeg";
+import { useNavigate } from "react-router-dom";
 import { getTokenFromCookie } from "../../../helper";
+import { motion, useInView, useAnimation } from "framer-motion";
+import {
+  ShoppingBag,
+  TrendingUp,
+  Leaf,
+  Warehouse,
+  CloudSun,
+  FileText,
+  Shield,
+  Bot,
+  QrCode,
+  ArrowRight,
+  CheckCircle2,
+  Star,
+  Users,
+  BarChart3,
+  MapPin,
+  Phone,
+  Mail,
+  ChevronRight,
+  Play,
+  Sparkles,
+  Zap,
+  Globe,
+  Award,
+  HeartHandshake,
+} from "lucide-react";
 
+/* ─────────────── tiny helpers ─────────────── */
+const FadeIn = ({ children, delay = 0, direction = "up", className = "" }) => {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const y = direction === "up" ? 40 : direction === "down" ? -40 : 0;
+  const x = direction === "left" ? 40 : direction === "right" ? -40 : 0;
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y, x }}
+      animate={inView ? { opacity: 1, y: 0, x: 0 } : {}}
+      transition={{ duration: 0.6, delay, ease: "easeOut" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const AnimatedCounter = ({ target, suffix = "", prefix = "" }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
+  useEffect(() => {
+    if (!inView) return;
+    const num = parseInt(target.replace(/[^0-9]/g, ""));
+    let start = 0;
+    const step = Math.ceil(num / 60);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= num) { setCount(num); clearInterval(timer); }
+      else setCount(start);
+    }, 25);
+    return () => clearInterval(timer);
+  }, [inView, target]);
+  return (
+    <span ref={ref}>
+      {prefix}{count.toLocaleString("en-IN")}{suffix}
+    </span>
+  );
+};
+
+/* ─────────────── data ─────────────── */
+const NAV_LINKS = [
+  { label: "Features",        href: "#features" },
+  { label: "How It Works",    href: "#how-it-works" },
+  { label: "Crop Advisory",   href: "/crop-advisory", route: true },
+  { label: "Market Trends",   href: "/market-trends", route: true },
+  { label: "Success Stories", href: "#success-stories" },
+];
+
+const STATS = [
+  { value: "10000", suffix: "+", prefix: "", label: "Active Farmers", icon: Users },
+  { value: "1000", suffix: "+", prefix: "", label: "Verified Buyers", icon: ShoppingBag },
+  { value: "10", suffix: "Cr+", prefix: "₹", label: "Transactions", icon: TrendingUp },
+  { value: "22", suffix: "", prefix: "", label: "States Covered", icon: Globe },
+];
+
+const FEATURES = [
+  {
+    icon: ShoppingBag,
+    title: "Direct Marketplace",
+    desc: "List your crops and connect directly with verified buyers across India. No middlemen — you keep more of every rupee.",
+    color: "green",
+    badge: "Core Feature",
+  },
+  {
+    icon: Shield,
+    title: "Escrow Payments",
+    desc: "Funds are held securely until delivery is confirmed. Both farmers and buyers are protected every single transaction.",
+    color: "blue",
+    badge: "Secure",
+  },
+  {
+    icon: FileText,
+    title: "Smart Contracts",
+    desc: "Digitally signed, blockchain-verified contracts prevent disputes and hold all parties legally accountable.",
+    color: "purple",
+    badge: "Verified",
+  },
+  {
+    icon: TrendingUp,
+    title: "AI Price Engine",
+    desc: "Our AI analyses real-time mandi data, seasonal trends, and demand signals to suggest the perfect selling price.",
+    color: "orange",
+    badge: "AI Powered",
+  },
+  {
+    icon: CloudSun,
+    title: "Weather Intelligence",
+    desc: "Hyper-local forecasts, rain alerts, and crop-specific weather advisories to protect your harvest before it's too late.",
+    color: "cyan",
+    badge: "Real-time",
+  },
+  {
+    icon: Leaf,
+    title: "Crop Advisory Bot",
+    desc: "AI-powered chatbot gives personalised crop recommendations based on your location, soil type, and current season.",
+    color: "emerald",
+    badge: "AI Advisory",
+  },
+  {
+    icon: Warehouse,
+    title: "Cold Storage Finder",
+    desc: "Locate nearby certified cold storage facilities on a live map, check availability, and book in seconds.",
+    color: "teal",
+    badge: "New",
+  },
+  {
+    icon: BarChart3,
+    title: "Market Trends",
+    desc: "Live mandi prices, historical charts, and forecast trends for 200+ crops so you always know the right time to sell.",
+    color: "indigo",
+    badge: "Live Data",
+  },
+  {
+    icon: QrCode,
+    title: "QR Crop Tracking",
+    desc: "Generate QR codes for every batch. Buyers can instantly verify crop origin, quality certifications, and harvest details.",
+    color: "rose",
+    badge: "Traceability",
+  },
+];
+
+const STEPS = [
+  {
+    number: "01",
+    title: "List Your Produce",
+    desc: "Add crop details, photos, and quantity. Our AI instantly suggests the best market price based on live mandi data.",
+    img: ProduceList,
+    color: "from-green-50 to-green-100",
+    iconColor: "bg-green-500",
+  },
+  {
+    number: "02",
+    title: "Connect with Buyers",
+    desc: "Receive direct offers from verified buyers across India. Negotiate, chat, and finalise deals without any middlemen.",
+    img: ConnectWith,
+    color: "from-blue-50 to-blue-100",
+    iconColor: "bg-blue-500",
+  },
+  {
+    number: "03",
+    title: "Get Paid Securely",
+    desc: "Funds are held in escrow and released instantly on delivery confirmation. Signed contracts protect both parties.",
+    img: SecurePayment,
+    color: "from-purple-50 to-purple-100",
+    iconColor: "bg-purple-500",
+  },
+];
+
+const FOR_USERS = [
+  {
+    role: "For Farmers",
+    emoji: "🌾",
+    gradient: "from-green-600 to-emerald-500",
+    light: "bg-green-50",
+    accent: "text-green-700",
+    border: "border-green-200",
+    points: [
+      "Get fair prices — no middlemen cutting your profits",
+      "AI-suggested pricing based on live mandi rates",
+      "Secure escrow payments — you always get paid",
+      "Digital smart contracts for every deal",
+      "Weather alerts and personalised crop advisories",
+      "Find and book cold storage near your farm",
+      "QR code traceability to prove crop quality",
+    ],
+  },
+  {
+    role: "For Buyers",
+    emoji: "🏪",
+    gradient: "from-blue-600 to-indigo-500",
+    light: "bg-blue-50",
+    accent: "text-blue-700",
+    border: "border-blue-200",
+    points: [
+      "Source fresh produce directly from verified farmers",
+      "Transparent pricing with live market comparison",
+      "Secure transactions with escrow protection",
+      "Verified contracts — zero fraud, zero disputes",
+      "QR scan to verify crop origin and quality",
+      "Real-time market trend insights for smart buying",
+      "Dedicated support via KisanMitra helpdesk",
+    ],
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    name: "Rajesh Kumar",
+    location: "Punjab",
+    avatar: "RK",
+    rating: 5,
+    text: "AgriConnect helped me increase profits by 35% by connecting me directly with buyers. The AI price predictions saved me from selling my wheat at rock-bottom rates.",
+  },
+  {
+    name: "Sunita Devi",
+    location: "Maharashtra",
+    avatar: "SD",
+    rating: 5,
+    text: "I used to depend on middlemen who gave me unfair prices. Now I negotiate directly with buyers and get paid immediately through the secure payment system.",
+  },
+  {
+    name: "Prakash Singh",
+    location: "Uttar Pradesh",
+    avatar: "PS",
+    rating: 5,
+    text: "The weather alerts and AI crop advisories have been invaluable. I've reduced crop losses by 40% thanks to the timely, location-specific information.",
+  },
+  {
+    name: "Anita Patel",
+    location: "Gujarat",
+    avatar: "AP",
+    rating: 5,
+    text: "Finding cold storage used to be a nightmare. The map feature helped me locate a facility 5 km from my farm and book it instantly. Game changer!",
+  },
+];
+
+const PLATFORM_HIGHLIGHTS = [
+  { icon: Sparkles, text: "AI-powered crop & price intelligence" },
+  { icon: Zap, text: "Real-time market data for 200+ crops" },
+  { icon: Award, text: "Blockchain-verified smart contracts" },
+  { icon: HeartHandshake, text: "24/7 KisanMitra support bot" },
+];
+
+const COLOR_MAP = {
+  green: { bg: "bg-green-100", text: "text-green-600", hover: "group-hover:bg-green-600", ring: "ring-green-200", badge: "bg-green-100 text-green-700" },
+  blue: { bg: "bg-blue-100", text: "text-blue-600", hover: "group-hover:bg-blue-600", ring: "ring-blue-200", badge: "bg-blue-100 text-blue-700" },
+  purple: { bg: "bg-purple-100", text: "text-purple-600", hover: "group-hover:bg-purple-600", ring: "ring-purple-200", badge: "bg-purple-100 text-purple-700" },
+  orange: { bg: "bg-orange-100", text: "text-orange-600", hover: "group-hover:bg-orange-600", ring: "ring-orange-200", badge: "bg-orange-100 text-orange-700" },
+  cyan: { bg: "bg-cyan-100", text: "text-cyan-600", hover: "group-hover:bg-cyan-600", ring: "ring-cyan-200", badge: "bg-cyan-100 text-cyan-700" },
+  emerald: { bg: "bg-emerald-100", text: "text-emerald-600", hover: "group-hover:bg-emerald-600", ring: "ring-emerald-200", badge: "bg-emerald-100 text-emerald-700" },
+  teal: { bg: "bg-teal-100", text: "text-teal-600", hover: "group-hover:bg-teal-600", ring: "ring-teal-200", badge: "bg-teal-100 text-teal-700" },
+  indigo: { bg: "bg-indigo-100", text: "text-indigo-600", hover: "group-hover:bg-indigo-600", ring: "ring-indigo-200", badge: "bg-indigo-100 text-indigo-700" },
+  rose: { bg: "bg-rose-100", text: "text-rose-600", hover: "group-hover:bg-rose-600", ring: "ring-rose-200", badge: "bg-rose-100 text-rose-700" },
+};
+
+/* ─────────────── component ─────────────── */
 const HomePage = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    // Auto-advance testimonials
-    const interval = setInterval(() => {
-      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      clearInterval(interval);
-    };
+    const onScroll = () => setIsScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", onScroll);
+    const timer = setInterval(
+      () => setActiveTestimonial((p) => (p + 1) % TESTIMONIALS.length),
+      5000
+    );
+    return () => { window.removeEventListener("scroll", onScroll); clearInterval(timer); };
   }, []);
 
-  const testimonials = [
-    {
-      name: "Rajesh Kumar",
-      location: "Punjab",
-      image: "/api/placeholder/60/60",
-      text: "AgriConnect helped me increase my profits by 35% by connecting me directly with buyers. The price predictions saved me from selling my wheat at low rates.",
-    },
-    {
-      name: "Sunita Devi",
-      location: "Maharashtra",
-      image: "/api/placeholder/60/60",
-      text: "I used to depend on middlemen who gave me unfair prices. Through AgriConnect, I now negotiate directly with buyers and get paid immediately through the secure payment system.",
-    },
-    {
-      name: "Prakash Singh",
-      location: "Uttar Pradesh",
-      image: "/api/placeholder/60/60",
-      text: "The weather alerts and crop advisories have been invaluable for my farm planning. I've reduced crop losses by 40% thanks to the timely information.",
-    },
-  ];
-
-  const features = [
-    {
-      title: "Direct Market Access",
-      icon: "🏪",
-      description: "Connect directly with buyers and eliminate intermediaries",
-    },
-    {
-      title: "Secure Payments",
-      icon: "🔐",
-      description: "Escrow-based payment system ensures you always get paid",
-    },
-    {
-      title: "Smart Contracts",
-      icon: "📝",
-      description: "Blockchain-verified contracts prevent fraud and disputes",
-    },
-    {
-      title: "AI Price Predictions",
-      icon: "📈",
-      description: "Get AI-powered price suggestions for maximum profit",
-    },
-    {
-      title: "Weather Alerts",
-      icon: "🌦️",
-      description: "Real-time weather updates to protect your crops",
-    },
-    {
-      title: "Crop Advisory",
-      icon: "🌱",
-      description: "Personalized advice for better yield and crop health",
-    },
-  ];
-
-  const stats = [
-    { value: "10,000+", label: "Farmers" },
-    { value: "1,000+", label: "Buyers" },
-    { value: "₹10Cr+", label: "Transactions" },
-    { value: "22", label: "States Covered" },
-  ];
-
-  const handleLoginClick = () => {
-    navigate("/auth", { state: { defaultView: "login" } });
-  };
-
-  const handleGetStartedClick = () => {
-    navigate("/auth", { state: { defaultView: "signup" } });
-  };
+  const goAuth = (view) => navigate("/auth", { state: { defaultView: view } });
 
   return (
-    <div className="min-h-screen bg-gray-50 font-poppins">
-      {/* Header */}
+    <div className="min-h-screen bg-white font-poppins overflow-x-hidden">
+
+      {/* ── NAVBAR ── */}
       <header
-        className={`fixed w-full z-50 transition-all duration-500 px-16 ${
-          isScrolled ? "bg-white shadow-md py-2" : "bg-transparent py-4"
+        className={`fixed w-full z-50 transition-all duration-500 ${
+          isScrolled
+            ? "bg-white/95 backdrop-blur-md shadow-md py-2"
+            : "bg-transparent py-4"
         }`}
       >
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <div className="text-green-600 font-bold text-2xl flex gap-x-2 items-center">
-              <img
-                src={leafImg}
-                width={30}
-                alt="AgriConnect Logo"
-                className={`transition-all duration-500 ${
-                  isScrolled ? "transform rotate-12" : ""
-                }`}
-              />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400">
-                AgriConnect
-              </span>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <img src={leafImg} width={28} alt="AgriConnect" />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 font-bold text-xl">
+              AgriConnect
+            </span>
           </div>
 
-          <nav className="hidden md:flex space-x-8">
-            {["Features", "How It Works", "Success Stories", "Contact"].map(
-              (item, index) => (
-                <a
-                  key={index}
-                  href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="text-gray-600 hover:text-green-600 font-medium relative group"
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+            {NAV_LINKS.map((item) => (
+              item.route ? (
+                <button
+                  key={item.label}
+                  onClick={() => navigate(item.href)}
+                  className={`text-sm font-medium relative group transition-colors duration-200 ${
+                    isScrolled ? "text-gray-700 hover:text-green-600" : "text-gray-800 hover:text-green-600"
+                  }`}
                 >
-                  {item}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-green-500 transition-all duration-300 group-hover:w-full"></span>
+                  {item.label}
+                  <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-green-500 rounded-full transition-all duration-300 group-hover:w-full" />
+                </button>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className={`text-sm font-medium relative group transition-colors duration-200 ${
+                    isScrolled ? "text-gray-700 hover:text-green-600" : "text-gray-800 hover:text-green-600"
+                  }`}
+                >
+                  {item.label}
+                  <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-green-500 rounded-full transition-all duration-300 group-hover:w-full" />
                 </a>
               )
-            )}
+            ))}
           </nav>
 
-          <div className="flex items-center space-x-4">
-            {!getTokenFromCookie() ? (
+          <div className="flex items-center gap-3">
+            {!getTokenFromCookie() && (
               <button
-                className="hidden md:block px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-colors"
-                onClick={handleLoginClick}
+                onClick={() => goAuth("login")}
+                className={`hidden md:block px-4 py-2 text-sm font-medium rounded-full border transition-all duration-200 ${
+                  isScrolled
+                    ? "border-green-600 text-green-600 hover:bg-green-50"
+                    : "border-green-700 text-green-700 hover:bg-green-50"
+                }`}
               >
                 Login
               </button>
-            ) : (
-              ""
             )}
             <button
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-              onClick={handleGetStartedClick}
+              onClick={() => goAuth("signup")}
+              className="px-5 py-2 text-sm font-semibold bg-green-600 text-white rounded-full hover:bg-green-700 shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
             >
-              Get Started
+              Get Started Free
+            </button>
+            <button
+              className="md:hidden p-2 text-gray-700"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              <div className="space-y-1.5">
+                <span className="block w-5 h-0.5 bg-current" />
+                <span className="block w-5 h-0.5 bg-current" />
+                <span className="block w-4 h-0.5 bg-current" />
+              </div>
             </button>
           </div>
         </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 space-y-3">
+            {NAV_LINKS.map((item) => (
+              item.route ? (
+                <button
+                  key={item.label}
+                  onClick={() => { setMenuOpen(false); navigate(item.href); }}
+                  className="block w-full text-left text-gray-700 font-medium hover:text-green-600 py-1"
+                >
+                  {item.label}
+                </button>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="block text-gray-700 font-medium hover:text-green-600 py-1"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              )
+            ))}
+            <div className="pt-3 flex flex-col gap-2">
+              <button onClick={() => goAuth("login")} className="w-full py-2.5 border border-green-600 text-green-600 rounded-lg font-medium text-sm">Login</button>
+              <button onClick={() => goAuth("signup")} className="w-full py-2.5 bg-green-600 text-white rounded-lg font-medium text-sm">Get Started</button>
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* Hero Section */}
-      <section className="pt-24 px-12 pb-16 md:pt-32 md:pb-24 bg-gradient-to-br from-green-50 to-green-100 relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute -right-20 -top-20 w-64 h-64 bg-green-200 rounded-full opacity-50 blur-3xl"></div>
-        <div className="absolute -left-20 bottom-10 w-80 h-80 bg-green-300 rounded-full opacity-40 blur-3xl"></div>
+      {/* ── HERO ── */}
+      <section className="relative min-h-screen flex items-center bg-gradient-to-br from-green-50 via-white to-emerald-50 overflow-hidden pt-18">
+        {/* Decorative blobs */}
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-green-200 rounded-full opacity-30 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-emerald-200 rounded-full opacity-30 blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-green-100 rounded-full opacity-20 blur-3xl pointer-events-none" />
 
-        <div className="container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center relative z-10">
-          <div className="max-w-xl">
-            <div className="inline-block px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-6 animate-pulse">
-              Trusted by 1000+ farmers across India
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight mb-6">
-              Empowering Farmers with{" "}
-              <span className="text-green-600 relative">
-                Direct Market Access
-                <span className="absolute bottom-2 left-0 w-full h-3 bg-green-100 -z-10"></span>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-20 grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left */}
+          <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-6 border border-green-200"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-600" />
               </span>
-            </h1>
-            <p className="text-lg md:text-xl text-gray-600 mb-8">
-              Connect directly with buyers, get fair prices, secure contracts,
-              and real-time market insights all in one platform.
-            </p>
-            {/* <div className="flex flex-col sm:flex-row gap-4">
-              <button className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 text-lg font-medium">
-                Start Selling
+              Trusted by 10,000+ farmers across India
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6"
+            >
+              Empowering Farmers with{" "}
+              <span className="relative">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-500">
+                  Direct Market
+                </span>
+                <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 300 12" fill="none">
+                  <path d="M2 9C50 3 100 1 150 4C200 7 250 9 298 6" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+              </span>{" "}
+              Access
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-lg text-gray-600 mb-8 max-w-lg leading-relaxed"
+            >
+              Connect directly with buyers, get AI-powered price guidance, secure
+              contracts, real-time market insights and crop advisories — all in
+              one platform built for Indian agriculture.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col sm:flex-row gap-4 mb-10"
+            >
+              <button
+                onClick={() => goAuth("signup")}
+                className="group flex items-center justify-center gap-2 px-7 py-3.5 bg-green-600 text-white rounded-full text-base font-semibold hover:bg-green-700 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5"
+              >
+                Start Selling Free
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="px-6 py-3 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-all text-lg font-medium">
+              <button
+                onClick={() => goAuth("login")}
+                className="flex items-center justify-center gap-2 px-7 py-3.5 border-2 border-gray-200 text-gray-700 rounded-full text-base font-semibold hover:border-green-400 hover:text-green-700 transition-all duration-200"
+              >
+                <Play size={16} className="text-green-600" />
                 Browse Marketplace
               </button>
-            </div> */}
-            <div className="mt-8 flex items-center text-gray-500">
-              <svg
-                className="w-5 h-5 text-green-500 mr-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>No middlemen, higher profits, secure payments</span>
-            </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="flex flex-wrap gap-x-6 gap-y-2"
+            >
+              {["No registration fees", "Instant payouts", "Fraud protection"].map((t) => (
+                <div key={t} className="flex items-center gap-1.5 text-sm text-gray-600">
+                  <CheckCircle2 size={15} className="text-green-500 flex-shrink-0" />
+                  {t}
+                </div>
+              ))}
+            </motion.div>
           </div>
-          <div className="hidden md:block relative">
-            <div className="absolute -z-10 w-full h-full bg-green-200 rounded-full blur-3xl opacity-30 transform -translate-y-10"></div>
-            <img
-              src={HeroImg}
-              alt="Farmers using AgriConnect"
-              className="rounded-2xl object-cover transform transition-transform hover:scale-105 duration-700"
-            />
-            <div className="absolute -bottom-5 -right-5 bg-white p-4 rounded-lg shadow-lg border-l-4 border-green-500">
-              <div className="flex items-center mb-2">
-                <div className="bg-green-500 h-3 w-3 rounded-full mr-2 animate-ping"></div>
-                <span className="text-green-600 font-semibold">
-                  Active Farmers
-                </span>
-              </div>
-              <div className="text-3xl font-bold">&nbsp; &nbsp; 1000 +</div>
+
+          {/* Right - hero image + floating cards */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="relative hidden lg:block"
+          >
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+              <img
+                src={HeroImg}
+                alt="Farmer using AgriConnect"
+                className="w-full h-auto object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
+
+            {/* Floating stat card – active farmers */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+              className="absolute -left-8 top-1/4 bg-white rounded-2xl shadow-xl p-4 border border-gray-100 flex items-center gap-3"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
+                <Users size={18} className="text-green-600" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Active Farmers</p>
+                <p className="text-xl font-bold text-gray-800">10,000+</p>
+              </div>
+              <div className="ml-2 flex h-2 w-2 rounded-full bg-green-500">
+                <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75" />
+              </div>
+            </motion.div>
+
+            {/* Floating stat card – transactions */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+              className="absolute -right-8 bottom-1/4 bg-white rounded-2xl shadow-xl p-4 border border-gray-100"
+            >
+              <p className="text-xs text-gray-500 font-medium mb-1">Total Transactions</p>
+              <p className="text-xl font-bold text-gray-800">₹10 Crore+</p>
+              <div className="mt-2 flex gap-1">
+                {[60, 80, 50, 90, 75, 95].map((h, i) => (
+                  <div
+                    key={i}
+                    className="w-1.5 bg-green-500 rounded-full opacity-80"
+                    style={{ height: `${h * 0.32}px` }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Floating badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1.1 }}
+              className="absolute top-4 right-4 bg-green-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5"
+            >
+              <Sparkles size={12} />
+              AI-Powered Platform
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60">
+          <span className="text-xs text-gray-500 font-medium">Scroll to explore</span>
+          <motion.div
+            animate={{ y: [0, 6, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            className="w-5 h-8 border-2 border-gray-400 rounded-full flex items-start justify-center pt-1"
+          >
+            <div className="w-1 h-2 bg-gray-400 rounded-full" />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── STATS BAR ── */}
+      <section className="py-14 bg-white border-y border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {STATS.map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <FadeIn key={i} delay={i * 0.1}>
+                  <div className="flex flex-col items-center text-center p-6 bg-gradient-to-br from-white to-green-50 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 mb-3">
+                      <Icon size={22} className="text-green-600" />
+                    </div>
+                    <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-1">
+                      <AnimatedCounter target={s.value} suffix={s.suffix} prefix={s.prefix} />
+                    </div>
+                    <div className="text-sm text-gray-500 font-medium">{s.label}</div>
+                  </div>
+                </FadeIn>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-12 px-12 bg-white relative">
-        <div className="absolute inset-0 bg-[url('/api/placeholder/20/20')] opacity-5"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="p-6 bg-gradient-to-br from-white to-green-50 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-100 transform hover:-translate-y-1"
-              >
-                <div className="text-3xl md:text-4xl font-bold text-green-600 mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
-                <div className="w-16 h-1 bg-green-200 mt-3 rounded-full"></div>
+      {/* ── PLATFORM HIGHLIGHTS STRIP ── */}
+      <div className="bg-green-600 py-4 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="flex flex-wrap justify-center gap-x-12 gap-y-3">
+            {PLATFORM_HIGHLIGHTS.map(({ icon: Icon, text }, i) => (
+              <div key={i} className="flex items-center gap-2 text-white/90 text-sm font-medium">
+                <Icon size={16} className="text-green-200" />
+                {text}
               </div>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Features Section */}
-      <section id="features" className="p-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <div className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-4">
-              OUR FEATURES
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Why Choose <span className="text-green-600">AgriConnect</span>
+      {/* ── FEATURES ── */}
+      <section id="features" className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <FadeIn className="text-center mb-16">
+            <span className="inline-block px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold mb-4">
+              EVERYTHING YOU NEED
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-5">
+              Why Farmers Choose{" "}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-500">
+                AgriConnect
+              </span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our platform is designed to solve the biggest challenges faced by
-              farmers
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              From listing crops to getting paid — every tool a farmer and buyer
+              needs is built into one seamless platform.
             </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 hover:border-green-200 group"
-              >
-                <div className="text-4xl mb-4 bg-green-100 h-16 w-16 rounded-lg flex items-center justify-center text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600">{feature.description}</p>
-                <div className="mt-4 flex items-center text-green-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>Learn more</span>
-                  <svg
-                    className="w-4 h-4 ml-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5l7 7-7 7"
-                    ></path>
-                  </svg>
-                </div>
-              </div>
-            ))}
+          </FadeIn>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {FEATURES.map((f, i) => {
+              const Icon = f.icon;
+              const c = COLOR_MAP[f.color];
+              return (
+                <FadeIn key={i} delay={i * 0.05}>
+                  <div className="group bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
+                    <div className="flex items-start justify-between mb-5">
+                      <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${c.bg} ${c.hover} transition-colors duration-300`}>
+                        <Icon size={26} className={`${c.text} group-hover:text-white transition-colors duration-300`} />
+                      </div>
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${c.badge}`}>
+                        {f.badge}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">{f.title}</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed flex-1">{f.desc}</p>
+                    <div className="mt-5 flex items-center gap-1 text-sm font-semibold text-green-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      Learn more <ChevronRight size={15} />
+                    </div>
+                  </div>
+                </FadeIn>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="py-16 bg-white relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-green-50 to-white opacity-50"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-16">
-            <div className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-4">
+      {/* ── HOW IT WORKS ── */}
+      <section id="how-it-works" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <FadeIn className="text-center mb-16">
+            <span className="inline-block px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold mb-4">
               SIMPLE PROCESS
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              How AgriConnect <span className="text-green-600">Works</span>
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-5">
+              Sell Your Crops in{" "}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-500">
+                3 Simple Steps
+              </span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Simple steps to transform how you sell your produce
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              From farm to payment in minutes — no paperwork, no middlemen, no hassle.
             </p>
-          </div>
-          <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-8 relative">
-              {/* Connecting line */}
-              <div className="hidden md:block absolute top-24 left-[16.66%] right-[16.66%] h-1 bg-green-200 z-0"></div>
+          </FadeIn>
 
-              <div className="text-center p-6 relative z-10">
-                <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-white text-green-600 text-2xl font-bold mb-6 border-4 border-green-200 shadow-lg">
-                  1
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  List Your Produce
-                </h3>
-                <p className="text-gray-600">
-                  Add details about your crops with photos. Our AI suggests the
-                  best price based on market trends.
-                </p>
-                <img
-                  src={ProduceList}
-                  alt="List produce"
-                  className="mx-auto mt-4 rounded-lg shadow-md"
-                />
-              </div>
+          <div className="relative">
+            {/* Connector line */}
+            <div className="hidden lg:block absolute top-36 left-[16.5%] right-[16.5%] h-0.5 bg-gradient-to-r from-green-300 via-blue-300 to-purple-300 z-0" />
 
-              <div className="text-center p-6 relative z-10">
-                <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-white text-green-600 text-2xl font-bold mb-6 border-4 border-green-200 shadow-lg">
-                  2
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  Connect with Buyers
-                </h3>
-                <p className="text-gray-600">
-                  Receive offers directly from verified buyers. Negotiate and
-                  finalize deals without intermediaries.
-                </p>
-                <img
-                  src={ConnectWith}
-                  alt="Connect with buyers"
-                  className="mx-auto mt-4 rounded-lg shadow-md"
-                />
-              </div>
-
-              <div className="text-center p-6 relative z-10">
-                <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-white text-green-600 text-2xl font-bold mb-6 border-4 border-green-200 shadow-lg">
-                  3
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  Secure Transaction
-                </h3>
-                <p className="text-gray-600">
-                  Use our blockchain-verified contracts and escrow payment
-                  system for safe, guaranteed payments.
-                </p>
-                <img
-                  src={SecurePayment}
-                  alt="Secure transaction"
-                  className="mx-auto mt-4 rounded-lg shadow-md"
-                />
-              </div>
+            <div className="grid lg:grid-cols-3 gap-10">
+              {STEPS.map((step, i) => (
+                <FadeIn key={i} delay={i * 0.15} direction="up">
+                  <div className="relative z-10 flex flex-col items-center text-center">
+                    <div className={`flex h-20 w-20 items-center justify-center rounded-full bg-white border-4 border-white shadow-xl mb-6 ${step.iconColor} text-white text-2xl font-bold`}>
+                      {step.number}
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-6">{step.desc}</p>
+                    <div className={`rounded-2xl overflow-hidden shadow-lg bg-gradient-to-br ${step.color} p-2 w-full`}>
+                      <img
+                        src={step.img}
+                        alt={step.title}
+                        className="w-full h-44 object-cover rounded-xl"
+                      />
+                    </div>
+                  </div>
+                </FadeIn>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section
-        id="testimonials"
-        className="py-16 bg-gradient-to-br from-green-600 to-green-700 text-white relative overflow-hidden"
-      >
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('/api/placeholder/30/30')] opacity-10"></div>
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-green-500 rounded-full opacity-30 blur-3xl"></div>
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-16">
-            <div className="inline-block px-3 py-1 bg-white bg-opacity-20 text-jewel-500 rounded-full text-sm font-medium mb-4">
-              TESTIMONIALS
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Success Stories
+      {/* ── FOR FARMERS & BUYERS ── */}
+      <section id="for-farmers" className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <FadeIn className="text-center mb-16">
+            <span className="inline-block px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold mb-4">
+              FOR EVERYONE
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-5">
+              Built for Both{" "}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-500">
+                Farmers & Buyers
+              </span>
             </h2>
-            <p className="text-xl max-w-3xl mx-auto opacity-90">
-              Hear from farmers who transformed their businesses with
-              AgriConnect
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              AgriConnect creates a fair ecosystem where farmers earn more and
+              buyers source better quality produce at transparent prices.
             </p>
-          </div>
+          </FadeIn>
 
-          <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-6">
-              {testimonials.map((testimonial, index) => (
-                <div
-                  key={index}
-                  className={`bg-white text-gray-800 rounded-xl shadow-xl p-6 transform transition-all duration-500 hover:-translate-y-2 ${
-                    index === activeTestimonial
-                      ? "md:scale-105 ring-4 ring-green-300"
-                      : "opacity-80 hover:opacity-100"
-                  }`}
-                  onClick={() => setActiveTestimonial(index)}
-                >
-                  <div className="mb-4">
-                    <svg
-                      className="w-8 h-8 text-green-500"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                    </svg>
-                  </div>
-                  <p className="text-lg mb-6 italic">"{testimonial.text}"</p>
-                  <div className="flex items-center">
-                    <img
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-green-500 mr-4"
-                    />
+          <div className="grid lg:grid-cols-2 gap-8">
+            {FOR_USERS.map((user, i) => (
+              <FadeIn key={i} delay={i * 0.15} direction={i === 0 ? "right" : "left"}>
+                <div className={`rounded-3xl border ${user.border} ${user.light} p-8 h-full`}>
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${user.gradient} text-3xl shadow-lg`}>
+                      {user.emoji}
+                    </div>
                     <div>
-                      <h4 className="font-bold">{testimonial.name}</h4>
-                      <p className="text-gray-600">{testimonial.location}</p>
+                      <h3 className={`text-2xl font-bold ${user.accent}`}>{user.role}</h3>
+                      <p className="text-gray-500 text-sm">Everything you get on AgriConnect</p>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-center mt-8">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveTestimonial(index)}
-                  className={`h-3 w-3 rounded-full mx-1 ${
-                    index === activeTestimonial
-                      ? "bg-white"
-                      : "bg-white bg-opacity-30"
-                  }`}
-                  aria-label={`View testimonial ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden transform hover:shadow-2xl transition-all">
-            <div className="grid md:grid-cols-2">
-              <div className="p-10 flex flex-col justify-center relative overflow-hidden">
-                <div className="absolute -top-10 -left-10 w-40 h-40 bg-green-100 rounded-full"></div>
-                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-green-100 rounded-full"></div>
-
-                <div className="relative z-10">
-                  <div className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-4">
-                    JOIN TODAY
-                  </div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                    Ready to Transform Your Agriculture Business?
-                  </h2>
-                  <p className="text-gray-600 mb-6">
-                    Join thousands of farmers who are selling directly to buyers
-                    and earning more with AgriConnect.
-                  </p>
-                  <div className="flex items-center space-x-4">
-                    <button className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-lg font-medium shadow-lg hover:shadow-xl">
-                      Get Started Now
-                    </button>
-                    <div className="flex items-center text-green-600 font-medium cursor-pointer">
-                      <svg
-                        className="w-12 h-12 mr-2"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M12 22c5.523 0 10-4.477 10-10s-4.477-10-10-10-10 4.477-10 10 4.477 10 10 10z"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        />
-                        <path d="M10 8l6 4-6 4V8z" fill="currentColor" />
-                      </svg>
-                      <span>Watch how it works</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-green-50 to-green-100 p-10 flex items-center justify-center">
-                <div className="bg-white p-6 rounded-xl shadow-lg max-w-sm w-full border border-green-100">
-                  <h3 className="text-xl font-bold text-center mb-6 text-gray-800">
-                    Request a Call Back
-                  </h3>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 mb-2 font-medium">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="Your Name"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 mb-2 font-medium">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="Your Phone"
-                    />
-                  </div>
-                  <button className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-md hover:shadow-lg">
-                    Request a Call Back
+                  <ul className="space-y-4">
+                    {user.points.map((pt, j) => (
+                      <li key={j} className="flex items-start gap-3">
+                        <CheckCircle2 size={18} className={`mt-0.5 flex-shrink-0 ${user.accent}`} />
+                        <span className="text-gray-700 text-sm leading-relaxed">{pt}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={() => goAuth("signup")}
+                    className={`mt-8 w-full py-3.5 rounded-xl bg-gradient-to-r ${user.gradient} text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2`}
+                  >
+                    Join as {user.role.split(" ")[2] || (i === 0 ? "Farmer" : "Buyer")}
+                    <ArrowRight size={16} />
                   </button>
-                  <p className="text-center text-gray-500 text-sm mt-4">
-                    We'll call you back within 24 hours
-                  </p>
                 </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── PLATFORM DEEP DIVE ── */}
+      <section className="py-24 bg-gradient-to-br from-green-700 via-green-600 to-emerald-600 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <FadeIn direction="right">
+              <span className="inline-block px-4 py-1 bg-white/20 text-white rounded-full text-sm font-semibold mb-6">
+                PLATFORM OVERVIEW
+              </span>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+                One Platform.<br />Infinite Possibilities.
+              </h2>
+              <p className="text-green-100 text-lg leading-relaxed mb-8">
+                AgriConnect is not just a marketplace — it's a complete agricultural
+                intelligence platform. From AI crop advisories and live mandi
+                prices to cold storage booking and KisanMitra support, we cover
+                every aspect of the farming journey.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-4 mb-8">
+                {[
+                  { icon: Bot, text: "KisanMitra AI Support" },
+                  { icon: BarChart3, text: "Live Market Trends" },
+                  { icon: Warehouse, text: "Cold Storage Map" },
+                  { icon: QrCode, text: "Crop QR Traceability" },
+                  { icon: CloudSun, text: "Weather Forecasting" },
+                  { icon: FileText, text: "Digital Contracts" },
+                ].map(({ icon: Icon, text }, i) => (
+                  <div key={i} className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 border border-white/20">
+                    <Icon size={18} className="text-green-200 flex-shrink-0" />
+                    <span className="text-white text-sm font-medium">{text}</span>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => goAuth("signup")}
+                className="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-green-700 font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-200 hover:-translate-y-0.5"
+              >
+                Explore the Platform <ArrowRight size={18} />
+              </button>
+            </FadeIn>
+
+            <FadeIn direction="left" delay={0.15}>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { num: "200+", label: "Crops Tracked", icon: Leaf, bg: "bg-white/10" },
+                  { num: "Real-time", label: "Price Updates", icon: TrendingUp, bg: "bg-white/10" },
+                  { num: "99.9%", label: "Uptime SLA", icon: Zap, bg: "bg-white/10" },
+                  { num: "AI", label: "Price Engine", icon: Sparkles, bg: "bg-white/10" },
+                  { num: "₹0", label: "Hidden Charges", icon: Shield, bg: "bg-white/10" },
+                  { num: "24/7", label: "KisanMitra Bot", icon: Bot, bg: "bg-white/10" },
+                ].map(({ num, label, icon: Icon, bg }, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.07 }}
+                    className={`${bg} border border-white/20 rounded-2xl p-5 text-center backdrop-blur-sm`}
+                  >
+                    <Icon size={24} className="text-green-200 mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-white">{num}</div>
+                    <div className="text-green-200 text-xs font-medium mt-1">{label}</div>
+                  </motion.div>
+                ))}
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ── */}
+      <section id="success-stories" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <FadeIn className="text-center mb-16">
+            <span className="inline-block px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold mb-4">
+              SUCCESS STORIES
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-5">
+              Real Farmers,{" "}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-500">
+                Real Results
+              </span>
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Hear directly from the farmers and buyers who transformed their
+              agricultural business with AgriConnect.
+            </p>
+          </FadeIn>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {TESTIMONIALS.map((t, i) => (
+              <motion.div
+                key={i}
+                onClick={() => setActiveTestimonial(i)}
+                className={`cursor-pointer bg-white rounded-2xl p-6 border-2 transition-all duration-300 ${
+                  activeTestimonial === i
+                    ? "border-green-400 shadow-xl scale-[1.02]"
+                    : "border-gray-100 shadow-md hover:shadow-lg hover:-translate-y-1"
+                }`}
+                whileHover={{ y: -4 }}
+              >
+                <div className="flex mb-3">
+                  {Array.from({ length: t.rating }).map((_, j) => (
+                    <Star key={j} size={14} className="text-yellow-400 fill-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-gray-700 text-sm leading-relaxed mb-5 italic">
+                  "{t.text}"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-700 font-bold text-sm flex-shrink-0">
+                    {t.avatar}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800 text-sm">{t.name}</p>
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <MapPin size={11} />
+                      {t.location}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="flex justify-center gap-2 mt-8">
+            {TESTIMONIALS.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveTestimonial(i)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  activeTestimonial === i ? "w-8 bg-green-600" : "w-2 bg-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+            <div className="grid lg:grid-cols-2">
+              {/* Left */}
+              <div className="p-10 lg:p-14 relative overflow-hidden">
+                <div className="absolute -top-16 -left-16 w-48 h-48 bg-green-50 rounded-full" />
+                <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-emerald-50 rounded-full" />
+                <div className="relative z-10">
+                  <FadeIn>
+                    <span className="inline-block px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold mb-5">
+                      START TODAY — IT'S FREE
+                    </span>
+                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                      Ready to Transform Your Agriculture Business?
+                    </h2>
+                    <p className="text-gray-600 mb-8 leading-relaxed">
+                      Join thousands of farmers already earning more with direct
+                      market access, AI-powered insights, and secure payments on
+                      AgriConnect.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                      <button
+                        onClick={() => goAuth("signup")}
+                        className="flex items-center justify-center gap-2 px-7 py-3.5 bg-green-600 text-white rounded-full font-semibold shadow-lg hover:bg-green-700 hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5"
+                      >
+                        Get Started Free <ArrowRight size={16} />
+                      </button>
+                      <button
+                        onClick={() => goAuth("login")}
+                        className="flex items-center justify-center gap-2 px-7 py-3.5 border-2 border-gray-200 text-gray-700 rounded-full font-semibold hover:border-green-400 hover:text-green-700 transition-all duration-200"
+                      >
+                        Login to Account
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-4">
+                      {["Zero setup fees", "Instant account activation", "Cancel anytime"].map((t) => (
+                        <div key={t} className="flex items-center gap-1.5 text-sm text-gray-500">
+                          <CheckCircle2 size={14} className="text-green-500" />
+                          {t}
+                        </div>
+                      ))}
+                    </div>
+                  </FadeIn>
+                </div>
+              </div>
+
+              {/* Right – callback form */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-10 lg:p-14 flex items-center justify-center border-l border-gray-100">
+                <FadeIn direction="left" className="w-full max-w-sm">
+                  <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-800 mb-1">Request a Call Back</h3>
+                    <p className="text-gray-500 text-sm mb-6">Our team will reach you within 24 hours</p>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
+                        <input
+                          type="text"
+                          placeholder="Your full name"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
+                        <input
+                          type="tel"
+                          placeholder="+91 XXXXX XXXXX"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">I am a</label>
+                        <select className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white">
+                          <option>Farmer</option>
+                          <option>Buyer / Trader</option>
+                          <option>Other</option>
+                        </select>
+                      </div>
+                      <button className="w-full py-3.5 bg-green-600 text-white rounded-xl font-semibold text-sm shadow-md hover:bg-green-700 hover:shadow-lg transition-all duration-200">
+                        Request Call Back
+                      </button>
+                    </div>
+                  </div>
+                </FadeIn>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12 relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 bg-green-600 rounded-full opacity-10 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-green-800 rounded-full opacity-10 blur-3xl"></div>
+      {/* ── FOOTER ── */}
+      <footer className="bg-gray-900 text-white pt-16 pb-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-green-700 rounded-full opacity-10 blur-3xl translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-green-900 rounded-full opacity-10 blur-3xl -translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid md:grid-cols-5 gap-8">
-            <div className="md:col-span-2">
-              <div className="text-2xl font-bold mb-4 flex gap-x-1 items-center">
-                <img
-                  src={leafImg}
-                  width={30}
-                  alt="AgriConnect Logo"
-                  className="filter brightness-0 invert"
-                />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-green-100">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+            {/* Brand */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-2 mb-4">
+                <img src={leafImg} width={28} alt="AgriConnect" className="brightness-0 invert" />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-green-100 font-bold text-xl">
                   AgriConnect
                 </span>
               </div>
-              <p className="text-gray-400 mb-6 max-w-md">
-                Empowering farmers with direct market access and fair prices.
-                Our platform connects farmers directly with buyers, eliminating
-                middlemen and ensuring better profits.
+              <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-sm">
+                Empowering Indian farmers with direct market access, AI-powered
+                insights, and secure payments. Bridging the gap between farms
+                and markets across 22 states.
               </p>
-              <div className="flex space-x-4">
-                {["facebook", "twitter", "linkedin", "instagram"].map(
-                  (social, index) => (
-                    <a
-                      key={index}
-                      href="#"
-                      className="text-gray-400 hover:text-white transition-colors transform hover:-translate-y-1 inline-block"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-gray-700 hover:bg-green-600 transition-colors flex items-center justify-center">
-                        <svg
-                          className="w-5 h-5"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z" />
-                        </svg>
-                      </div>
-                    </a>
-                  )
-                )}
+              <div className="flex gap-3">
+                {["facebook", "twitter", "linkedin", "instagram"].map((s, i) => (
+                  <a
+                    key={i}
+                    href="#"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-800 hover:bg-green-600 transition-colors duration-200"
+                    aria-label={s}
+                  >
+                    <svg className="w-4 h-4 fill-current text-gray-400 hover:text-white" viewBox="0 0 24 24">
+                      <path d="M22.675 0h-21.35C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24h11.495v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
+                    </svg>
+                  </a>
+                ))}
               </div>
             </div>
 
+            {/* Quick Links */}
             <div>
-              <h3 className="text-xl font-semibold mb-6 flex items-center">
-                <span className="w-8 h-1 bg-green-500 rounded-full mr-3"></span>
+              <h4 className="text-white font-semibold mb-5 flex items-center gap-2">
+                <span className="w-5 h-0.5 bg-green-500 rounded-full inline-block" />
                 Quick Links
-              </h3>
+              </h4>
               <ul className="space-y-3">
-                {[
-                  "Home",
-                  "Features",
-                  "How It Works",
-                  "Success Stories",
-                  "About Us",
-                ].map((link, index) => (
-                  <li key={index}>
-                    <a
-                      href="#"
-                      className="text-gray-400 hover:text-white transition-colors flex items-center"
-                    >
-                      <svg
-                        className="w-4 h-4 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M9 5l7 7-7 7"
-                        ></path>
-                      </svg>
-                      {link}
+                {["Home", "Features", "How It Works", "Success Stories", "About Us"].map((l) => (
+                  <li key={l}>
+                    <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors flex items-center gap-1.5">
+                      <ChevronRight size={13} className="text-green-500" /> {l}
                     </a>
                   </li>
                 ))}
               </ul>
             </div>
 
+            {/* Platform */}
             <div>
-              <h3 className="text-xl font-semibold mb-6 flex items-center">
-                <span className="w-8 h-1 bg-green-500 rounded-full mr-3"></span>
-                Resources
-              </h3>
+              <h4 className="text-white font-semibold mb-5 flex items-center gap-2">
+                <span className="w-5 h-0.5 bg-green-500 rounded-full inline-block" />
+                Platform
+              </h4>
               <ul className="space-y-3">
-                {[
-                  "Market Trends",
-                  "Weather Forecasts",
-                  "Crop Advisory",
-                  "FAQs",
-                  "Help Center",
-                ].map((resource, index) => (
-                  <li key={index}>
-                    <a
-                      href="#"
-                      className="text-gray-400 hover:text-white transition-colors flex items-center"
-                    >
-                      <svg
-                        className="w-4 h-4 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M9 5l7 7-7 7"
-                        ></path>
-                      </svg>
-                      {resource}
+                {["Marketplace", "Market Trends", "Crop Advisory", "Cold Storage", "Weather", "KisanMitra"].map((l) => (
+                  <li key={l}>
+                    <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors flex items-center gap-1.5">
+                      <ChevronRight size={13} className="text-green-500" /> {l}
                     </a>
                   </li>
                 ))}
               </ul>
             </div>
 
+            {/* Contact */}
             <div>
-              <h3 className="text-xl font-semibold mb-6 flex items-center">
-                <span className="w-8 h-1 bg-green-500 rounded-full mr-3"></span>
+              <h4 className="text-white font-semibold mb-5 flex items-center gap-2">
+                <span className="w-5 h-0.5 bg-green-500 rounded-full inline-block" />
                 Contact Us
-              </h3>
-              <ul className="space-y-4">
-                <li className="flex items-start">
-                  <svg
-                    className="w-5 h-5 mr-3 mt-1 text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  <span className="text-gray-400">
-                    123 Agriculture Lane, Digital District
-                  </span>
+              </h4>
+              <ul className="space-y-4 text-sm">
+                <li className="flex items-start gap-3">
+                  <MapPin size={15} className="text-green-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-400">123 Agriculture Lane, Digital District, India</span>
                 </li>
-                <li className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                    />
-                  </svg>
-                  <span className="text-gray-400">+91 1234567890</span>
+                <li className="flex items-center gap-3">
+                  <Phone size={15} className="text-green-400 flex-shrink-0" />
+                  <a href="tel:+911234567890" className="text-gray-400 hover:text-white transition-colors">+91 1234567890</a>
                 </li>
-                <li className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span className="text-gray-400">support@agriconnect.com</span>
+                <li className="flex items-center gap-3">
+                  <Mail size={15} className="text-green-400 flex-shrink-0" />
+                  <a href="mailto:support@agriconnect.com" className="text-gray-400 hover:text-white transition-colors">support@agriconnect.com</a>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-gray-700 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-center mb-4 md:mb-0">
-              © 2025 AgriConnect. All rights reserved.
-            </p>
-            <div className="flex space-x-6">
-              <a href="#" className="text-gray-400 hover:text-white">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white">
-                Terms of Service
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white">
-                Cookie Policy
-              </a>
+          <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-sm">© 2025 AgriConnect. All rights reserved.</p>
+            <div className="flex gap-6 text-sm">
+              {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((l) => (
+                <a key={l} href="#" className="text-gray-500 hover:text-white transition-colors">{l}</a>
+              ))}
             </div>
           </div>
         </div>

@@ -209,7 +209,7 @@ const Index_Bot = () => {
     "div",
     {
       className:
-        "min-h-screen flex flex-col items-center bg-gradient-to-br from-green-50 via-green-100/30 to-emerald-50 relative mt-20",
+        "min-h-screen flex flex-col items-center bg-gradient-to-br from-green-50 via-green-100/30 to-emerald-50 relative mt-18",
     },
     React.createElement("div", {
       className: "absolute inset-0 z-0 bg-leaf-pattern opacity-30",

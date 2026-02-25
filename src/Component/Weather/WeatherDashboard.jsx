@@ -273,7 +273,7 @@ const WeatherDashboard = () => {
     .slice(0, 5);
 
   return (
-    <div className="bg-gray-50 px-4 md:px-6 lg:px-8 py-6 ml-0 md:ml-16 mt-16 md:mt-20 min-h-screen">
+    <div className="bg-gray-50 px-4 md:px-6 lg:px-8 py-6 ml-0 md:ml-16 mt-16 md:mt-18 min-h-screen">
       <div className="max-w-full md:max-w-5xl mx-auto">
         {/* Header */}
         <header className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-4 mb-4 md:mb-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-center">

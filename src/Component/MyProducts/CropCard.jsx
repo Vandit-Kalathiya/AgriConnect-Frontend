@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { FaStar } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_CONFIG } from "../../config/apiConfig";
+import { Pencil } from "lucide-react";
 
 const CropCard = ({ crop }) => {
   const [images, setImages] = useState([]);
+  const navigate = useNavigate();
 
   const getImage = async () => {
     const imageUrl = `${API_CONFIG.MARKET_ACCESS}/image/${crop.images[0].id}`;
@@ -24,15 +25,31 @@ const CropCard = ({ crop }) => {
     getImage();
   }, []);
 
+  const handleUpdate = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/update-listing/${crop.id}`);
+  };
+
   return (
     <Link to={`/crop/${crop.id}`}>
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden h-full flex flex-col hover:shadow-xl cursor-pointer transition-all duration-300 transform hover:scale-105 hover:bg-jewel-50">
         {/* Image Section */}
-        <img
-          src={images}
-          alt={`${crop.productType} - ${crop.productName}`}
-          className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-t-2xl transition-opacity duration-300 hover:opacity-90"
-        />
+        <div className="relative">
+          <img
+            src={images}
+            alt={`${crop.productType} - ${crop.productName}`}
+            className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-t-2xl transition-opacity duration-300 hover:opacity-90"
+          />
+          {/* Update button overlay */}
+          <button
+            onClick={handleUpdate}
+            className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-jewel-700 text-xs font-semibold rounded-lg shadow-md hover:bg-jewel-600 hover:text-white transition-all duration-200 border border-jewel-200"
+          >
+            <Pencil size={12} />
+            Edit
+          </button>
+        </div>
         {/* Status Badge */}
         <div className="p-4 md:p-6 flex-1 flex flex-col justify-between">
           <div>
@@ -61,7 +78,7 @@ const CropCard = ({ crop }) => {
               </span>
             </p>
             <p className="text-xs md:text-sm text-gray-500 mb-2 md:mb-3 line-clamp-2">
-              {crop.description}
+              {crop.productDescription}
             </p>
           </div>
           <div>

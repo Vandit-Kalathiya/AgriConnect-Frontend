@@ -126,7 +126,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white shadow-md py-3 md:py-4 px-4 md:px-6 lg:px-20 flex justify-between items-center fixed w-full top-0 z-50 h-16 md:h-20">
+      <nav className="bg-white shadow-md px-3 sm:px-4 md:px-6 lg:px-10 xl:px-20 flex justify-between items-center fixed w-full top-0 z-50 h-14 sm:h-16">
         {/* Logo */}
         <Link
           to="/"
@@ -141,13 +141,13 @@ const Navbar = () => {
             />
             <div className="absolute -inset-1 bg-green-100 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
           </div>
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 font-bold text-2xl">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 font-bold text-xl sm:text-2xl">
             AgriConnect
           </span>
         </Link>
 
         {/* Desktop Navigation Links */}
-        <div className="hidden md:flex space-x-6 lg:space-x-8 text-[#112216] font-medium">
+        <div className="hidden lg:flex space-x-4 xl:space-x-6 text-[#112216] font-medium">
           {navLinks.map((link) => (
             <Link
               key={link.path}
@@ -167,7 +167,7 @@ const Navbar = () => {
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center space-x-2 md:space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
           {/* <Link
             to="/cart"
             className="hidden md:flex text-gray-600 hover:text-green-600 transition-colors duration-200 relative"
@@ -196,7 +196,7 @@ const Navbar = () => {
                   <FaUser size={14} className="text-green-600" />
                 )}
               </div>
-              <span className="hidden md:inline text-sm font-medium">
+              <span className="hidden xl:inline text-sm font-medium">
                 {user?.username || "Account"}
               </span>
             </button>
@@ -285,7 +285,7 @@ const Navbar = () => {
             )}
           </div>
 
-          <button className="hidden md:flex text-gray-600 hover:text-green-600 transition-colors duration-200 relative">
+          <button className="hidden lg:flex text-gray-600 hover:text-green-600 transition-colors duration-200 relative">
             <FaBell size={20} />
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
               3
@@ -293,7 +293,7 @@ const Navbar = () => {
           </button>
 
           {/* Hamburger Menu */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button
               onClick={toggleMenu}
               className="text-gray-700 hover:text-green-600 transition-colors focus:outline-none p-1"
@@ -311,7 +311,7 @@ const Navbar = () => {
         {isMenuOpen && (
           <div
             ref={menuRef}
-            className="md:hidden absolute top-16 left-0 w-full bg-white shadow-lg border-t border-gray-200 z-40"
+            className="lg:hidden absolute top-14 sm:top-16 left-0 w-full bg-white shadow-lg border-t border-gray-200 z-40"
             style={{ animation: "slideDown 0.3s ease-out" }}
           >
             <div className="flex flex-col p-4 space-y-1">
@@ -387,7 +387,6 @@ const Navbar = () => {
           }
         }
       `}</style>
-      <div className="h-16 md:h-20"></div>
     </>
   );
 };

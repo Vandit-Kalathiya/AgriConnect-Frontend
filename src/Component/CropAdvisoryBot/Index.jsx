@@ -86,7 +86,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-b from-background to-background/80 mt-20">
+    <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-b from-background to-background/80 mt-18">
       <AnimatedBackground />
 
       <main className="container max-w-5xl mx-auto px-4 py-12 relative z-10">

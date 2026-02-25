@@ -32,7 +32,7 @@ const Sidebar = () => {
       <div
         className={`${
           isCollapsed ? "space-y-4" : "space-y-3"
-        } overflow-y-auto scrollbar-thin scrollbar-thumb-jewel-300 scrollbar-track-transparent hover:scrollbar-thumb-jewel-400 transition-all duration-300 mt-20`}
+        } overflow-y-auto scrollbar-thin scrollbar-thumb-jewel-300 scrollbar-track-transparent hover:scrollbar-thumb-jewel-400 transition-all duration-300 mt-18`}
         style={{ maxHeight: "calc(100vh - 80px)" }}
       >
         <SidebarSection
