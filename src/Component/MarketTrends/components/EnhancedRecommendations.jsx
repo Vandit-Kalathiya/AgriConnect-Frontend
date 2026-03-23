@@ -6,7 +6,7 @@ import {
   AlertTriangle, TrendingUp, Leaf, AlertCircle, BarChart3,
   ArrowRight, CloudRain, PiggyBank, Coins, Lightbulb
 } from 'lucide-react';
-import { getFormattedCurrentDate } from '../utils/DateUtils';
+import { getFormattedCurrentDate } from '../Utils/DateUtils';
 import { toast } from 'sonner';
 
 const EnhancedRecommendations = () => {
