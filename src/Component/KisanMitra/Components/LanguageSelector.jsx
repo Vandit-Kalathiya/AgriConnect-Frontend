@@ -5,7 +5,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../Components/Ui/DropdownMenu"; // Adjust path as per your project
+} from "../Components/UI/DropdownMenu"; // Adjust path as per your project
 import { LANGUAGES } from "../Services/LanguageService";
 
 const LanguageSelector = ({ selectedLanguage, onLanguageChange }) => {

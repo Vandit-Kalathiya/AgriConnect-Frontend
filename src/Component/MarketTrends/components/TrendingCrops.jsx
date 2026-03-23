@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/UI/Tabs';
 import { TrendingUp, Grape, Wheat, Carrot } from 'lucide-react';
 import { toast } from 'sonner';
 

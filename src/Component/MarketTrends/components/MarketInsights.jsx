@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/UI/Tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/UI/Card';
+import { Button } from '../components/UI/Button';
 import { ChevronRight, AlertTriangle, TrendingUp, TrendingDown, Leaf, ArrowRight } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/Dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/UI/Dialog';
 import { useNavigate } from 'react-router-dom';
 
 const marketStats = [

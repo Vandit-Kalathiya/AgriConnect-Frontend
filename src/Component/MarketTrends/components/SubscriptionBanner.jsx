@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Card, CardContent } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs';
+import { Card, CardContent } from '../components/UI/Card';
+import { Button } from '../components/UI/Button';
+import { Input } from '../components/UI/Input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/UI/Tabs';
 import { Bell, Zap, Calendar, MessageSquare, Check, Star, Map, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 

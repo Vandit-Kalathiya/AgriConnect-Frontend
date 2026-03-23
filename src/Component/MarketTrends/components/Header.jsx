@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Moon, Sun, Menu, X } from 'lucide-react';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
+import { Button } from '../components/UI/Button';
+import { Input } from '../components/UI/Input';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);

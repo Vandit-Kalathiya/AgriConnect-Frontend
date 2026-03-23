@@ -16,7 +16,7 @@ import ChatInterface from "./components/ChatInterface";
 import SoilTips from "./components/SoilTips";
 import MarketTrends from "./components/MarketTrends";
 import CropCard from "./components/CropCard";
-import { Button } from "./components/ui/Button";
+import { Button } from "./components/UI/Button";
 import { motion } from "framer-motion";
 
 const Index = () => {

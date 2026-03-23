@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button } from "./ui/Button";
-import { Input } from "./ui/Input";
-import { ScrollArea } from "./ui/ScrollArea";
+import { Button } from "./UI/Button";
+import { Input } from "./UI/Input";
+import { ScrollArea } from "./UI/ScrollArea";
 import {
   SendIcon,
   Loader2Icon,
@@ -22,16 +22,16 @@ import {
   CardTitle,
   CardContent,
   CardFooter,
-} from "./ui/Card";
-import { Avatar } from "./ui/Avtar";
-import { Separator } from "./ui/Separator";
+} from "./UI/Card";
+import { Avatar } from "./UI/Avtar";
+import { Separator } from "./UI/Separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./ui/Tooltip";
-import { Badge } from "./ui/Badge";
+} from "./UI/Tooltip";
+import { Badge } from "./UI/Badge";
 
 const INITIAL_MESSAGE = `Welcome to the Crop Advisor! I can help you find the best crops to grow based on your location and current market trends in India.
 

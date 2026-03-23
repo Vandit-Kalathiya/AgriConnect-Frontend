@@ -6,9 +6,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./ui/Card";
-import { Badge } from "./ui/Badge";
-import { Separator } from "./ui/Separator";
+} from "./UI/Card";
+import { Badge } from "./UI/Badge";
+import { Separator } from "./UI/Separator";
 import {
   ArrowUpIcon,
   ArrowDownIcon,

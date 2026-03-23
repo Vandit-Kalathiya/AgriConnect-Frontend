@@ -1,6 +1,6 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
-import { Badge } from "./ui/Badge";
+import { Card, CardContent, CardHeader, CardTitle } from "./UI/Card";
+import { Badge } from "./UI/Badge";
 import {
   AreaChart,
   Area,
