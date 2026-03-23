@@ -141,6 +141,11 @@ const SignUp = ({ onNavigateToLogin }) => {
         );
 
         if (loginResponse.status === 200) {
+          const { jwtToken } = loginResponse.data;
+          if (jwtToken) {
+            const maxAge = 7 * 24 * 60 * 60; // 7 days in seconds
+            document.cookie = `jwt_token=${jwtToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+          }
           toast.success("Registration successful!");
           // Use replace to force a full page reload with new auth state
           window.location.replace("/dashboard");

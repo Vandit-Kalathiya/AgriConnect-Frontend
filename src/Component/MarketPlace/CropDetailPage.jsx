@@ -198,7 +198,7 @@ const CropDetailPage = () => {
   const isOwner = userPhone === cropData.contact;
 
   return (
-    <div className="bg-gray-50 py-12 md:ml-20 mt-16 min-h-screen pb-24">
+    <div className="bg-gray-50 py-8 md:ml-20 mt-14 sm:mt-16 min-h-screen pb-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
           <button
@@ -241,11 +241,14 @@ const CropDetailPage = () => {
                   This is your listing
                 </h3>
                 <p className="text-amber-700 text-sm">
-                  You cannot purchase your own listing
+                  You can edit the details of this listing
                 </p>
               </div>
             </div>
-            <button className="px-4 py-2 bg-white border border-amber-300 rounded-lg text-amber-700 hover:bg-amber-50 transition-all font-medium text-sm">
+            <button
+              onClick={() => navigate(`/edit/${cropData.id}`)}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-all font-medium text-sm shadow-sm"
+            >
               Edit Listing
             </button>
           </div>

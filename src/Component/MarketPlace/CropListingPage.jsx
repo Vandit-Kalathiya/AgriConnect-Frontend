@@ -222,7 +222,7 @@ export const CropListingPage = () => {
 
   /* ═══ render ═══ */
   return (
-    <div className="min-h-screen bg-[#f1f3f6] ml-0 md:ml-20 mt-16 md:mt-18 font-poppins">
+    <div className="min-h-screen bg-[#f1f3f6] ml-0 md:ml-20 mt-14 sm:mt-16 font-poppins">
 
       {/* ════ MOBILE FILTER OVERLAY ════ */}
       {mobileSidebar && (
@@ -254,7 +254,7 @@ export const CropListingPage = () => {
 
         {/* ── LEFT SIDEBAR (desktop) ── */}
         <aside className="hidden lg:block w-56 xl:w-60 flex-shrink-0">
-          <div className="sticky top-18 h-[calc(100vh-4.5rem)] overflow-y-auto bg-white border-r border-gray-200 scrollbar-thin scrollbar-thumb-gray-200 px-4 pt-4 pb-8">
+          <div className="sticky top-14 sm:top-16 h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] overflow-y-auto bg-white border-r border-gray-200 scrollbar-thin scrollbar-thumb-gray-200 px-4 pt-4 pb-8">
             <FilterSidebar filters={filters} onFilterChange={updateFilter} onClearAll={clearAll}
               cropTypes={cropTypes} grades={grades} locations={locations}
               certificationsList={certificationsList} priceRange={priceRange}
@@ -266,7 +266,7 @@ export const CropListingPage = () => {
         <div className="flex-1 min-w-0">
 
           {/* ── TOP BAR: title/crumb + search on right ── */}
-          <div className="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between gap-4 sticky top-18 z-20">
+          <div className="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between gap-4 sticky top-14 sm:top-16 z-20">
             <div className="flex items-center gap-1.5 text-xs text-gray-500 min-w-0">
               <span className="font-medium text-gray-700 text-sm truncate">Fresh Produce Marketplace</span>
               {debouncedSearch && (

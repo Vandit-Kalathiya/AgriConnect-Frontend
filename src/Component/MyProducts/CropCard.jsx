@@ -28,7 +28,7 @@ const CropCard = ({ crop }) => {
   const handleUpdate = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate(`/update-listing/${crop.id}`);
+    navigate(`/edit/${crop.id}`);
   };
 
   return (

@@ -30,7 +30,7 @@ export const getTokenFromCookie = () => {
             .split('; ')
             .find(row => row.startsWith('jwt_token='))
             ?.split('=')[1];
-
+        
         if (!token) {
             return null;
         }

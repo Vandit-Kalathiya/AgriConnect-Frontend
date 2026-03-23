@@ -84,6 +84,10 @@ const Login = ({ onNavigateToSignUp }) => {
       );
       if (response.status === 200) {
         const { jwtToken, role } = response.data;
+        if (jwtToken) {
+          const maxAge = 7 * 24 * 60 * 60; // 7 days in seconds
+          document.cookie = `jwt_token=${jwtToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+        }
         setPhoneNumber("");
         setShowOtp(false);
         toast.success("Login successful!");

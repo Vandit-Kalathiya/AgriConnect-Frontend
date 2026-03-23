@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import OpenAI from "openai";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -11,14 +12,29 @@ import {
   FaMapMarkerAlt, FaPhone, FaCoins, FaChartLine,
   FaExclamationTriangle, FaInfoCircle,
 } from "react-icons/fa";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const BASE_URL = API_CONFIG.MARKET_ACCESS;
 const MAX_PHOTOS = 5;
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+// Groq client — llama-3.3-70b-versatile is the most capable free model on Groq
+const groqClient = new OpenAI({
+  apiKey: import.meta.env.VITE_GROQ_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1",
+  dangerouslyAllowBrowser: true,
+});
+const GROQ_MODEL = "llama-3.3-70b-versatile";
+
+const askGroq = async (systemPrompt, userPrompt) => {
+  const completion = await groqClient.chat.completions.create({
+    model: GROQ_MODEL,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user",   content: userPrompt },
+    ],
+    temperature: 0.4,
+  });
+  return completion.choices?.[0]?.message?.content ?? "";
+};
 
 const CROP_TYPES = [
   { value: "Grains",     label: "Grains (e.g., Rice, Wheat)" },
@@ -50,11 +66,11 @@ const UpdateListingForm = () => {
   const blobUrlsRef = useRef([]);
 
   const [loading, setLoading]             = useState(true);
+  const [fetchError, setFetchError]       = useState(null);
   const [submitting, setSubmitting]       = useState(false);
   const [showConfirm, setShowConfirm]     = useState(false);
   const [aiLoading, setAiLoading]         = useState(false);
   const [deletingIndex, setDeletingIndex] = useState(null);
-  // track whether images were modified so we only include images in PUT when needed
   const [imagesModified, setImagesModified] = useState(false);
   const [formData, setFormData] = useState({
     productName:       "",
@@ -86,6 +102,11 @@ const UpdateListingForm = () => {
   }, [id]);
 
   const fetchListingData = async () => {
+    if (!id) {
+      toast.error("Invalid listing ID.");
+      navigate("/my-listing");
+      return;
+    }
     try {
       setLoading(true);
       const response = await axios.get(`${BASE_URL}/listings/get/${id}`, {
@@ -93,21 +114,44 @@ const UpdateListingForm = () => {
       });
       const l = response.data;
 
+      // log so we can inspect field names in the browser console
+      console.log("[EditListing] raw API response:", l);
+
+      if (!l || typeof l !== "object") {
+        toast.error("Listing not found.");
+        navigate("/my-listing");
+        return;
+      }
+
+      // Normalise the harvest date: backend may return a full ISO timestamp
+      // like "2024-01-15T00:00:00.000+05:30" — date inputs need "YYYY-MM-DD"
+      const toDateInput = (val) =>
+        val ? String(val).split("T")[0] : "";
+
+      // Normalise cropType: the old create form default was "all" which should
+      // map to an empty selection so the user has to confirm/pick a type.
+      const normCropType = (val) =>
+        (!val || val === "all") ? "" : val;
+
+      // Safely convert any numeric / null / undefined field to a trimmed string
+      const toStr = (val) =>
+        (val !== null && val !== undefined) ? String(val).trim() : "";
+
       setFormData(prev => ({
         ...prev,
-        productName:       l.productName      || "",
-        cropType:          l.productType       || "",
-        description:       l.productDescription || "",
-        quantity:          l.quantity?.toString() || "",
-        unitOfQuantity:    l.unitOfQuantity    || "kg",
-        harvestDate:       l.harvestedDate     || "",
-        storageConditions: l.storageCondition  || "",
-        certifications:    l.certifications    || "",
-        shelfLife:         l.shelfLifetime?.toString() || "",
-        location:          l.location          || "",
-        contactInfo:       l.contactOfFarmer   || "",
-        aiGeneratedPrice:  l.aiGeneratedPrice?.toString() || "",
-        finalPrice:        l.finalPrice?.toString()       || "",
+        productName:       toStr(l.productName),
+        cropType:          normCropType(l.productType),
+        description:       toStr(l.productDescription),
+        quantity:          toStr(l.quantity),
+        unitOfQuantity:    l.unitOfQuantity || "kg",
+        harvestDate:       toDateInput(l.harvestedDate),
+        storageConditions: toStr(l.storageCondition),
+        certifications:    toStr(l.certifications),
+        shelfLife:         toStr(l.shelfLifetime),
+        location:          toStr(l.location),
+        contactInfo:       toStr(l.contactOfFarmer),
+        aiGeneratedPrice:  toStr(l.aiGeneratedPrice),
+        finalPrice:        toStr(l.finalPrice),
         productPhotos:     [],
       }));
 
@@ -116,8 +160,13 @@ const UpdateListingForm = () => {
         setFormData(prev => ({ ...prev, productPhotos: photos }));
       }
     } catch (error) {
-      console.error("Error fetching listing:", error);
-      toast.error("Failed to load listing details.");
+      console.error("[EditListing] fetch error:", error);
+      const msg = error.response?.data?.message
+        || error.response?.data
+        || error.message
+        || "Unknown error";
+      toast.error(`Failed to load listing: ${msg}`);
+      setFetchError(msg);
     } finally {
       setLoading(false);
     }
@@ -198,38 +247,73 @@ const UpdateListingForm = () => {
     setImagesModified(true);
   };
 
+  const [aiInsights, setAiInsights] = useState([]);
+
   const fetchAiPrice = async () => {
     if (!formData.productName || !formData.quantity || !formData.location) {
       toast.error("Fill in product name, quantity and location first.");
       return;
     }
     setAiLoading(true);
+    setAiInsights([]);
     try {
-      const prompt = `
-        You are an agricultural pricing expert. Based on the following details, provide a fair price per kilogram:
-        - Product: ${formData.productName}
-        - Quantity: ${formData.quantity} ${formData.unitOfQuantity}
-        - Location: ${formData.location}
-        IMPORTANT: Return ONLY a numeric value per kg without currency or units. Example: "245.50"
-        Respond in this JSON format:
-        { "price": "245.50" }
-      `;
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      const match = text.match(/\{.*\}/s);
-      if (match) {
-        const parsed = JSON.parse(match[0]);
-        const price = parseFloat(parsed.price).toFixed(2);
-        setFormData(prev => ({
-          ...prev,
-          aiGeneratedPrice: price,
-          finalPrice: prev.finalPrice || price,
-        }));
-        toast.success(`AI suggested price: ₹${price}/kg`);
+      const system = `You are AgriAdvisor, an expert agricultural market consultant helping Indian farmers get the best price for their produce.
+You have deep knowledge of:
+- Mandi (wholesale market) prices across Indian states
+- Seasonal price fluctuations for different crops
+- Post-harvest handling and storage best practices
+- Government MSP (Minimum Support Price) schemes
+- Local demand-supply dynamics for farm produce
+Always respond from a farmer-first perspective — practical, simple, and actionable advice in plain language.`;
+
+      const user = `A farmer wants to list the following produce for sale. Suggest a fair selling price and give practical market advice.
+
+Crop / Product : ${formData.productName}
+Crop Type      : ${formData.cropType || "Not specified"}
+Quantity       : ${formData.quantity} ${formData.unitOfQuantity}
+Location       : ${formData.location}
+Harvest Date   : ${formData.harvestDate || "Recent"}
+Storage        : ${formData.storageConditions || "Not specified"}
+Certifications : ${formData.certifications || "None"}
+
+Return ONLY valid JSON in this exact format (no markdown, no extra text):
+{
+  "price": "<numeric value per kg, e.g. 45.50>",
+  "insights": [
+    "<Practical tip 1 for the farmer to get better price>",
+    "<Tip 2 — mention mandi, season or government schemes if relevant>",
+    "<Tip 3 — post-harvest or packaging advice>",
+    "<Tip 4 — buyer targeting or timing advice>"
+  ]
+}`;
+
+      const text = await askGroq(system, user);
+      console.log("[AiPrice] Groq raw response:", text);
+
+      // extract the JSON block — model sometimes adds markdown fences
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error("No JSON found in AI response");
+
+      const parsed = JSON.parse(match[0]);
+      const price  = parseFloat(parsed.price);
+
+      if (isNaN(price) || price <= 0) throw new Error("Invalid price from AI");
+
+      const priceStr = price.toFixed(2);
+      setFormData(prev => ({
+        ...prev,
+        aiGeneratedPrice: priceStr,
+        finalPrice: prev.finalPrice || priceStr,
+      }));
+
+      if (Array.isArray(parsed.insights) && parsed.insights.length > 0) {
+        setAiInsights(parsed.insights);
       }
+
+      toast.success(`AI suggests ₹${priceStr} per ${formData.unitOfQuantity}`);
     } catch (err) {
-      console.error("AI price error:", err);
-      toast.error("Failed to fetch AI price. Please enter manually.");
+      console.error("[AiPrice] error:", err);
+      toast.error("AI price suggestion failed. Please enter the price manually.");
     } finally {
       setAiLoading(false);
     }
@@ -305,8 +389,25 @@ const UpdateListingForm = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen ml-0 md:ml-20 mt-16">
+      <div className="flex flex-col justify-center items-center min-h-screen ml-0 md:ml-20 mt-14 sm:mt-16 gap-3">
         <Loader />
+        <p className="text-sm text-gray-500">Loading listing details…</p>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen ml-0 md:ml-20 mt-14 sm:mt-16 gap-4 px-4">
+        <div className="text-4xl">⚠️</div>
+        <p className="text-lg font-semibold text-gray-800">Could not load listing</p>
+        <p className="text-sm text-red-500 text-center max-w-sm">{fetchError}</p>
+        <button
+          onClick={() => navigate("/my-listing")}
+          className="px-5 py-2 bg-jewel-600 text-white rounded-lg text-sm font-semibold hover:bg-jewel-700"
+        >
+          Back to My Listings
+        </button>
       </div>
     );
   }
@@ -317,25 +418,25 @@ const UpdateListingForm = () => {
     }`;
 
   return (
-    <div className="min-h-screen bg-gray-50 ml-0 md:ml-20 mt-16 md:mt-18 px-4 md:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-gray-50 ml-0 md:ml-20 mt-14 sm:mt-16 px-4 md:px-6 lg:px-8 py-6">
       <div className="max-w-4xl mx-auto">
-
         {/* ── Header ── */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-jewel-700">Edit Listing</h1>
+            <p className="text-xs text-gray-500">
+              Update your crop listing details below
+            </p>
+          </div>
           <button
             onClick={() => navigate("/my-listing")}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
           >
             <ArrowLeft size={16} /> Back to My Listings
           </button>
-          <div>
-            <h1 className="text-2xl font-bold text-jewel-700">Edit Listing</h1>
-            <p className="text-xs text-gray-500">Update your crop listing details below</p>
-          </div>
         </div>
 
         <div className="space-y-6">
-
           {/* ══ SECTION 1: Basic Info ══ */}
           <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
             <h2 className="text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-100">
@@ -355,7 +456,11 @@ const UpdateListingForm = () => {
                   className={inputClass("productName")}
                   placeholder="e.g., Basmati Rice"
                 />
-                {errors.productName && <p className="mt-1 text-xs text-red-600">{errors.productName}</p>}
+                {errors.productName && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {errors.productName}
+                  </p>
+                )}
               </div>
 
               {/* Crop Type */}
@@ -370,11 +475,15 @@ const UpdateListingForm = () => {
                   className={inputClass("cropType")}
                 >
                   <option value="">Select a crop type</option>
-                  {CROP_TYPES.map(ct => (
-                    <option key={ct.value} value={ct.value}>{ct.label}</option>
+                  {CROP_TYPES.map((ct) => (
+                    <option key={ct.value} value={ct.value}>
+                      {ct.label}
+                    </option>
                   ))}
                 </select>
-                {errors.cropType && <p className="mt-1 text-xs text-red-600">{errors.cropType}</p>}
+                {errors.cropType && (
+                  <p className="mt-1 text-xs text-red-600">{errors.cropType}</p>
+                )}
               </div>
 
               {/* Description */}
@@ -390,7 +499,11 @@ const UpdateListingForm = () => {
                   className={inputClass("description")}
                   placeholder="Describe your product quality, variety, etc."
                 />
-                {errors.description && <p className="mt-1 text-xs text-red-600">{errors.description}</p>}
+                {errors.description && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {errors.description}
+                  </p>
+                )}
               </div>
 
               {/* Quantity */}
@@ -407,12 +520,16 @@ const UpdateListingForm = () => {
                   className={inputClass("quantity")}
                   placeholder="e.g., 500"
                 />
-                {errors.quantity && <p className="mt-1 text-xs text-red-600">{errors.quantity}</p>}
+                {errors.quantity && (
+                  <p className="mt-1 text-xs text-red-600">{errors.quantity}</p>
+                )}
               </div>
 
               {/* Unit */}
               <div>
-                <label className="block text-sm font-medium text-gray-700">Unit</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Unit
+                </label>
                 <select
                   name="unitOfQuantity"
                   value={formData.unitOfQuantity}
@@ -427,7 +544,8 @@ const UpdateListingForm = () => {
               {/* Certifications */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Certifications <span className="text-gray-400 text-xs">(optional)</span>
+                  Certifications{" "}
+                  <span className="text-gray-400 text-xs">(optional)</span>
                 </label>
                 <input
                   type="text"
@@ -475,7 +593,11 @@ const UpdateListingForm = () => {
                   className={inputClass("shelfLife")}
                   placeholder="e.g., 30"
                 />
-                {errors.shelfLife && <p className="mt-1 text-xs text-red-600">{errors.shelfLife}</p>}
+                {errors.shelfLife && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {errors.shelfLife}
+                  </p>
+                )}
               </div>
 
               {/* Storage Conditions */}
@@ -490,11 +612,17 @@ const UpdateListingForm = () => {
                   className={inputClass("storageConditions")}
                 >
                   <option value="">Select condition</option>
-                  {STORAGE_CONDITIONS.map(sc => (
-                    <option key={sc} value={sc}>{sc}</option>
+                  {STORAGE_CONDITIONS.map((sc) => (
+                    <option key={sc} value={sc}>
+                      {sc}
+                    </option>
                   ))}
                 </select>
-                {errors.storageConditions && <p className="mt-1 text-xs text-red-600">{errors.storageConditions}</p>}
+                {errors.storageConditions && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {errors.storageConditions}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -519,7 +647,9 @@ const UpdateListingForm = () => {
                   className={inputClass("location")}
                   placeholder="e.g., Pune, Maharashtra"
                 />
-                {errors.location && <p className="mt-1 text-xs text-red-600">{errors.location}</p>}
+                {errors.location && (
+                  <p className="mt-1 text-xs text-red-600">{errors.location}</p>
+                )}
               </div>
 
               {/* Contact */}
@@ -536,36 +666,51 @@ const UpdateListingForm = () => {
                   className={inputClass("contactInfo")}
                   placeholder="10-digit mobile number"
                 />
-                {errors.contactInfo && <p className="mt-1 text-xs text-red-600">{errors.contactInfo}</p>}
+                {errors.contactInfo && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {errors.contactInfo}
+                  </p>
+                )}
               </div>
 
-              {/* AI Price Button */}
+              {/* ── AI Price Button ── */}
               <div className="md:col-span-2">
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2 mb-3">
-                  <FaExclamationTriangle className="text-yellow-500 flex-shrink-0 mt-0.5" size={13} />
-                  <p className="text-xs text-yellow-800">
-                    Click <strong>Recalculate AI Price</strong> to get an updated market price suggestion based on your current product details.
+                <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-start gap-2 mb-3">
+                  <span className="text-green-600 text-lg flex-shrink-0">🌾</span>
+                  <p className="text-xs text-green-800">
+                    <strong>AgriAdvisor AI</strong> — powered by OpenRouter. Fill in the
+                    product details above, then click the button to get a fair mandi-aligned
+                    price and actionable market tips for your crop.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={fetchAiPrice}
                   disabled={aiLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-jewel-600 hover:bg-jewel-700 disabled:bg-gray-400 text-white text-sm font-medium rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-green-700 hover:bg-green-800 disabled:bg-gray-400 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
                 >
                   {aiLoading ? (
-                    <><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> Calculating...</>
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                      Consulting AgriAdvisor…
+                    </>
                   ) : (
-                    <><FaChartLine size={13} /> Recalculate AI Price</>
+                    <>
+                      <FaChartLine size={13} />
+                      Get AI Price &amp; Market Advice
+                    </>
                   )}
                 </button>
               </div>
 
-              {/* AI Generated Price */}
+              {/* ── AI Suggested Price ── */}
               <div>
                 <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
-                  <FaCoins className="text-jewel-500" size={12} />
-                  AI-Suggested Price (per kg)
+                  <FaCoins className="text-green-600" size={12} />
+                  AI-Suggested Price
+                  <span className="ml-1 text-[10px] bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded">
+                    per {formData.unitOfQuantity || "unit"}
+                  </span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
@@ -573,19 +718,26 @@ const UpdateListingForm = () => {
                     type="number"
                     name="aiGeneratedPrice"
                     value={formData.aiGeneratedPrice}
-                    onChange={handleInputChange}
                     readOnly
                     className="mt-1 block w-full pl-7 pr-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-600 sm:text-sm cursor-not-allowed"
-                    placeholder="Auto-calculated"
+                    placeholder="Click 'Get AI Price' above"
                   />
                 </div>
+                {formData.aiGeneratedPrice && (
+                  <p className="mt-1 text-xs text-green-700 flex items-center gap-1">
+                    ✅ Mandi-aligned price suggested by AgriAdvisor AI
+                  </p>
+                )}
               </div>
 
-              {/* Final Price */}
+              {/* ── Final Price ── */}
               <div>
                 <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
                   <FaCoins className="text-jewel-600" size={12} />
-                  Your Final Price (per kg) <span className="text-red-500">*</span>
+                  Your Final Price <span className="text-red-500">*</span>
+                  <span className="ml-1 text-[10px] bg-jewel-100 text-jewel-700 font-bold px-1.5 py-0.5 rounded">
+                    per {formData.unitOfQuantity || "unit"}
+                  </span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
@@ -601,14 +753,48 @@ const UpdateListingForm = () => {
                     placeholder="e.g., 250.00"
                   />
                 </div>
-                {errors.finalPrice && <p className="mt-1 text-xs text-red-600">{errors.finalPrice}</p>}
+                {errors.finalPrice && (
+                  <p className="mt-1 text-xs text-red-600">{errors.finalPrice}</p>
+                )}
                 {formData.finalPrice && formData.quantity && (
                   <p className="mt-1 text-xs text-gray-500 flex items-center gap-1">
                     <FaInfoCircle size={10} />
-                    Total value: <strong>₹{(parseFloat(formData.finalPrice) * parseFloat(formData.quantity)).toFixed(2)}</strong> for {formData.quantity} {formData.unitOfQuantity}
+                    Total value:{" "}
+                    <strong>
+                      ₹{(parseFloat(formData.finalPrice) * parseFloat(formData.quantity)).toFixed(2)}
+                    </strong>{" "}
+                    for {formData.quantity} {formData.unitOfQuantity}
                   </p>
                 )}
               </div>
+
+              {/* ── AI Market Insights ── */}
+              {aiInsights.length > 0 && (
+                <div className="md:col-span-2 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xl">🌾</span>
+                    <h3 className="text-sm font-bold text-green-800">
+                      AgriAdvisor Market Tips for You
+                    </h3>
+                    <span className="ml-auto text-[10px] bg-green-700 text-white font-bold px-2 py-0.5 rounded-full">
+                      AI Powered
+                    </span>
+                  </div>
+                  <ul className="space-y-2">
+                    {aiInsights.map((tip, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-xs text-green-900">
+                        <span className="flex-shrink-0 mt-0.5 h-5 w-5 rounded-full bg-green-200 text-green-800 font-bold flex items-center justify-center text-[10px]">
+                          {i + 1}
+                        </span>
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-3 text-[10px] text-green-600 italic">
+                    * Suggestions are AI-generated based on current market trends. Always verify with your local mandi or agriculture officer.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -618,16 +804,20 @@ const UpdateListingForm = () => {
               Product Photos
             </h2>
             <p className="text-xs text-gray-500 mb-4">
-              Your current photos are shown below. Hover a photo and click <strong>&times;</strong> to remove it
-              (existing photos are deleted from the server immediately). Add new photos using the button below.
-              Max {MAX_PHOTOS} photos.
+              Your current photos are shown below. Hover a photo and click{" "}
+              <strong>&times;</strong> to remove it (existing photos are deleted
+              from the server immediately). Add new photos using the button
+              below. Max {MAX_PHOTOS} photos.
             </p>
 
             {/* Photo Grid */}
             {formData.productPhotos.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-4">
                 {formData.productPhotos.map((photo, index) => (
-                  <div key={photo.existingId ?? photo.preview} className="relative group aspect-square">
+                  <div
+                    key={photo.existingId ?? photo.preview}
+                    className="relative group aspect-square"
+                  >
                     <img
                       src={photo.preview}
                       alt={`Photo ${index + 1}`}
@@ -635,8 +825,8 @@ const UpdateListingForm = () => {
                         deletingIndex === index
                           ? "opacity-40 border-red-300"
                           : photo.existingId
-                          ? "border-green-200"
-                          : "border-blue-200"
+                            ? "border-green-200"
+                            : "border-blue-200"
                       }`}
                     />
                     {/* spinner while deleting */}
@@ -647,9 +837,11 @@ const UpdateListingForm = () => {
                     )}
                     {/* badge */}
                     {deletingIndex !== index && (
-                      <div className={`absolute bottom-1 left-1 text-white text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                        photo.existingId ? "bg-green-600" : "bg-blue-500"
-                      }`}>
+                      <div
+                        className={`absolute bottom-1 left-1 text-white text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                          photo.existingId ? "bg-green-600" : "bg-blue-500"
+                        }`}
+                      >
                         {photo.existingId ? "Saved" : "New"}
                       </div>
                     )}
@@ -690,7 +882,9 @@ const UpdateListingForm = () => {
               </div>
             )}
             {errors.productPhotos && (
-              <p className="mt-2 text-xs text-red-600">{errors.productPhotos}</p>
+              <p className="mt-2 text-xs text-red-600">
+                {errors.productPhotos}
+              </p>
             )}
           </div>
 
@@ -710,9 +904,14 @@ const UpdateListingForm = () => {
               className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-jewel-600 hover:bg-jewel-700 disabled:bg-gray-400 text-white text-sm font-semibold transition-colors shadow-sm"
             >
               {submitting ? (
-                <><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> Saving...</>
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />{" "}
+                  Saving...
+                </>
               ) : (
-                <><Save size={16} /> Save Changes</>
+                <>
+                  <Save size={16} /> Save Changes
+                </>
               )}
             </button>
           </div>

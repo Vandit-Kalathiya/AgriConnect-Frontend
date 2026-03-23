@@ -207,7 +207,7 @@ const UserProfile = () => {
   return (
     <>
       {isLoading && <Loader message="Saving your profile..." />}
-      <div className="bg-gray-50 py-6 md:py-12 px-4 md:px-6 lg:px-8 ml-0 md:ml-20 mt-16 md:mt-18 min-h-screen">
+      <div className="bg-gray-50 py-6 md:py-12 px-4 md:px-6 lg:px-8 ml-0 md:ml-20 mt-14 sm:mt-16 min-h-screen">
         <div className="max-w-full md:max-w-4xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold text-green-900 mb-6 md:mb-10 text-center drop-shadow-md">
             Your Profile

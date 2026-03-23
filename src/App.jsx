@@ -152,7 +152,7 @@ function App() {
           }
         />
         <Route
-          path="/update-listing/:id"
+          path="/edit/:id"
           element={
             <PrivateRoute>
               <Layout>
