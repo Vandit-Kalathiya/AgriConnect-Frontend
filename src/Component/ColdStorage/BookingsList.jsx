@@ -104,7 +104,7 @@ const BookingsList = ({
             Book a storage space to get started
           </p>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsModalOpen && setIsModalOpen(true)}
             className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
           >
             Book Now

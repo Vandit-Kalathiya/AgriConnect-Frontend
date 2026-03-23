@@ -1,6 +1,7 @@
 import React from "react";
 // import { FaCheckCircle, ThumbsUp } from "react-feather";
 import { FaRegCheckCircle, FaThumbsUp } from "react-icons/fa";
+import { XCircle } from "lucide-react";
 
 const VerifyModal = ({
   verificationComplete,

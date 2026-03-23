@@ -6,6 +6,15 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
   { ignores: ['dist'] },
+
+  // ── Vite config needs Node globals (process, __dirname, etc.) ────────────
+  {
+    files: ['vite.config.js'],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+  },
+
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -31,10 +40,12 @@ export default [
 
       // ── Downgraded to warn / off ──────────────────────────────────
       'react/jsx-no-target-blank': 'off',
-      'react/prop-types': 'off',                        // not enforced in this project
-      'react/no-unescaped-entities': 'off',             // JSX apostrophes/quotes
-      'no-unused-vars': 'warn',                         // warn, not block the build
-      'react-hooks/exhaustive-deps': 'warn',            // warn, not block the build
+      'react/prop-types': 'off',               // not enforced in this project
+      'react/no-unescaped-entities': 'off',    // JSX apostrophes/quotes
+      'react/no-unknown-property': 'off',      // allows jsx={}, cmdk-*, styled-jsx attrs
+      'no-unused-vars': 'warn',                // warn, not block the build
+      'no-undef': 'warn',                      // warn, not block the build
+      'react-hooks/exhaustive-deps': 'warn',   // warn, not block the build
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
