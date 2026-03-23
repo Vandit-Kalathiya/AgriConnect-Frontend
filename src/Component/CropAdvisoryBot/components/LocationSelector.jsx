@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Input } from "./UI/Input";
-import { Label } from "./UI/Label";
+import { Input } from "./ui/Input";
+import { Label } from "./ui/Label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./UI/Select";
+} from "./ui/Select";
 import { MapPinIcon, MapIcon, Globe, Search, CheckCircle } from "lucide-react";
-import { Card, CardContent } from "./UI/Card";
-import { Button } from "./UI/Button";
+import { Card, CardContent } from "./ui/Card";
+import { Button } from "./ui/Button";
 import { indianStates } from "./indianStates";
 
 const LocationSelector = ({ onLocationSelect }) => {

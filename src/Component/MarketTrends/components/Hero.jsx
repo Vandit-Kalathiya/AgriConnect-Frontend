@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Button } from '../components/UI/Button';
+import { Button } from '../components/ui/Button';
 import SearchBar from './SearchBar';
 import { ArrowRight, BarChart3, Sprout, TrendingUp } from 'lucide-react';
 

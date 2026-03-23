@@ -8,17 +8,17 @@ import {
   TrendingUp, BarChart3, ArrowUpRight, Filter, ArrowRight,
   Layers, Calendar, Wheat, Carrot, Grape, Coffee
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/UI/Card';
-import { Button } from '../components/UI/Button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/UI/Tabs';
-import { Input } from '../components/UI/Input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs';
+import { Input } from '../components/ui/Input';
 import { 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from '../components/UI/Select';
+} from '../components/ui/Select';
 import TrendingCrops from '../components/TrendingCrops';
 
 const Trends = () => {

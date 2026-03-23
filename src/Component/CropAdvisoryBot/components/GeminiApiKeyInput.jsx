@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Input } from "./UI/Input";
-import { Button } from "./UI/Button";
+import { Input } from "./ui/Input";
+import { Button } from "./ui/Button";
 import { Key, Check, Eye, EyeOff } from "lucide-react";
 import { useToast } from "../Hooks/use-toast";
 

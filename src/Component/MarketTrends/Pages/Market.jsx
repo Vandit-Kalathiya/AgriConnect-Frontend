@@ -6,18 +6,18 @@ import {
   Coffee, Filter, ArrowDownRight, ArrowUpRight, ChevronRight, 
   Clock, LayoutGrid
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/UI/Card';
-import { Button } from '../components/UI/Button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/UI/Tabs';
-import { Input } from '../components/UI/Input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs';
+import { Input } from '../components/ui/Input';
 import { 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from '../components/UI/Select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/UI/Table';
+} from '../components/ui/Select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/Table';
 import SearchBar from '../components/SearchBar';
 
 const Market = () => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/UI/Card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/UI/Tabs';
-import { Button } from '../components/UI/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs';
+import { Button } from '../components/ui/Button';
 import { 
   AlertTriangle, TrendingUp, Leaf, AlertCircle, BarChart3,
   ArrowRight, CloudRain, PiggyBank, Coins, Lightbulb

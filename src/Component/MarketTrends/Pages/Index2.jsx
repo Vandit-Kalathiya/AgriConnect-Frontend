@@ -14,7 +14,7 @@ import {
   Lightbulb,
   ArrowUpRight,
 } from "lucide-react";
-import { Button } from "../components/UI/Button";
+import { Button } from "../components/ui/Button";
 import { getCurrentMonth, getCurrentYear } from "../Utils/DateUtils";
 
 const Index2 = () => {

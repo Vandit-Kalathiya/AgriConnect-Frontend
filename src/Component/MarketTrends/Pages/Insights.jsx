@@ -9,17 +9,17 @@ import {
   ArrowUpRight, ArrowDownRight, Zap, BadgeAlert, BarChart3, 
   CloudRain, Sun, ThermometerSun
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/UI/Card';
-import { Button } from '../components/UI/Button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/UI/Tabs';
-import { Separator } from '../components/UI/Separator';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs';
+import { Separator } from '../components/ui/Separator';
 import { 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from '../components/UI/Select';
+} from '../components/ui/Select';
 import { generateRecommendations } from '../components/GeminiService';
 import { toast } from 'sonner';
 

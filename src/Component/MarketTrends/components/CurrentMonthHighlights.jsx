@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/UI/Card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { Badge } from '../components/UI/Badge';
+import { Badge } from '../components/ui/Badge';
 import { ArrowUpRight, ArrowDownRight, Percent, Clock } from 'lucide-react';
 import { getCurrentMonth, getCurrentYear } from '../Utils/DateUtils';
 

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, Loader2 } from 'lucide-react';
-import { Button } from '../components/UI/Button';
-import { Input } from '../components/UI/Input';
-import { Card } from '../components/UI/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card } from '../components/ui/Card';
 import { toast } from 'sonner';
 
 const SearchBar = () => {

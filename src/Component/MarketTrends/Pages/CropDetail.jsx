@@ -36,14 +36,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/UI/Card";
-import { Button } from "../components/UI/Button";
+} from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../components/UI/Tabs";
+} from "../components/ui/Tabs";
 import {
   Table,
   TableBody,
@@ -51,8 +51,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/UI/Table";
-import { Separator } from "../components/UI/Separator";
+} from "../components/ui/Table";
+import { Separator } from "../components/ui/Separator";
 import {
   generateCropAnalysis,
   generateRecommendations,
@@ -64,7 +64,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "../components/UI/Dialog";
+} from "../components/ui/Dialog";
 import { getFormattedCurrentDate } from "../Utils/DateUtils";
 import Loader from "../../Loader/Loader";
 
