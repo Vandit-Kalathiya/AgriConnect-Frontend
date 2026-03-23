@@ -80,6 +80,26 @@ jobs:
             ./ \
             ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ env.APP_DIR }}/
 
+      - name: Ensure Docker is installed on EC2
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "bash -l -c '
+              if ! command -v docker &>/dev/null; then
+                echo \"==> Docker not found. Installing...\"
+                curl -fsSL https://get.docker.com | sudo sh
+                sudo usermod -aG docker \$USER
+                echo \"==> Docker installed.\"
+              else
+                echo \"==> Docker already installed: \$(docker --version)\"
+              fi
+              if ! command -v docker &>/dev/null; then
+                export PATH=\$PATH:/usr/bin
+              fi
+              docker compose version || sudo apt-get install -y docker-compose-plugin
+            '"
+
       - name: Build Docker image & restart container
         run: |
           ssh -i ~/.ssh/deploy_key \
@@ -90,8 +110,14 @@ jobs:
               export PATH=$PATH:/usr/bin:/usr/local/bin
               cd ~/AgriConnect_Frontend
 
+              echo "==> Logging in to Docker Hub (avoids pull rate limits)..."
+              echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
               echo "==> Building Docker image..."
               docker build -t ${{ secrets.DOCKER_USERNAME }}/agriconnect-frontend:latest .
+
+              echo "==> Logging out of Docker Hub..."
+              docker logout
 
               echo "==> Restarting container..."
               DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }} docker compose up -d --remove-orphans
