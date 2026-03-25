@@ -4,7 +4,7 @@ import { Package } from "react-feather";
 import OrderRow from "./OrderRow";
 import OrderDetailsDrawer from "./OrderDetailsDrawer";
 import OrderStatusBadge from "./OrderStatusBadge";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { API_CONFIG } from "../../config/apiConfig";
 
 // Mobile Order Card Component
@@ -90,7 +90,7 @@ const OrderList = ({
       ) {
         setLoadingFarmer(true);
         try {
-          const response = await axios.get(
+          const response = await api.get(
             `${API_CONFIG.IDENTITY_SERVICE}/users/unique/${selectedOrder.farmerAddress}`,
             {
               headers: {

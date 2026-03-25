@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import Step1 from "./Step1";
 import Step2 from "./Step2";
 import Step3 from "./Step3";
@@ -228,15 +228,9 @@ const ListingForm = () => {
     }
 
     try {
-      const response = await axios.post(
+      const response = await api.post(
         `${BASE_URL}/listings/add`,
-        submissionData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        submissionData
       );
 
       console.log("Backend response:", response.data);
@@ -276,12 +270,7 @@ const ListingForm = () => {
 
   const fetchListingById = async (listingId) => {
     try {
-      const response = await axios.get(
-        `${BASE_URL}/listings/get/${listingId}`,
-        {
-          withCredentials: true, // If your API requires authentication
-        }
-      );
+      const response = await api.get(`${BASE_URL}/listings/get/${listingId}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching listing:", error);

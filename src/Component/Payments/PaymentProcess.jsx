@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { useLocation, useNavigate } from "react-router-dom";
 import { API_CONFIG } from "../../config/apiConfig";
 import {
@@ -104,15 +104,9 @@ const PaymentProcess = () => {
       paymentData.append("orderId", order?.id);
       paymentData.append("amount", Math.round(amount));
 
-      const response = await axios.post(
+      const response = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/api/payments/create-order`,
-        paymentData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        },
+        paymentData
       );
 
       const razorpayData = response.data;
@@ -131,6 +125,7 @@ const PaymentProcess = () => {
               `${API_CONFIG.CONTRACT_FARMING}/api/payments/payment-callback`,
               {
                 method: "POST",
+                credentials: "include",
                 headers: {
                   "Content-Type": "application/x-www-form-urlencoded",
                 },
@@ -144,7 +139,7 @@ const PaymentProcess = () => {
             if (verifyData.success) {
               const listingId = order?.listingId || verifyData.data.listingId;
               const quantity = order?.quantity || verifyData.data.quantity;
-              const updateListingStatus = await axios.put(
+              const updateListingStatus = await api.put(
                 `${API_CONFIG.MARKET_ACCESS}/listings/${listingId}/archived/${quantity}`,
               );
               if (!updateListingStatus.status === 200) {
@@ -160,7 +155,7 @@ const PaymentProcess = () => {
               }
               setPaymentCompleted(true);
               toast.success(verifyData.message);
-              window.location.href = `${import.meta.env.VITE_APP_URL || 'http://localhost:5000'}/my-orders`;
+              window.location.href = `${window.location.origin}/my-orders`;
             } else {
               toast.error("Payment verification failed.");
             }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { API_CONFIG } from "../../config/apiConfig";
 
 const CropCard = ({ crop }) => {
@@ -18,9 +18,8 @@ const CropCard = ({ crop }) => {
       setLoading(true);
       const imagePromises = crop.images.map((image) => {
         const imageUrl = `${API_CONFIG.MARKET_ACCESS}/image/${image.id}`;
-        return axios
+        return api
           .get(imageUrl, {
-            withCredentials: true,
             responseType: "blob",
           })
           .then((res) => {

@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import React, { useEffect, useState } from "react";
 import {
   FaFileContract,
@@ -41,7 +41,7 @@ const Contracts = () => {
 
       const params = buildPaginationParams(cursor, limit, sortOrder === "desc" ? "DESC" : "ASC");
       
-      const response = await axios.get(
+      const response = await api.get(
         `${API_CONFIG.CONTRACT_FARMING}/user/agreements/${user.uniqueHexAddress}/paginated?${params}`,
         { withCredentials: true }
       );
@@ -146,7 +146,7 @@ const Contracts = () => {
   const handleDownload = async (downloadUrl, fileName) => {
     try {
       toast.info("Preparing download...");
-      const response = await axios.get(downloadUrl, {
+      const response = await api.get(downloadUrl, {
         responseType: "blob",
         withCredentials: true,
       });

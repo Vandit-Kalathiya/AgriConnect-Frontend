@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from './src/config/axiosInstance.js';
 import { jwtDecode } from 'jwt-decode';
 import { API_CONFIG } from './src/config/apiConfig.js';
 
@@ -54,12 +54,7 @@ export const getCurrentUser = async () => {
             throw new Error('Unable to extract phone number from token');
         }
 
-        const response = await axios.get(`${BASE_URL}/users/${phoneNumber}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            withCredentials: true,
-        });
+        const response = await api.get(`${BASE_URL}/users/${phoneNumber}`);
 
         return response.data;
     } catch (error) {

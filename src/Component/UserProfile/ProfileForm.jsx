@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaUser, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
-import axios from "axios";
-import { BASE_URL, getTokenFromCookie } from "../../../helper";
+import api from "../../config/axiosInstance";
+import { BASE_URL } from "../../../helper";
 import toast from "react-hot-toast";
 
 const ProfileForm = ({
@@ -27,7 +27,7 @@ const ProfileForm = ({
     }
 
     try {
-      const res = await axios.post(
+      const res = await api.post(
         `${BASE_URL}/auth/otp/send?phoneNumber=${tempPhoneNumber}`
       );
       setIsOtpSent(true);
@@ -39,13 +39,8 @@ const ProfileForm = ({
 
   const handleVerifyOtp = async () => {
     try {
-      const response = await axios.post(
-        `${BASE_URL}/auth/otp/verify?phoneNumber=${tempPhoneNumber}&otp=${otpValue}`,
-        {
-          headers: {
-            Authorization: "Bearer " + getTokenFromCookie(),
-          },
-        }
+      const response = await api.post(
+        `${BASE_URL}/auth/otp/verify?phoneNumber=${tempPhoneNumber}&otp=${otpValue}`
       );
       if (response.data) {
         onPhoneNumberVerified(tempPhoneNumber);

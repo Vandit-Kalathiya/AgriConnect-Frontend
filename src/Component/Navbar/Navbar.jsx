@@ -10,8 +10,8 @@ import {
 } from "react-icons/fa";
 import { GiHamburgerMenu, GiCrossedBones } from "react-icons/gi";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { BASE_URL, getCurrentUser, getTokenFromCookie } from "../../../helper";
-import axios from "axios";
+import { BASE_URL, getCurrentUser } from "../../../helper";
+import api from "../../config/axiosInstance";
 import leafImg from "../../assets/leaf.png";
 import toast from "react-hot-toast";
 
@@ -56,14 +56,9 @@ const Navbar = () => {
 
       // Fetch profile picture
       if (user1?.id) {
-        const profileResponse = await axios.get(
+        const profileResponse = await api.get(
           `${BASE_URL}/users/profile-image/${user1.id}`,
-          {
-            responseType: "arraybuffer", // Handle binary data
-            headers: {
-              Authorization: "Bearer " + getTokenFromCookie(),
-            },
-          },
+          { responseType: "arraybuffer" },
         );
         const profileBlob = new Blob([profileResponse.data], {
           type: "image/jpeg",
@@ -71,14 +66,9 @@ const Navbar = () => {
         setProfilePicture(URL.createObjectURL(profileBlob));
 
         // Fetch signature
-        const signatureResponse = await axios.get(
+        const signatureResponse = await api.get(
           `${BASE_URL}/users/signature-image/${user1.id}`,
-          {
-            responseType: "arraybuffer",
-            headers: {
-              Authorization: "Bearer " + getTokenFromCookie(),
-            },
-          },
+          { responseType: "arraybuffer" },
         );
         const signatureBlob = new Blob([signatureResponse.data], {
           type: "image/jpeg",
@@ -101,12 +91,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${BASE_URL}/auth/logout`, null, {
-        withCredentials: true,
-        headers: {
-          Authorization: "Bearer " + getTokenFromCookie(),
-        },
-      });
+      await api.post(`${BASE_URL}/auth/logout`, null);
       toast.success("Logged out successfully");
       navigate("/");
     } catch (error) {

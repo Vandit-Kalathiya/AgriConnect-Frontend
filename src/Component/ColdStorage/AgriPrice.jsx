@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+const ML_API_URL = import.meta.env.VITE_ML_API_URL || 'http://localhost:2020';
+
 const Agriprice = () => {
   const [state, setState] = useState("");
   const [district, setDistrict] = useState("");
@@ -9,7 +11,7 @@ const Agriprice = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.post("http://localhost:2020/run/predict", {
+      const response = await axios.post(`${ML_API_URL}/run/predict`, {
         data: [category, state, district],
       });
 

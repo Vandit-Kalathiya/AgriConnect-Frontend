@@ -1,7 +1,7 @@
 // import React, { useEffect, useState } from "react";
 // import leafImg from "../../assets/leaf.png";
 // import { useNavigate, useParams } from "react-router-dom";
-// import axios from "axios"; // Import axios for API calls
+// import api from "../../config/axiosInstance"; // Import api instance for API calls
 // import { getCurrentUser } from "../../../helper";
 
 // export const CropContractAgreement = () => {
@@ -23,7 +23,7 @@
 
 //   const fetchListingById = async () => {
 //     try {
-//       const response = await axios.get(
+//       const response = await api.get(
 //         `http://localhost:2527/listings/get/${listingId}`,
 //         {
 //           withCredentials: true,
@@ -40,7 +40,7 @@
 
 //   const fetchFarmerDetails = async (farmerContact) => {
 //     try {
-//       const response = await axios.get(
+//       const response = await api.get(
 //         `http://localhost:2525/users/${farmerContact}`,
 //         {
 //           withCredentials: true,
@@ -208,7 +208,7 @@
 
 //     try {
 //       // Step 1: Save the contract
-//       const saveResponse = await axios.post(
+//       const saveResponse = await api.post(
 //         "http://localhost:2526/agreements/save",
 //         submitData,
 //         {
@@ -227,7 +227,7 @@
 //         throw new Error("Agreement ID not returned from save response");
 //       }
 
-//       const fetchResponse = await axios.get(
+//       const fetchResponse = await api.get(
 //         `http://localhost:2526/agreements/get/${agreementId}`,
 //         {
 //           headers: {
@@ -281,7 +281,7 @@
 //       window.URL.revokeObjectURL(url);
 //       console.log("Contract PDF generated successfully");
 
-//       const updateListingStatus = axios.put(
+//       const updateListingStatus = api.put(
 //         `http://localhost:2527/listings/${listingId}/archived`
 //       );
 //       if (!response.ok) {
@@ -333,7 +333,7 @@
 //     uploadData.append("amount", lis.finalPrice * lis.quantity);
 
 //     try {
-//       const response = await axios.post(
+//       const response = await api.post(
 //         "http://localhost:2526/api/agreements/upload",
 //         uploadData,
 //         {
@@ -1527,7 +1527,7 @@
 import React, { useEffect, useState } from "react";
 import leafImg from "../../assets/leaf.png";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios"; // Import axios for API calls
+import api from "../../config/axiosInstance"; // Import api instance for API calls
 import { getCurrentUser } from "../../../helper";
 import { Upload, FileText, CheckCircle } from "lucide-react";
 import { API_CONFIG } from "../../config/apiConfig";
@@ -1646,7 +1646,7 @@ export const CropContractAgreement = () => {
 
   const fetchListingById = async () => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `${API_CONFIG.MARKET_ACCESS}/listings/get/${listingId}`,
         {
           withCredentials: true,
@@ -1709,7 +1709,7 @@ export const CropContractAgreement = () => {
 
   const fetchFarmerDetails = async (farmerContact) => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `${API_CONFIG.MAIN_BACKEND}/users/${farmerContact}`,
         {
           withCredentials: true,
@@ -1806,7 +1806,7 @@ export const CropContractAgreement = () => {
 
     try {
       // Step 1: Save the contract
-      const saveResponse = await axios.post(
+      const saveResponse = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/agreements/save`,
         submitData,
         {
@@ -1825,7 +1825,7 @@ export const CropContractAgreement = () => {
         throw new Error("Agreement ID not returned from save response");
       }
 
-      const fetchResponse = await axios.get(
+      const fetchResponse = await api.get(
         `${API_CONFIG.CONTRACT_FARMING}/agreements/get/${agreementId}`,
         {
           headers: {
@@ -1851,6 +1851,7 @@ export const CropContractAgreement = () => {
 
       const response = await fetch(`${API_CONFIG.GENERATE_AGREEMENT}/contracts/generate`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/pdf",
@@ -1912,7 +1913,7 @@ export const CropContractAgreement = () => {
     uploadData.append("file", contractFile);
 
     try {
-      const response = await axios.post(
+      const response = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/upload/${far.uniqueHexAddress}/${buy.uniqueHexAddress}`,
         uploadData,
         {
@@ -2902,7 +2903,7 @@ export const CropContractAgreement = () => {
 import React, { useEffect, useState } from "react";
 import leafImg from "../../assets/leaf.png";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios"; // Import axios for API calls
+import api from "../../config/axiosInstance"; // Import api instance for API calls
 import { getCurrentUser } from "../../../helper";
 import { Upload, FileText, CheckCircle } from "lucide-react";
 import { API_CONFIG } from "../../config/apiConfig";
@@ -3023,7 +3024,7 @@ export const CropContractAgreement = () => {
 
   const fetchListingById = async () => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `${API_CONFIG.MARKET_ACCESS}/listings/get/${listingId}`,
         {
           withCredentials: true,
@@ -3087,7 +3088,7 @@ export const CropContractAgreement = () => {
 
   const fetchFarmerDetails = async (farmerContact) => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `${API_CONFIG.MAIN_BACKEND}/users/${farmerContact}`,
         {
           withCredentials: true,
@@ -3184,7 +3185,7 @@ export const CropContractAgreement = () => {
 
     try {
       // Step 1: Save the contract
-      const saveResponse = await axios.post(
+      const saveResponse = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/agreements/save`,
         submitData,
         {
@@ -3203,7 +3204,7 @@ export const CropContractAgreement = () => {
         throw new Error("Agreement ID not returned from save response");
       }
 
-      const fetchResponse = await axios.get(
+      const fetchResponse = await api.get(
         `${API_CONFIG.CONTRACT_FARMING}/agreements/get/${agreementId}`,
         {
           headers: {
@@ -3229,6 +3230,7 @@ export const CropContractAgreement = () => {
 
       const response = await fetch(`${API_CONFIG.GENERATE_AGREEMENT}/contracts/generate`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/pdf",
@@ -3290,7 +3292,7 @@ export const CropContractAgreement = () => {
     uploadData.append("file", contractFile);
 
     try {
-      const response = await axios.post(
+      const response = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/upload/${far.uniqueHexAddress}/${buy.uniqueHexAddress}`,
         uploadData,
         {

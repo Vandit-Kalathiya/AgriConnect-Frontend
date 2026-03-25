@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { API_CONFIG } from "../../config/apiConfig";
 import { getCurrentUser } from "../../../helper";
 import PartyInformation from "./PartyInformation";
@@ -109,7 +109,7 @@ const CropContractAgreement = ({ quantity }) => {
 
   const fetchListingById = async () => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `${API_CONFIG.MARKET_ACCESS}/listings/get/${listingId}`,
         {
           withCredentials: true,
@@ -125,7 +125,7 @@ const CropContractAgreement = ({ quantity }) => {
 
   const fetchFarmerDetails = async (farmerContact) => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `${API_CONFIG.MAIN_BACKEND}/users/${farmerContact}`,
         {
           withCredentials: true,
@@ -272,7 +272,7 @@ const CropContractAgreement = ({ quantity }) => {
     }
 
     try {
-      const saveResponse = await axios.post(
+      const saveResponse = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/agreements/save`,
         submitData,
         {
@@ -339,7 +339,7 @@ const CropContractAgreement = ({ quantity }) => {
     };
 
     try {
-      const response = await axios.post(
+      const response = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/orders/create`,
         orderRequest,
         {
@@ -348,7 +348,7 @@ const CropContractAgreement = ({ quantity }) => {
       );
       toast.success("Order Created!");
 
-      const updateListingStatus = await axios.put(
+      const updateListingStatus = await api.put(
         `${API_CONFIG.MARKET_ACCESS}/listings/${listingId}/archived/${formData.cropDetails.quantity}`,
       );
       if (updateListingStatus.status === 200) {

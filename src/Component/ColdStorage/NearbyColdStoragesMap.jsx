@@ -400,6 +400,7 @@ import { BiCurrentLocation } from "react-icons/bi";
 import { BsListUl } from "react-icons/bs";
 import { AiOutlineClose } from "react-icons/ai";
 import axios from "axios";
+import api from "../../config/axiosInstance";
 import { API_CONFIG } from "../../config/apiConfig";
 
 const MAPBOX_API_KEY = import.meta.env.VITE_MAPBOX_API_KEY;
@@ -434,7 +435,7 @@ const NearbyColdStoragesMap = ({
 
       console.log(district,' ,',state);
 
-      const response = await axios.get(CUSTOM_API_URL, {
+      const response = await api.get(CUSTOM_API_URL, {
         params: {
           district,
           state,

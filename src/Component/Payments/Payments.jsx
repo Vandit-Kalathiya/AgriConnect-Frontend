@@ -11,7 +11,7 @@ import {
   FaArrowUp,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { getCurrentUser } from "../../../helper";
 import Loader from "../Loader/Loader";
 import { API_CONFIG } from "../../config/apiConfig";
@@ -46,10 +46,7 @@ const Payments = () => {
         ? `${API_CONFIG.CONTRACT_FARMING}/orders/buyer/${currentUser.uniqueHexAddress}/paginated?${params}&status=completed`
         : `${API_CONFIG.CONTRACT_FARMING}/orders/farmer/${currentUser.uniqueHexAddress}/paginated?${params}&status=completed`;
 
-      const response = await axios.get(endpoint, {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      });
+      const response = await api.get(endpoint);
 
       return response.data; // Returns { data: [...], metadata: {...} }
     } catch (error) {

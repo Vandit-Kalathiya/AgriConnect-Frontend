@@ -11,8 +11,8 @@ import {
   FaSignature,
 } from "react-icons/fa";
 import Loader from "../Loader/Loader";
-import { getCurrentUser, getTokenFromCookie, BASE_URL } from "../../../helper";
-import axios from "axios";
+import { getCurrentUser, BASE_URL } from "../../../helper";
+import api from "../../config/axiosInstance";
 import toast from "react-hot-toast";
 
 const UserProfile = () => {
@@ -33,7 +33,7 @@ const UserProfile = () => {
       setFormData(userData);
 
       if (userData?.id) {
-        const profileResponse = await axios.get(
+        const profileResponse = await api.get(
           `${BASE_URL}/users/profile-image/${userData.id}`,
           {
             responseType: "arraybuffer",
@@ -47,7 +47,7 @@ const UserProfile = () => {
         });
         setProfilePictureUrl(URL.createObjectURL(profileBlob));
 
-        const signatureResponse = await axios.get(
+        const signatureResponse = await api.get(
           `${BASE_URL}/users/signature-image/${userData.id}`,
           {
             responseType: "arraybuffer",
@@ -185,7 +185,7 @@ const UserProfile = () => {
         formDataToSend.append("signatureImage", signatureFile);
       }
 
-      const response = await axios.put(
+      const response = await api.put(
         `${BASE_URL}/users/update/${userData.id}`,
         formDataToSend,
         {

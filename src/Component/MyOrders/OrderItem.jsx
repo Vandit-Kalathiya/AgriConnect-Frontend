@@ -19,7 +19,7 @@ import {
   FaShippingFast,
 } from "react-icons/fa";
 import { XCircle, ThumbsUp, Package, Clock } from "react-feather";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { API_CONFIG } from "../../config/apiConfig";
@@ -50,7 +50,7 @@ const OrderItem = ({
       if (!isFarmer && order.farmerAddress) {
         setLoadingFarmer(true);
         try {
-          const response = await axios.get(
+          const response = await api.get(
             `${API_CONFIG.IDENTITY_SERVICE}/users/unique/${order.farmerAddress}`,
             {
               headers: {
@@ -75,7 +75,7 @@ const OrderItem = ({
   const approveDelivery = async (orderId) => {
     setLoading(true);
     try {
-      const response2 = await axios.post(
+      const response2 = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/api/payments/verify-delivery/${orderId}`,
         {},
         { withCredentials: true }
@@ -83,7 +83,7 @@ const OrderItem = ({
 
       const agreementId = order.agreementId;
 
-      const fetchResponse = await axios.get(
+      const fetchResponse = await api.get(
         `${API_CONFIG.CONTRACT_FARMING}/agreements/get/${agreementId}`,
         {
           headers: {
@@ -110,6 +110,7 @@ const OrderItem = ({
         `${API_CONFIG.GENERATE_AGREEMENT}/contracts/generate`,
         {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/pdf",
@@ -127,7 +128,7 @@ const OrderItem = ({
 
       const blob = await response.blob();
 
-      const farmerResponse = await axios.get(
+      const farmerResponse = await api.get(
         `${API_CONFIG.MAIN_BACKEND}/users/${contractRequest.farmerInfo.farmerContact}`,
         {
           headers: {
@@ -137,7 +138,7 @@ const OrderItem = ({
         }
       );
 
-      const buyerResponse = await axios.get(
+      const buyerResponse = await api.get(
         `${API_CONFIG.MAIN_BACKEND}/users/${contractRequest.buyerInfo.buyerContact}`,
         {
           headers: {
@@ -170,7 +171,7 @@ const OrderItem = ({
       const listingId = order.listingId;
       const quantity = order.quantity;
 
-      const updateListingStatus = await axios.put(
+      const updateListingStatus = await api.put(
         `${API_CONFIG.MARKET_ACCESS}/listings/${listingId}/purchased/${quantity}`
       );
 
@@ -196,7 +197,7 @@ const OrderItem = ({
       const formData = new FormData();
       formData.append("file", pdfBlob, "contract.pdf");
 
-      const response = await axios.post(
+      const response = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/upload/${farmerAddress}/${buyerAddress}`,
         formData,
         {

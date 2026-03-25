@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import OtpVerification from "./OtpVerification";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../../helper";
@@ -97,9 +97,7 @@ const SignUp = ({ onNavigateToLogin }) => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${BASE_URL}/auth/register`, formData, {
-        withCredentials: true,
-      });
+      const response = await api.post(`${BASE_URL}/auth/register`, formData);
       if (response.status === 200) {
         setShowOtp(true);
         setErrors({});
@@ -127,17 +125,15 @@ const SignUp = ({ onNavigateToLogin }) => {
 
   const handleCreateAccount = async (otp) => {
     try {
-      const response = await axios.post(
+      const response = await api.post(
         `${BASE_URL}/auth/r/verify-otp/${formData.phoneNumber}/${otp}`,
-        formData,
-        { withCredentials: true }
+        formData
       );
 
       if (response.status === 201) {
-        const loginResponse = await axios.post(
+        const loginResponse = await api.post(
           `${BASE_URL}/auth/login/after/register`,
-          { phoneNumber: formData.phoneNumber },
-          { withCredentials: true }
+          { phoneNumber: formData.phoneNumber }
         );
 
         if (loginResponse.status === 200) {

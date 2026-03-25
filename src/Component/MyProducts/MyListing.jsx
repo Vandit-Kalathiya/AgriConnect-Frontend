@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { getCurrentUser } from "../../../helper";
 import CropCard from "./CropCard";
 import Loader from "../Loader/Loader";
@@ -13,11 +13,8 @@ export const MyListing = () => {
     const user = await getCurrentUser();
     const userContact = user.phoneNumber;
     try {
-      const response = await axios.get(
-        `${API_CONFIG.MARKET_ACCESS}/listings/user/${userContact}`,
-        {
-          withCredentials: true,
-        }
+      const response = await api.get(
+        `${API_CONFIG.MARKET_ACCESS}/listings/user/${userContact}`
       );
       setLoading(true);
       setListings(response.data);

@@ -13,7 +13,7 @@ import {
   FaShoppingBag,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { getCurrentUser } from "../../../helper";
 import { API_CONFIG } from "../../config/apiConfig";
 import Loader from "../Loader/Loader";
@@ -81,7 +81,7 @@ const MyOrders = () => {
     setCurrentUser(user);
 
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `${API_CONFIG.CONTRACT_FARMING}/orders/u/${user.uniqueHexAddress}`,
         {
           headers: { "Content-Type": "application/json" },
@@ -135,7 +135,7 @@ const MyOrders = () => {
 
   const fetchImage = async (imageId) => {
     try {
-      const res = await axios.get(
+      const res = await api.get(
         `${API_CONFIG.MARKET_ACCESS}/image/${imageId}`,
         {
           responseType: "blob",
@@ -150,7 +150,7 @@ const MyOrders = () => {
 
   const fetchListingById = async (listingId) => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `${API_CONFIG.MARKET_ACCESS}/listings/get/${listingId}`,
         { withCredentials: true },
       );
@@ -378,14 +378,14 @@ const MyOrders = () => {
     setIsProcessingPayment(true);
     try {
       if (newStatus === "delivered") {
-        await axios.post(
+        await api.post(
           `${API_CONFIG.CONTRACT_FARMING}/api/payments/confirm-delivery/${orderId}/${deliveryData.trackingNumber}`,
           {},
           { withCredentials: true },
         );
         toast.success("Delivery confirmed successfully!");
       } else if (newStatus === "return_confirmed") {
-        await axios.post(
+        await api.post(
           `${API_CONFIG.CONTRACT_FARMING}/api/payments/confirm-return/${orderId}`,
           {},
           { withCredentials: true },
@@ -407,7 +407,7 @@ const MyOrders = () => {
   const handleBuyerRefund = async (orderId) => {
     setIsProcessingPayment(true);
     try {
-      await axios.post(
+      await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/api/payments/reject-delivery/${orderId}`,
         {},
         { withCredentials: true },
@@ -459,7 +459,7 @@ const MyOrders = () => {
         return;
       }
 
-      const finalRes = await axios.post(
+      const finalRes = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/api/payments/request-return/${order.id}/abcd`,
         { withCredentials: true },
       );
@@ -487,7 +487,7 @@ const MyOrders = () => {
   const confirmDeliveryVerification = async () => {
     try {
       const order = orders.find((o) => o.id === selectedOrderId);
-      const res = await axios.post(
+      const res = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/api/payments/verify-delivery/${order.pdfHash}`,
         {},
         { withCredentials: true },

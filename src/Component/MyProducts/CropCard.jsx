@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { API_CONFIG } from "../../config/apiConfig";
 import { Pencil } from "lucide-react";
 
@@ -10,9 +10,8 @@ const CropCard = ({ crop }) => {
 
   const getImage = async () => {
     const imageUrl = `${API_CONFIG.MARKET_ACCESS}/image/${crop.images[0].id}`;
-    await axios
+    await api
       .get(imageUrl, {
-        withCredentials: true,
         responseType: "blob",
       })
       .then((res) => {

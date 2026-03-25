@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import WeatherForecast from "./WeatherForecast";
 import StatCard from "./StatCard";
 import AlertsPanel from "./AlertsPanel";
@@ -56,12 +56,8 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await axios.get(
-        `${API_CONFIG.CONTRACT_FARMING}/orders/u/${user.uniqueHexAddress}`,
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        }
+      const response = await api.get(
+        `${API_CONFIG.CONTRACT_FARMING}/orders/u/${user.uniqueHexAddress}`
       );
 
       if (response.data && Array.isArray(response.data)) {

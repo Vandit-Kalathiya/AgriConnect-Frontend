@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import OtpVerification from "./OtpVerification";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../../helper";
@@ -44,7 +44,7 @@ const Login = ({ onNavigateToSignUp }) => {
     setError("");
 
     try {
-      const response = await axios.post(`${BASE_URL}/auth/login`, jwtRequest);
+      const response = await api.post(`${BASE_URL}/auth/login`, jwtRequest);
       if (response.status === 200) {
         setShowOtp(true);
         toast.success(typeof response.data === 'string' ? response.data : 'OTP sent successfully!');
@@ -77,10 +77,8 @@ const Login = ({ onNavigateToSignUp }) => {
 
   const handleLogin = async (otp) => {
     try {
-      const response = await axios.post(
-        `${BASE_URL}/auth/verify-otp/${phoneNumber}/${otp}`,
-        {},
-        { withCredentials: true }
+      const response = await api.post(
+        `${BASE_URL}/auth/verify-otp/${phoneNumber}/${otp}`
       );
       if (response.status === 200) {
         const { jwtToken, role } = response.data;

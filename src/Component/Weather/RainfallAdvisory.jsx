@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+const RAINFALL_API_URL = import.meta.env.VITE_RAINFALL_API_URL || 'http://localhost:5002';
+
 const RainfallAdvisory = () => {
   const [state, setState] = useState("");
   const [month, setMonth] = useState("");
@@ -76,7 +78,7 @@ const RainfallAdvisory = () => {
     try {
       // Replace with your actual ML model API endpoint for rainfall prediction
       const response = await axios.get(
-        `http://192.168.137.175:5000/predict_rainfall?state=${encodeURIComponent(
+        `${RAINFALL_API_URL}/predict_rainfall?state=${encodeURIComponent(
           state
         )}&month=${encodeURIComponent(month)}`
       );

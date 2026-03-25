@@ -1,13 +1,13 @@
 const GATEWAY = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8080';
 
 export const API_CONFIG = {
-    MAIN_BACKEND:       `${GATEWAY}/main`,
+    MAIN_BACKEND:       `${GATEWAY}`,
     CONTRACT_FARMING:   `${GATEWAY}/contract-farming`,
     MARKET_ACCESS:      `${GATEWAY}/market`,
     GENERATE_AGREEMENT: `${GATEWAY}/agreement`,
 
     // Alias for MAIN_BACKEND — used by OrderItem.jsx and OrderList.jsx (/users/unique/{id})
-    IDENTITY_SERVICE:   `${GATEWAY}/main`,
+    IDENTITY_SERVICE:   `${GATEWAY}`,
 };
 
 export const GEMINI_API_KEY      = import.meta.env.VITE_GEMINI_API_KEY;

@@ -3,7 +3,7 @@ import { ShoppingCart, Phone, AlertTriangle, Check, X } from "lucide-react";
 import { toast } from "react-hot-toast";
 import TermsAndConditionsModal from "../TermsAndConditions/TermsAndConditionsModal";
 import CropContractAgreement from "../CropContractAgreement/CropContractAgreement";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { API_CONFIG } from "../../config/apiConfig";
 
 const ActionBar = ({ crop, userPhone }) => {
@@ -52,10 +52,8 @@ const ActionBar = ({ crop, userPhone }) => {
 
   const handleCall = async () => {
     try {
-      const response = await axios.post(
-        `${API_CONFIG.MAIN_BACKEND}/auth/otp/initiate?phoneNumber=${crop.contact}`,
-        {},
-        { withCredentials: true }
+      const response = await api.post(
+        `${API_CONFIG.MAIN_BACKEND}/auth/otp/initiate?phoneNumber=${crop.contact}`
       );
       toast.success("Call initiated successfully!", {
         icon: <Phone size={18} />,

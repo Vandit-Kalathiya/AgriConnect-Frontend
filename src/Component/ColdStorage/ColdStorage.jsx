@@ -113,7 +113,7 @@
 //   // Reverse geocode using Nominatim OpenStreetMap API
 //   const reverseGeocode = async (lat, lon) => {
 //     try {
-//       const response = await axios.get(
+//       const response = await api.get(
 //         `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
 //       );
 //       setLoading(true);
@@ -134,7 +134,7 @@
 //   const fetchBookings = async (farmerId) => {
 //     setIsLoading(true);
 //     try {
-//       const response = await axios.get(`http://localhost:2529/coldstorage/bookings?farmerId=${farmerId}`);
+//       const response = await api.get(`http://localhost:2529/coldstorage/bookings?farmerId=${farmerId}`);
 //       setBookings(response.data);
 //     } catch (error) {
 //       console.error("Error fetching bookings:", error);
@@ -170,7 +170,7 @@
 //         cropName: bookingForm.cropName,
 //         coldStorageName: bookingForm.coldStorageName,
 //       };
-//       const response = await axios.post("http://localhost:2529/coldstorage/book", bookingData);
+//       const response = await api.post("http://localhost:2529/coldstorage/book", bookingData);
 //       setBookingStatus({
 //         type: "success",
 //         message: `Booking submitted! Booking ID: ${response.data.id} (Pending approval)`,
@@ -196,7 +196,7 @@
 
 //   const confirmApproveBooking = async () => {
 //     try {
-//       await axios.put(`http://localhost:2529/coldstorage/approve/${selectedBookingId}`);
+//       await api.put(`http://localhost:2529/coldstorage/approve/${selectedBookingId}`);
 //       setIsApproveModalOpen(false);
 //       fetchBookings(user.id);
 //     } catch (error) {
@@ -645,7 +645,7 @@
 // export default ColdStoragePage;
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { API_CONFIG } from "../../config/apiConfig";
 import { getCurrentUser } from "../../../helper";
 import Loader from "../Loader/Loader";
@@ -705,7 +705,7 @@ const ColdStoragePage = () => {
   const fetchBookings = async (farmerId) => {
     setIsLoading(true);
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/bookings?farmerId=${farmerId}`
       );
       setBookings(response.data);
@@ -731,7 +731,7 @@ const ColdStoragePage = () => {
         cropName: bookingForm.cropName,
         coldStorageName: bookingForm.coldStorageName,
       };
-      const response = await axios.post(
+      const response = await api.post(
         `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/book`,
         bookingData
       );
@@ -767,7 +767,7 @@ const ColdStoragePage = () => {
 
   const confirmApproveBooking = async () => {
     try {
-      await axios.put(
+      await api.put(
         `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/approve/${selectedBookingId}`
       );
       setIsApproveModalOpen(false);

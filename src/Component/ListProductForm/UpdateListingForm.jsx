@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import OpenAI from "openai";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { API_CONFIG } from "../../config/apiConfig";
@@ -109,7 +109,7 @@ const UpdateListingForm = () => {
     }
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}/listings/get/${id}`, {
+      const response = await api.get(`${BASE_URL}/listings/get/${id}`, {
         withCredentials: true,
       });
       const l = response.data;
@@ -175,7 +175,7 @@ const UpdateListingForm = () => {
   const fetchExistingImages = async (images) => {
     const results = await Promise.allSettled(
       images.map(async (img) => {
-        const res = await axios.get(`${BASE_URL}/image/${img.id}`, {
+        const res = await api.get(`${BASE_URL}/image/${img.id}`, {
           withCredentials: true,
           responseType: "blob",
         });
@@ -227,7 +227,7 @@ const UpdateListingForm = () => {
       // delete from server first
       setDeletingIndex(index);
       try {
-        await axios.delete(`${BASE_URL}/image/${photo.existingId}`, {
+        await api.delete(`${BASE_URL}/image/${photo.existingId}`, {
           withCredentials: true,
         });
       } catch (error) {
@@ -367,7 +367,7 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
 
     try {
       setSubmitting(true);
-      await axios.put(`${BASE_URL}/listings/update/${id}`, data, {
+      await api.put(`${BASE_URL}/listings/update/${id}`, data, {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       });

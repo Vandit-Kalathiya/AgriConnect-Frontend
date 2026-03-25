@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import { API_CONFIG } from "../../config/apiConfig";
 import {
   ArrowLeft,
@@ -61,7 +61,7 @@ const CropDetailPage = () => {
   const fetchCropData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
+      const response = await api.get(
         `${API_CONFIG.MARKET_ACCESS}/listings/get/${id}`,
         {
           withCredentials: true,

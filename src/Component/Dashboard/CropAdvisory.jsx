@@ -33,6 +33,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
 
+const CROP_ADVISORY_URL = import.meta.env.VITE_CROP_ADVISORY_URL || 'http://localhost:5001';
+
 const CropAdvisory = () => {
   const [state, setState] = useState("");
   const [district, setDistrict] = useState("");
@@ -113,7 +115,7 @@ const CropAdvisory = () => {
 
     try {
       const response = await axios.get(
-        `http://192.168.137.175:5001/predict?state=${encodeURIComponent(
+        `${CROP_ADVISORY_URL}/predict?state=${encodeURIComponent(
           state
         )}&district=${encodeURIComponent(district)}&season=${encodeURIComponent(
           season

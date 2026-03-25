@@ -4,7 +4,7 @@ import React, {
 import { Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import FilterSidebar from "./FilterSidebar";
-import axios from "axios";
+import api from "../../config/axiosInstance";
 import Loader from "../Loader/Loader";
 import { getCurrentUser } from "../../../helper";
 import { API_CONFIG } from "../../config/apiConfig";
@@ -79,7 +79,7 @@ export const CropListingPage = () => {
     setLoading(true);
     try {
       const [res, user] = await Promise.all([
-        axios.get(`${BASE_URL}/listings/all/active`, { withCredentials: true }),
+        api.get(`${BASE_URL}/listings/all/active`, { withCredentials: true }),
         getCurrentUser(),
       ]);
       const raw = res.data.filter(l => l.contactOfFarmer !== user.phoneNumber);
@@ -515,7 +515,7 @@ const CompactCropCard = ({ crop }) => {
       try {
         const urls = await Promise.all(
           crop.images.map(img =>
-            axios.get(`${API_CONFIG.MARKET_ACCESS}/image/${img.id}`, { withCredentials: true, responseType: "blob" })
+            api.get(`${API_CONFIG.MARKET_ACCESS}/image/${img.id}`, { withCredentials: true, responseType: "blob" })
               .then(r => URL.createObjectURL(r.data))
           )
         );
@@ -592,7 +592,7 @@ const ListCropCard = ({ crop }) => {
       try {
         const urls = await Promise.all(
           crop.images.map(img =>
-            axios.get(`${API_CONFIG.MARKET_ACCESS}/image/${img.id}`, { withCredentials: true, responseType: "blob" })
+            api.get(`${API_CONFIG.MARKET_ACCESS}/image/${img.id}`, { withCredentials: true, responseType: "blob" })
               .then(r => URL.createObjectURL(r.data))
           )
         );
