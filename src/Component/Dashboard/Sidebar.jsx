@@ -56,7 +56,7 @@ const Sidebar = () => {
             toggleSidebar={toggleSidebar}
           />
           <SidebarItem
-            icon={<FaBoxes />}
+            icon={<FaBox />}
             text="My Products"
             to="/my-listing"
             isCollapsed={isCollapsed}

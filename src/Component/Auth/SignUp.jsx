@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import api from "../../config/axiosInstance";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../../helper";
+import { Eye, EyeOff } from "lucide-react";
 
 const SignUp = ({ onNavigateToLogin }) => {
   const mobileVerificationEnabled =
@@ -21,6 +22,8 @@ const SignUp = ({ onNavigateToLogin }) => {
   const [mobileOtp, setMobileOtp] = useState("");
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [mobileVerificationRequired, setMobileVerificationRequired] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateUsername = (username) => {
     if (!username.trim()) return "Username is required";
@@ -377,21 +380,31 @@ const SignUp = ({ onNavigateToLogin }) => {
             <label className="block text-[#275434] mb-2 font-medium">
               Password <span className="text-red-500">*</span>
             </label>
-            <input
-              type="password"
-              placeholder="Create password (min 8 chars)"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
-                errors.password
-                  ? "border-red-300 focus:ring-red-200"
-                  : "border-gray-300 focus:ring-[#45a25e]"
-              }`}
-              value={formData.password}
-              onChange={(e) => handleInputChange("password", e.target.value)}
-              onBlur={() => handleBlur("password")}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading}
-              autoComplete="new-password"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Create password (min 8 chars)"
+                className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+                  errors.password
+                    ? "border-red-300 focus:ring-red-200"
+                    : "border-gray-300 focus:ring-[#45a25e]"
+                }`}
+                value={formData.password}
+                onChange={(e) => handleInputChange("password", e.target.value)}
+                onBlur={() => handleBlur("password")}
+                onKeyDown={handleKeyDown}
+                disabled={isLoading}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+                disabled={isLoading}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             {errors.password && (
               <p className="mt-1 text-sm text-red-500">{errors.password}</p>
             )}
@@ -401,21 +414,31 @@ const SignUp = ({ onNavigateToLogin }) => {
             <label className="block text-[#275434] mb-2 font-medium">
               Confirm Password <span className="text-red-500">*</span>
             </label>
-            <input
-              type="password"
-              placeholder="Re-enter password"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
-                errors.confirmPassword
-                  ? "border-red-300 focus:ring-red-200"
-                  : "border-gray-300 focus:ring-[#45a25e]"
-              }`}
-              value={formData.confirmPassword}
-              onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-              onBlur={() => handleBlur("confirmPassword")}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading}
-              autoComplete="new-password"
-            />
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Re-enter password"
+                className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+                  errors.confirmPassword
+                    ? "border-red-300 focus:ring-red-200"
+                    : "border-gray-300 focus:ring-[#45a25e]"
+                }`}
+                value={formData.confirmPassword}
+                onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                onBlur={() => handleBlur("confirmPassword")}
+                onKeyDown={handleKeyDown}
+                disabled={isLoading}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+                disabled={isLoading}
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             {errors.confirmPassword && (
               <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
             )}

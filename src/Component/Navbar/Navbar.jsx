@@ -107,6 +107,10 @@ const Navbar = () => {
   };
 
   const isActive = (path) => location.pathname === path;
+  const getInitials = (name) => {
+    if (!name) return "AC";
+    return name.trim().slice(0, 2).toUpperCase();
+  };
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -125,6 +129,15 @@ const Navbar = () => {
     { name: "My Payments", path: "/my-payments", icon: <FaMoneyBillWave /> },
     { name: "My Orders", path: "/orders", icon: <FaShoppingCart /> },
   ];
+  const profileMenuItems = [
+    { to: "/profile", icon: <FaUser className="text-green-600" />, label: "Profile Settings" },
+    { to: "/wishlist", icon: <FaHeart className="text-red-500" />, label: "My Wishlist" },
+    { to: "/orders", icon: <FaShoppingCart className="text-blue-600" />, label: "My Orders" },
+    { to: "/settings", icon: <FaCog className="text-gray-600" />, label: "Account Settings" },
+  ];
+
+  console.log(signature);
+  
 
   return (
     <>
@@ -192,7 +205,9 @@ const Navbar = () => {
                     className="h-full w-full rounded-full object-cover"
                   />
                 ) : (
-                  <FaUser size={14} className="text-green-600" />
+                  <span className="text-[10px] md:text-xs font-semibold text-green-700">
+                    {getInitials(user?.username)}
+                  </span>
                 )}
               </div>
               <span className="hidden lg:inline xl:inline text-sm font-medium max-w-24 truncate">
@@ -204,13 +219,13 @@ const Navbar = () => {
             {isOpen && (
               <div
                 ref={profileRef}
-                className="absolute right-0 top-12 mt-2 w-64 bg-white border border-gray-200 shadow-xl rounded-lg overflow-hidden transition-all duration-200 transform origin-top-right"
+                className="absolute right-0 top-12 mt-2 w-[min(88vw,16.5rem)] bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden transition-all duration-200 transform origin-top-right"
                 style={{ animation: "scaleIn 0.2s ease-out" }}
               >
                 {user && (
-                  <div className="p-4 border-b border-gray-100 bg-green-50">
+                  <div className="p-3 border-b border-gray-100 bg-green-50/60">
                     <div className="flex items-center space-x-3">
-                      <div className="h-12 w-12 rounded-full bg-green-200 flex items-center justify-center overflow-hidden">
+                      <div className="h-10 w-10 rounded-full bg-green-200 flex items-center justify-center overflow-hidden ring-2 ring-white">
                         {profilePicture ? (
                           <img
                             src={profilePicture}
@@ -218,63 +233,53 @@ const Navbar = () => {
                             className="h-full w-full rounded-full object-cover"
                           />
                         ) : (
-                          <FaUser size={20} className="text-green-600" />
+                          <span className="text-sm font-semibold text-green-700">
+                            {getInitials(user?.username)}
+                          </span>
                         )}
                       </div>
-                      <div>
-                        <div className="font-medium text-gray-800">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-gray-800 truncate text-sm">
                           {user.username}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 truncate">
                           {user.phoneNumber || "No contact found"}
                         </div>
                       </div>
                     </div>
-                    {signature && (
-                      <div className="mt-2">
+                    <div className="mt-2 pt-2 border-t border-green-100">
+                      <p className="text-[11px] text-gray-500 mb-1">Signature</p>
+                      {signature ? (
                         <img
                           src={signature}
                           alt="Signature"
-                          className="h-8 w-auto"
+                          className="h-7 w-auto rounded"
                         />
-                      </div>
-                    )}
+                      ) : (
+                        <p className="text-xs text-gray-500">
+                          Signature not uploaded yet.
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
                 <div className="py-2">
-                  <Link
-                    to="/profile"
-                    className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <FaUser className="text-green-600" />
-                    <span>Profile Settings</span>
-                  </Link>
-                  <Link
-                    to="/wishlist"
-                    className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <FaHeart className="text-red-500" />
-                    <span>My Wishlist</span>
-                  </Link>
-                  <Link
-                    to="/orders"
-                    className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <FaShoppingCart className="text-blue-600" />
-                    <span>My Orders</span>
-                  </Link>
-                  <Link
-                    to="/settings"
-                    className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <FaCog className="text-gray-600" />
-                    <span>Account Settings</span>
-                  </Link>
+                  {profileMenuItems.map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className="flex items-center space-x-3 px-3.5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </Link>
+                  ))}
                 </div>
                 <div className="border-t border-gray-100">
                   <button
                     onClick={handleLogout}
-                    className="flex items-center space-x-3 w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    className="flex items-center space-x-3 w-full text-left px-3.5 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium"
                   >
                     <FaSignOutAlt className="text-red-500" />
                     <span>Logout</span>
