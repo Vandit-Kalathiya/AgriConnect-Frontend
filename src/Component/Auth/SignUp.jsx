@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import { BASE_URL } from "../../../helper";
 
 const SignUp = ({ onNavigateToLogin }) => {
+  const mobileVerificationEnabled =
+    import.meta.env.VITE_FEATURE_MOBILE_VERIFICATION_ENABLED === "true";
   const [formData, setFormData] = useState({
     username: "",
     address: "",
@@ -14,6 +16,11 @@ const SignUp = ({ onNavigateToLogin }) => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState(1);
+  const [emailOtp, setEmailOtp] = useState("");
+  const [mobileOtp, setMobileOtp] = useState("");
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [mobileVerificationRequired, setMobileVerificationRequired] = useState(null);
 
   const validateUsername = (username) => {
     if (!username.trim()) return "Username is required";
@@ -46,6 +53,13 @@ const SignUp = ({ onNavigateToLogin }) => {
   const validatePassword = (password) => {
     if (!password.trim()) return "Password is required";
     if (password.length < 8) return "Password must be at least 8 characters";
+    return "";
+  };
+
+  const validateOtp = (otp, label) => {
+    const cleaned = otp.replace(/\D/g, "");
+    if (!cleaned) return `${label} is required`;
+    if (cleaned.length !== 6) return `${label} must be exactly 6 digits`;
     return "";
   };
 
@@ -84,6 +98,18 @@ const SignUp = ({ onNavigateToLogin }) => {
     const value = e.target.value;
     const numericValue = value.replace(/\D/g, "").slice(0, 10);
     handleInputChange("phoneNumber", numericValue);
+  };
+
+  const handleOtpChange = (setter) => (e) => {
+    setter(e.target.value.replace(/\D/g, "").slice(0, 6));
+    if (errors.emailOtp || errors.mobileOtp) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.emailOtp;
+        delete next.mobileOtp;
+        return next;
+      });
+    }
   };
 
   const handleBlur = (field) => {
@@ -128,8 +154,15 @@ const SignUp = ({ onNavigateToLogin }) => {
       const response = await api.post(`${BASE_URL}/auth/register`, payload);
       if (response.status === 201 || response.status === 200) {
         setErrors({});
-        toast.success("Registered successfully. Please login.");
-        onNavigateToLogin();
+        const requiredFromApi = response.data?.mobileVerificationRequired;
+        setRegisteredEmail(formData.email.trim());
+        setMobileVerificationRequired(
+          typeof requiredFromApi === "boolean"
+            ? requiredFromApi
+            : mobileVerificationEnabled
+        );
+        toast.success(response.data?.message || "OTP sent successfully");
+        setStep(2);
       }
     } catch (err) {
       let errorMessage = "Registration failed. Please try again.";
@@ -145,6 +178,52 @@ const SignUp = ({ onNavigateToLogin }) => {
       }
       
       setErrors({ general: errorMessage });
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyRegistration = async () => {
+    const otpErrors = {
+      emailOtp: validateOtp(emailOtp, "Email OTP"),
+    };
+    const mobileRequired =
+      mobileVerificationRequired === null
+        ? mobileVerificationEnabled
+        : mobileVerificationRequired;
+    if (mobileRequired) {
+      otpErrors.mobileOtp = validateOtp(mobileOtp, "Mobile OTP");
+    }
+
+    Object.keys(otpErrors).forEach((key) => {
+      if (!otpErrors[key]) delete otpErrors[key];
+    });
+
+    if (Object.keys(otpErrors).length > 0) {
+      setErrors((prev) => ({ ...prev, ...otpErrors }));
+      toast.error("Please enter valid OTP values");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const payload = {
+        email: registeredEmail,
+        emailOtp: emailOtp.trim(),
+      };
+      if (mobileRequired) payload.mobileOtp = mobileOtp.trim();
+
+      const response = await api.post(`${BASE_URL}/auth/register/verify`, payload);
+      if (response.status === 201 || response.status === 200) {
+        toast.success(response.data?.message || "Registration completed successfully");
+        onNavigateToLogin();
+      }
+    } catch (err) {
+      let errorMessage = "OTP verification failed. Please try again.";
+      if (typeof err.response?.data === "string") errorMessage = err.response.data;
+      else if (err.response?.data?.message) errorMessage = err.response.data.message;
+      setErrors((prev) => ({ ...prev, general: errorMessage }));
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -192,197 +271,236 @@ const SignUp = ({ onNavigateToLogin }) => {
         </div>
       )}
 
-      <div className="mb-4">
-        <label className="block text-[#275434] mb-2 font-medium">
-          Username <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          placeholder="Choose a username"
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
-            errors.username
-              ? "border-red-300 focus:ring-red-200"
-              : "border-gray-300 focus:ring-[#45a25e]"
-          }`}
-          value={formData.username}
-          onChange={(e) => handleInputChange("username", e.target.value)}
-          onBlur={() => handleBlur("username")}
-          onKeyDown={handleKeyDown}
-          disabled={isLoading}
-          autoComplete="username"
-        />
-        {errors.username && (
-          <p className="mt-1 text-sm text-red-500">{errors.username}</p>
-        )}
-        <p className="text-xs text-gray-500 mt-1">
-          3-30 characters, letters, numbers, and underscores only
-        </p>
-      </div>
+      {step === 1 ? (
+        <>
+          <div className="mb-4">
+            <label className="block text-[#275434] mb-2 font-medium">
+              Username <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Choose a username"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+                errors.username
+                  ? "border-red-300 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-[#45a25e]"
+              }`}
+              value={formData.username}
+              onChange={(e) => handleInputChange("username", e.target.value)}
+              onBlur={() => handleBlur("username")}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading}
+              autoComplete="username"
+            />
+            {errors.username && (
+              <p className="mt-1 text-sm text-red-500">{errors.username}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              3-30 characters, letters, numbers, and underscores only
+            </p>
+          </div>
 
-      <div className="mb-4">
-        <label className="block text-[#275434] mb-2 font-medium">
-          Address <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          placeholder="Enter your complete address"
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
-            errors.address
-              ? "border-red-300 focus:ring-red-200"
-              : "border-gray-300 focus:ring-[#45a25e]"
-          }`}
-          value={formData.address}
-          onChange={(e) => handleInputChange("address", e.target.value)}
-          onBlur={() => handleBlur("address")}
-          onKeyDown={handleKeyDown}
-          disabled={isLoading}
-          autoComplete="street-address"
-        />
-        {errors.address && (
-          <p className="mt-1 text-sm text-red-500">{errors.address}</p>
-        )}
-        <p className="text-xs text-gray-500 mt-1">
-          Include street, city, and postal code
-        </p>
-      </div>
+          <div className="mb-4">
+            <label className="block text-[#275434] mb-2 font-medium">
+              Address <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Enter your complete address"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+                errors.address
+                  ? "border-red-300 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-[#45a25e]"
+              }`}
+              value={formData.address}
+              onChange={(e) => handleInputChange("address", e.target.value)}
+              onBlur={() => handleBlur("address")}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading}
+              autoComplete="street-address"
+            />
+            {errors.address && (
+              <p className="mt-1 text-sm text-red-500">{errors.address}</p>
+            )}
+          </div>
 
-      <div className="mb-6">
-        <label className="block text-[#275434] mb-2 font-medium">
-          Phone Number <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="tel"
-          placeholder="Enter 10-digit phone number"
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
-            errors.phoneNumber
-              ? "border-red-300 focus:ring-red-200"
-              : "border-gray-300 focus:ring-[#45a25e]"
-          }`}
-          value={formData.phoneNumber}
-          onChange={handlePhoneChange}
-          onBlur={() => handleBlur("phoneNumber")}
-          onKeyDown={handleKeyDown}
-          maxLength={10}
-          disabled={isLoading}
-          inputMode="numeric"
-          pattern="[0-9]*"
-          autoComplete="tel"
-        />
-        {errors.phoneNumber && (
-          <p className="mt-1 text-sm text-red-500">{errors.phoneNumber}</p>
-        )}
-        <p className="text-xs text-gray-500 mt-1">
-          Enter your 10-digit mobile number
-        </p>
-      </div>
+          <div className="mb-4">
+            <label className="block text-[#275434] mb-2 font-medium">
+              Phone Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="tel"
+              placeholder="Enter 10-digit phone number"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+                errors.phoneNumber
+                  ? "border-red-300 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-[#45a25e]"
+              }`}
+              value={formData.phoneNumber}
+              onChange={handlePhoneChange}
+              onBlur={() => handleBlur("phoneNumber")}
+              onKeyDown={handleKeyDown}
+              maxLength={10}
+              disabled={isLoading}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="tel"
+            />
+            {errors.phoneNumber && (
+              <p className="mt-1 text-sm text-red-500">{errors.phoneNumber}</p>
+            )}
+          </div>
 
-      <div className="mb-4">
-        <label className="block text-[#275434] mb-2 font-medium">
-          Email <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="email"
-          placeholder="Enter your email"
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
-            errors.email
-              ? "border-red-300 focus:ring-red-200"
-              : "border-gray-300 focus:ring-[#45a25e]"
-          }`}
-          value={formData.email}
-          onChange={(e) => handleInputChange("email", e.target.value)}
-          onBlur={() => handleBlur("email")}
-          onKeyDown={handleKeyDown}
-          disabled={isLoading}
-          autoComplete="email"
-        />
-        {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
-      </div>
+          <div className="mb-4">
+            <label className="block text-[#275434] mb-2 font-medium">
+              Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+                errors.email
+                  ? "border-red-300 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-[#45a25e]"
+              }`}
+              value={formData.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              onBlur={() => handleBlur("email")}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading}
+              autoComplete="email"
+            />
+            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+          </div>
 
-      <div className="mb-4">
-        <label className="block text-[#275434] mb-2 font-medium">
-          Password <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="password"
-          placeholder="Create password (min 8 chars)"
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
-            errors.password
-              ? "border-red-300 focus:ring-red-200"
-              : "border-gray-300 focus:ring-[#45a25e]"
-          }`}
-          value={formData.password}
-          onChange={(e) => handleInputChange("password", e.target.value)}
-          onBlur={() => handleBlur("password")}
-          onKeyDown={handleKeyDown}
-          disabled={isLoading}
-          autoComplete="new-password"
-        />
-        {errors.password && (
-          <p className="mt-1 text-sm text-red-500">{errors.password}</p>
-        )}
-      </div>
+          <div className="mb-4">
+            <label className="block text-[#275434] mb-2 font-medium">
+              Password <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              placeholder="Create password (min 8 chars)"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+                errors.password
+                  ? "border-red-300 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-[#45a25e]"
+              }`}
+              value={formData.password}
+              onChange={(e) => handleInputChange("password", e.target.value)}
+              onBlur={() => handleBlur("password")}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading}
+              autoComplete="new-password"
+            />
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+            )}
+          </div>
 
-      <div className="mb-6">
-        <label className="block text-[#275434] mb-2 font-medium">
-          Confirm Password <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="password"
-          placeholder="Re-enter password"
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
-            errors.confirmPassword
-              ? "border-red-300 focus:ring-red-200"
-              : "border-gray-300 focus:ring-[#45a25e]"
-          }`}
-          value={formData.confirmPassword}
-          onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-          onBlur={() => handleBlur("confirmPassword")}
-          onKeyDown={handleKeyDown}
-          disabled={isLoading}
-          autoComplete="new-password"
-        />
-        {errors.confirmPassword && (
-          <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
-        )}
-      </div>
+          <div className="mb-6">
+            <label className="block text-[#275434] mb-2 font-medium">
+              Confirm Password <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              placeholder="Re-enter password"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+                errors.confirmPassword
+                  ? "border-red-300 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-[#45a25e]"
+              }`}
+              value={formData.confirmPassword}
+              onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+              onBlur={() => handleBlur("confirmPassword")}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading}
+              autoComplete="new-password"
+            />
+            {errors.confirmPassword && (
+              <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
+            )}
+          </div>
 
-      <button
-        className={`w-full py-3 rounded-md transition duration-200 font-medium flex items-center justify-center ${
-          isLoading || !isFormValid
-            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-            : "bg-[#45a25e] text-white hover:bg-[#34854a]"
-        }`}
-        onClick={handleRegister}
-        disabled={isLoading || !isFormValid}
-      >
-        {isLoading ? (
-          <>
-            <svg
-              className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            Creating Account...
-          </>
-        ) : (
-          "Create Account"
-        )}
-      </button>
+          <button
+            className={`w-full py-3 rounded-md transition duration-200 font-medium flex items-center justify-center ${
+              isLoading || !isFormValid
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-[#45a25e] text-white hover:bg-[#34854a]"
+            }`}
+            onClick={handleRegister}
+            disabled={isLoading || !isFormValid}
+          >
+            {isLoading ? "Sending OTP..." : "Continue"}
+          </button>
+        </>
+      ) : (
+        <>
+          <div className="mb-4 p-3 rounded-md bg-green-50 text-sm text-green-700 border border-green-100">
+            OTP sent to <span className="font-semibold">{registeredEmail}</span>
+          </div>
+          <div className="mb-4">
+            <label className="block text-[#275434] mb-2 font-medium">
+              Email OTP <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Enter 6-digit email OTP"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+                errors.emailOtp
+                  ? "border-red-300 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-[#45a25e]"
+              }`}
+              value={emailOtp}
+              onChange={handleOtpChange(setEmailOtp)}
+              maxLength={6}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              disabled={isLoading}
+            />
+            {errors.emailOtp && (
+              <p className="mt-1 text-sm text-red-500">{errors.emailOtp}</p>
+            )}
+          </div>
+          {(mobileVerificationRequired === null
+            ? mobileVerificationEnabled
+            : mobileVerificationRequired) && (
+            <div className="mb-6">
+              <label className="block text-[#275434] mb-2 font-medium">
+                Mobile OTP <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Enter 6-digit mobile OTP"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+                  errors.mobileOtp
+                    ? "border-red-300 focus:ring-red-200"
+                    : "border-gray-300 focus:ring-[#45a25e]"
+                }`}
+                value={mobileOtp}
+                onChange={handleOtpChange(setMobileOtp)}
+                maxLength={6}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                disabled={isLoading}
+              />
+              {errors.mobileOtp && (
+                <p className="mt-1 text-sm text-red-500">{errors.mobileOtp}</p>
+              )}
+            </div>
+          )}
+          <button
+            className={`w-full py-3 rounded-md transition duration-200 font-medium ${
+              isLoading
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-[#45a25e] text-white hover:bg-[#34854a]"
+            }`}
+            onClick={handleVerifyRegistration}
+            disabled={isLoading}
+          >
+            {isLoading ? "Verifying..." : "Verify & Complete Signup"}
+          </button>
+        </>
+      )}
     </div>
   );
 };

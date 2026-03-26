@@ -1,26 +1,16 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import api from "../../config/axiosInstance";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../../helper";
 
 const ForgotPassword = ({ onBackToLogin }) => {
-  const envMobileRequired =
-    import.meta.env.VITE_FEATURE_MOBILE_VERIFICATION_ENABLED === "true";
-
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [emailOtp, setEmailOtp] = useState("");
-  const [mobileOtp, setMobileOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [mobileRequiredFromApi, setMobileRequiredFromApi] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const mobileRequired = useMemo(() => {
-    if (mobileRequiredFromApi !== null) return mobileRequiredFromApi;
-    return envMobileRequired;
-  }, [envMobileRequired, mobileRequiredFromApi]);
 
   const handleRequestOtp = async () => {
     if (!email.trim()) {
@@ -30,13 +20,10 @@ const ForgotPassword = ({ onBackToLogin }) => {
     setError("");
     setIsLoading(true);
     try {
-      const response = await api.post(`${BASE_URL}/auth/forgot-password`, {
+      await api.post(`${BASE_URL}/auth/forgot-password`, {
         email: email.trim(),
       });
-      setMobileRequiredFromApi(
-        Boolean(response.data?.mobileVerificationRequired)
-      );
-      toast.success(response.data?.message || "OTP sent successfully");
+      toast.success("OTP sent successfully");
       setStep(2);
     } catch (err) {
       const message =
@@ -51,12 +38,9 @@ const ForgotPassword = ({ onBackToLogin }) => {
   };
 
   const handleResetPassword = async () => {
-    if (!emailOtp.trim()) {
-      setError("Email OTP is required");
-      return;
-    }
-    if (mobileRequired && !mobileOtp.trim()) {
-      setError("Mobile OTP is required");
+    const emailOtpClean = emailOtp.replace(/\D/g, "");
+    if (emailOtpClean.length !== 6) {
+      setError("Email OTP must be exactly 6 digits");
       return;
     }
     if (!newPassword.trim() || newPassword.length < 8) {
@@ -73,8 +57,7 @@ const ForgotPassword = ({ onBackToLogin }) => {
     try {
       const payload = {
         email: email.trim(),
-        emailOtp: emailOtp.trim(),
-        ...(mobileRequired ? { mobileOtp: mobileOtp.trim() } : {}),
+        emailOtp: emailOtpClean,
         newPassword,
       };
       const response = await api.post(`${BASE_URL}/auth/reset-password`, payload);
@@ -135,25 +118,13 @@ const ForgotPassword = ({ onBackToLogin }) => {
               type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#45a25e]"
               value={emailOtp}
-              onChange={(e) => setEmailOtp(e.target.value)}
+              onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
               placeholder="Enter email OTP"
+              maxLength={6}
+              inputMode="numeric"
+              pattern="[0-9]*"
             />
           </div>
-
-          {mobileRequired && (
-            <div>
-              <label className="block text-[#275434] mb-2 font-medium">
-                Mobile OTP
-              </label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#45a25e]"
-                value={mobileOtp}
-                onChange={(e) => setMobileOtp(e.target.value)}
-                placeholder="Enter mobile OTP"
-              />
-            </div>
-          )}
 
           <div>
             <label className="block text-[#275434] mb-2 font-medium">
