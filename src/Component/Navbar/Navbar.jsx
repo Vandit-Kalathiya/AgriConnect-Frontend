@@ -26,6 +26,7 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [profilePicture, setProfilePicture] = useState(null);
   const [signature, setSignature] = useState(null);
+  const [showSignature, setShowSignature] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -47,6 +48,7 @@ const Navbar = () => {
         !event.target.closest("button[data-profile-toggle]")
       ) {
         setIsOpen(false);
+        setShowSignature(false);
       }
     };
 
@@ -245,17 +247,30 @@ const Navbar = () => {
                       </div>
                     </div>
                     <div className="mt-2 pt-2 border-t border-green-100">
-                      <p className="text-[11px] text-gray-500 mb-1">Signature</p>
-                      {signature ? (
-                        <img
-                          src={signature}
-                          alt="Signature"
-                          className="h-7 w-auto rounded"
-                        />
-                      ) : (
-                        <p className="text-xs text-gray-500">
-                          Signature not uploaded yet.
-                        </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[11px] text-gray-500">Signature</p>
+                        <button
+                          type="button"
+                          className="text-[11px] font-medium text-green-700 hover:underline"
+                          onClick={() => setShowSignature((prev) => !prev)}
+                        >
+                          {showSignature ? "Hide signature" : "Show signature"}
+                        </button>
+                      </div>
+                      {showSignature && (
+                        <div className="mt-1">
+                          {signature ? (
+                            <img
+                              src={signature}
+                              alt="Signature"
+                              className="h-7 w-auto rounded"
+                            />
+                          ) : (
+                            <p className="text-xs text-gray-500">
+                              Signature not uploaded yet.
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
