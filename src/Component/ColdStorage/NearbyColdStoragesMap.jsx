@@ -426,7 +426,12 @@ const NearbyColdStoragesMap = ({
     setIsLoading(true);
     try {
       const res = await axios.get(
-        `https://nominatim.openstreetmap.org/reverse?lat=${liveLocation.lat}&lon=${liveLocation.lon}&format=json`
+        `https://nominatim.openstreetmap.org/reverse?lat=${liveLocation.lat}&lon=${liveLocation.lon}&format=json&accept-language=en`,
+        {
+          headers: {
+            "Accept-Language": "en",
+          },
+        }
       );
       const address = res.data.address;
       console.log(address);

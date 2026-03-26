@@ -56,33 +56,44 @@ const CropAdvisory = () => {
 
   // Fetch live location
   const fetchLiveLocation = () => {
-    if (navigator.geolocation) {
-      setIsLoading(true);
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          setLiveLocation({ lat: latitude, lon: longitude });
-          const locationData = await reverseGeocode(latitude, longitude);
-          setDistrict(locationData.district || "Unknown District");
-          setState(locationData.state || "Unknown State");
-          setIsLoading(false);
-        },
-        (error) => {
-          console.error("Location error:", error);
-          setError("Unable to fetch live location. Please try manual entry.");
-          setIsLoading(false);
-        }
-      );
-    } else {
+    if (!navigator.geolocation) {
       setError("Geolocation is not supported by your browser.");
+      return;
     }
+
+    setIsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        setLiveLocation({ lat: latitude, lon: longitude, accuracy });
+        const locationData = await reverseGeocode(latitude, longitude);
+        setDistrict(locationData.district || "Unknown District");
+        setState(locationData.state || "Unknown State");
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error("Location error:", error);
+        setError("Unable to fetch live location. Please try manual entry.");
+        setIsLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
+      }
+    );
   };
 
   // Reverse geocode using Nominatim OpenStreetMap API
   const reverseGeocode = async (lat, lon) => {
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`,
+        {
+          headers: {
+            "Accept-Language": "en",
+          },
+        }
       );
       const address = response.data.address;
       return {

@@ -22,32 +22,47 @@ const LocationControl = ({
 
   const fetchLiveLocation = () => {
     setLoading(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          setLiveLocation({ lat: latitude, lon: longitude });
-          const locationData = await reverseGeocode(latitude, longitude);
-          setDistrict(locationData.district);
-          setState(locationData.state);
-          setSelectedState(locationData.state);
-          setAvailableDistricts(districtsByState[locationData.state] || []);
-          setLoading(false);
-        },
-        (error) => {
-          console.error("Location error:", error);
-          setDistrict("Unable to fetch");
-          setState("Unable to fetch");
-          setLoading(false);
-        }
-      );
+    if (!navigator.geolocation) {
+      setDistrict("Geolocation unsupported");
+      setState("Geolocation unsupported");
+      setLoading(false);
+      return;
     }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        setLiveLocation({ lat: latitude, lon: longitude, accuracy });
+        const locationData = await reverseGeocode(latitude, longitude);
+        setDistrict(locationData.district);
+        setState(locationData.state);
+        setSelectedState(locationData.state);
+        setAvailableDistricts(districtsByState[locationData.state] || []);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Location error:", error);
+        setDistrict("Unable to fetch");
+        setState("Unable to fetch");
+        setLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
+      }
+    );
   };
 
   const reverseGeocode = async (lat, lon) => {
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`,
+        {
+          headers: {
+            "Accept-Language": "en",
+          },
+        }
       );
       const address = response.data.address;
       return {
