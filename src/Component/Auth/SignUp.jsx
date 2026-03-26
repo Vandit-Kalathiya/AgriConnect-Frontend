@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import OtpVerification from "./OtpVerification";
 import api from "../../config/axiosInstance";
-import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../../helper";
 
@@ -10,11 +8,12 @@ const SignUp = ({ onNavigateToLogin }) => {
     username: "",
     address: "",
     phoneNumber: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
-  const [showOtp, setShowOtp] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const validateUsername = (username) => {
     if (!username.trim()) return "Username is required";
@@ -38,12 +37,29 @@ const SignUp = ({ onNavigateToLogin }) => {
     return "";
   };
 
+  const validateEmail = (email) => {
+    if (!email.trim()) return "Email is required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Enter a valid email";
+    return "";
+  };
+
+  const validatePassword = (password) => {
+    if (!password.trim()) return "Password is required";
+    if (password.length < 8) return "Password must be at least 8 characters";
+    return "";
+  };
+
   const validateForm = () => {
     const newErrors = {
       username: validateUsername(formData.username),
       address: validateAddress(formData.address),
       phoneNumber: validatePhoneNumber(formData.phoneNumber),
+      email: validateEmail(formData.email),
+      password: validatePassword(formData.password),
     };
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
 
     Object.keys(newErrors).forEach((key) => {
       if (!newErrors[key]) delete newErrors[key];
@@ -76,6 +92,11 @@ const SignUp = ({ onNavigateToLogin }) => {
     if (field === "address") error = validateAddress(formData.address);
     if (field === "phoneNumber")
       error = validatePhoneNumber(formData.phoneNumber);
+    if (field === "email") error = validateEmail(formData.email);
+    if (field === "password") error = validatePassword(formData.password);
+    if (field === "confirmPassword" && formData.password !== formData.confirmPassword) {
+      error = "Passwords do not match";
+    }
 
     if (error) {
       setErrors((prev) => ({ ...prev, [field]: error }));
@@ -84,11 +105,11 @@ const SignUp = ({ onNavigateToLogin }) => {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !isLoading) {
-      handleGetOtp();
+      handleRegister();
     }
   };
 
-  const handleGetOtp = async () => {
+  const handleRegister = async () => {
     if (!validateForm()) {
       toast.error("Please fix all errors before continuing");
       return;
@@ -97,14 +118,21 @@ const SignUp = ({ onNavigateToLogin }) => {
     setIsLoading(true);
 
     try {
-      const response = await api.post(`${BASE_URL}/auth/register`, formData);
-      if (response.status === 200) {
-        setShowOtp(true);
+      const payload = {
+        username: formData.username.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
+        address: formData.address.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+      };
+      const response = await api.post(`${BASE_URL}/auth/register`, payload);
+      if (response.status === 201 || response.status === 200) {
         setErrors({});
-        toast.success("OTP sent successfully!");
+        toast.success("Registered successfully. Please login.");
+        onNavigateToLogin();
       }
     } catch (err) {
-      let errorMessage = "Failed to send OTP. Please try again.";
+      let errorMessage = "Registration failed. Please try again.";
       
       if (err.response?.data) {
         if (typeof err.response.data === 'string') {
@@ -123,68 +151,13 @@ const SignUp = ({ onNavigateToLogin }) => {
     }
   };
 
-  const handleCreateAccount = async (otp) => {
-    try {
-      const response = await api.post(
-        `${BASE_URL}/auth/r/verify-otp/${formData.phoneNumber}/${otp}`,
-        formData
-      );
-
-      if (response.status === 201) {
-        const loginResponse = await api.post(
-          `${BASE_URL}/auth/login/after/register`,
-          { phoneNumber: formData.phoneNumber }
-        );
-
-        if (loginResponse.status === 200) {
-          const { jwtToken } = loginResponse.data;
-          if (jwtToken) {
-            const maxAge = 7 * 24 * 60 * 60; // 7 days in seconds
-            document.cookie = `jwt_token=${jwtToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
-          }
-          toast.success("Registration successful!");
-          // Use replace to force a full page reload with new auth state
-          window.location.replace("/dashboard");
-        }
-      }
-    } catch (err) {
-      let errorMessage = "Failed to verify OTP or complete registration";
-      
-      if (err.response?.data) {
-        if (typeof err.response.data === 'string') {
-          errorMessage = err.response.data;
-        } else if (err.response.data.message) {
-          errorMessage = err.response.data.message;
-        }
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      setErrors({ general: errorMessage });
-      toast.error(errorMessage);
-      throw err; // Re-throw so OtpVerification component knows it failed
-    }
-  };
-
-  const handleBackToSignUp = () => {
-    setShowOtp(false);
-    setErrors({});
-  };
-
-  if (showOtp) {
-    return (
-      <OtpVerification
-        onSubmit={handleCreateAccount}
-        onBack={handleBackToSignUp}
-        buttonText="Create Account"
-        isFromLogin={false}
-        error={errors.general}
-      />
-    );
-  }
-
   const isFormValid =
-    formData.username && formData.address && formData.phoneNumber.length === 10;
+    formData.username &&
+    formData.address &&
+    formData.phoneNumber.length === 10 &&
+    formData.email &&
+    formData.password &&
+    formData.confirmPassword;
 
   return (
     <div className="font-poppins">
@@ -303,13 +276,83 @@ const SignUp = ({ onNavigateToLogin }) => {
         </p>
       </div>
 
+      <div className="mb-4">
+        <label className="block text-[#275434] mb-2 font-medium">
+          Email <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="email"
+          placeholder="Enter your email"
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+            errors.email
+              ? "border-red-300 focus:ring-red-200"
+              : "border-gray-300 focus:ring-[#45a25e]"
+          }`}
+          value={formData.email}
+          onChange={(e) => handleInputChange("email", e.target.value)}
+          onBlur={() => handleBlur("email")}
+          onKeyDown={handleKeyDown}
+          disabled={isLoading}
+          autoComplete="email"
+        />
+        {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-[#275434] mb-2 font-medium">
+          Password <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="password"
+          placeholder="Create password (min 8 chars)"
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+            errors.password
+              ? "border-red-300 focus:ring-red-200"
+              : "border-gray-300 focus:ring-[#45a25e]"
+          }`}
+          value={formData.password}
+          onChange={(e) => handleInputChange("password", e.target.value)}
+          onBlur={() => handleBlur("password")}
+          onKeyDown={handleKeyDown}
+          disabled={isLoading}
+          autoComplete="new-password"
+        />
+        {errors.password && (
+          <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+        )}
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-[#275434] mb-2 font-medium">
+          Confirm Password <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="password"
+          placeholder="Re-enter password"
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition duration-200 ${
+            errors.confirmPassword
+              ? "border-red-300 focus:ring-red-200"
+              : "border-gray-300 focus:ring-[#45a25e]"
+          }`}
+          value={formData.confirmPassword}
+          onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+          onBlur={() => handleBlur("confirmPassword")}
+          onKeyDown={handleKeyDown}
+          disabled={isLoading}
+          autoComplete="new-password"
+        />
+        {errors.confirmPassword && (
+          <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
+        )}
+      </div>
+
       <button
         className={`w-full py-3 rounded-md transition duration-200 font-medium flex items-center justify-center ${
           isLoading || !isFormValid
             ? "bg-gray-300 text-gray-500 cursor-not-allowed"
             : "bg-[#45a25e] text-white hover:bg-[#34854a]"
         }`}
-        onClick={handleGetOtp}
+        onClick={handleRegister}
         disabled={isLoading || !isFormValid}
       >
         {isLoading ? (
@@ -334,16 +377,12 @@ const SignUp = ({ onNavigateToLogin }) => {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Sending OTP...
+            Creating Account...
           </>
         ) : (
-          "Get OTP"
+          "Create Account"
         )}
       </button>
-
-      <p className="text-xs text-gray-500 text-center mt-4">
-        By signing up, you agree to receive OTP via SMS
-      </p>
     </div>
   );
 };

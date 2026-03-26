@@ -44,8 +44,8 @@ const TrackingModal = ({
   };
 
   return (
-    <div className="fixed inset-0 backdrop-blur-md bg-opacity-60 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-8 max-w-lg w-full shadow-2xl transform transition-all duration-300 scale-100 hover:scale-[1.01]">
+    <div className="fixed inset-0 backdrop-blur-md bg-opacity-60 flex items-center justify-center z-50 p-3 sm:p-4">
+      <div className="bg-white rounded-xl p-4 sm:p-6 md:p-8 max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl transform transition-all duration-300 scale-100 hover:scale-[1.01]">
         <h2 className="text-2xl font-bold text-green-700 mb-6 flex items-center">
           <FaTruck className="mr-2" /> Confirm Delivery
         </h2>
@@ -128,7 +128,7 @@ const TrackingModal = ({
         </div>
 
         {/* Buttons */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
           <button
             onClick={closeTrackingModal}
             className="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium"

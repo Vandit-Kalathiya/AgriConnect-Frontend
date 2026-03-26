@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Login from "./Login"
 import SignUp from "./SignUp";
+import ForgotPassword from "./ForgotPassword";
 import leafImg from "../../assets/leaf.png";
 import { useLocation } from "react-router-dom";
 
@@ -14,6 +15,9 @@ const AuthPage = () => {
 
   const navigateToLogin = () => {
     setCurrentPage("login");
+  };
+  const navigateToForgotPassword = () => {
+    setCurrentPage("forgotPassword");
   };
 
   useEffect(() => {
@@ -43,16 +47,21 @@ const AuthPage = () => {
       </div>
 
       {/* right section */}
-      <div className="flex justify-center items-center w-full md:w-1/2 bg-gray-50">
-        <div className="w-full max-w-md ">
+      <div className="flex justify-center items-center w-full md:w-1/2 bg-gray-50 px-4 py-6 sm:py-8">
+        <div className="w-full max-w-md">
           <div className="flex items-center gap-x-2 mb-6">
             <img src={leafImg} width={40} alt="Leaf icon" />
             <h1 className="text-3xl font-bold text-[#34854a]">AgriConnect</h1>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-8">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 md:p-8">
             {currentPage === "login" ? (
-              <Login onNavigateToSignUp={navigateToSignUp} />
+              <Login
+                onNavigateToSignUp={navigateToSignUp}
+                onNavigateToForgotPassword={navigateToForgotPassword}
+              />
+            ) : currentPage === "forgotPassword" ? (
+              <ForgotPassword onBackToLogin={navigateToLogin} />
             ) : (
               <SignUp onNavigateToLogin={navigateToLogin} />
             )}

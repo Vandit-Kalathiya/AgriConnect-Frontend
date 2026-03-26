@@ -579,7 +579,7 @@ const MyOrders = () => {
   };
 
   return (
-    <div className="bg-gray-50 py-8 md:py-12 px-4 md:px-6 lg:px-8 ml-0 md:ml-20 mt-14 sm:mt-16 min-h-screen">
+    <div className="bg-gray-50 py-6 md:py-12 px-3 sm:px-4 md:px-6 lg:px-8 md:ml-20 min-h-[calc(100vh-3.5rem)] overflow-x-hidden">
       <div className="max-w-full md:max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -1102,9 +1102,9 @@ const MyOrders = () => {
 
       {/* Tracking Modal */}
       {showTrackingModal && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full animate-pulse">
-            <div className="p-6">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[92vh] overflow-y-auto animate-pulse">
+            <div className="p-4 sm:p-6">
               <h2 className="text-2xl font-bold text-green-800 mb-6 flex items-center">
                 <FaTruck className="mr-3" />
                 Confirm Delivery
@@ -1125,7 +1125,7 @@ const MyOrders = () => {
                   order verification.
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={closeTrackingModal}
                   className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all font-medium"
@@ -1158,9 +1158,9 @@ const MyOrders = () => {
 
       {/* Reject Modal */}
       {showRejectModal && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full">
-            <div className="p-6">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto">
+            <div className="p-4 sm:p-6">
               <h3 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
                 <XCircle className="mr-3 h-6 w-6 text-red-600" />
                 Reject Delivery
@@ -1204,7 +1204,7 @@ const MyOrders = () => {
                   onChange={(e) => setRejectionComment(e.target.value)}
                 />
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   className="flex-1 border-2 border-gray-300 rounded-lg px-4 py-3 hover:bg-gray-50 transition-all font-medium"
                   onClick={handleCloseRejectModal}
@@ -1227,9 +1227,9 @@ const MyOrders = () => {
 
       {/* Verify Modal */}
       {showVerifyModal && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-            <div className="p-6">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[92vh] overflow-y-auto">
+            <div className="p-4 sm:p-6">
               {!verificationComplete ? (
                 <>
                   <h3 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
@@ -1245,7 +1245,7 @@ const MyOrders = () => {
                       ⚠️ This action cannot be undone once confirmed.
                     </div>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       className="flex-1 border-2 border-gray-300 rounded-lg px-4 py-3 hover:bg-gray-50 transition-all font-medium"
                       onClick={() => setShowVerifyModal(false)}

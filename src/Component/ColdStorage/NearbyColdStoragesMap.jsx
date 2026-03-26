@@ -421,6 +421,37 @@ const NearbyColdStoragesMap = ({
   const [mapBounds, setMapBounds] = useState(null);
   const mapRef = useRef(null);
 
+  const getMapboxErrorMessage = (event) => {
+    const rawError = event?.error || {};
+    const status =
+      rawError?.status ||
+      rawError?.statusCode ||
+      rawError?.error?.status ||
+      rawError?.error?.statusCode;
+    const message =
+      rawError?.message ||
+      rawError?.error?.message ||
+      "Unknown map loading error";
+
+    if (!MAPBOX_API_KEY) {
+      return "Missing Mapbox token. Add VITE_MAPBOX_API_KEY in frontend env.";
+    }
+    if (status === 401 || status === 403) {
+      return "Mapbox token is invalid, expired, or blocked for this domain/style.";
+    }
+    if (
+      message.toLowerCase().includes("failed to fetch") ||
+      message.toLowerCase().includes("networkerror")
+    ) {
+      return "Map tiles could not be fetched. Check internet, firewall, VPN, or ad-blocker.";
+    }
+    if (message.toLowerCase().includes("style")) {
+      return "Map style could not be loaded. Verify style id and token style permissions.";
+    }
+
+    return `Map loading failed: ${message}`;
+  };
+
   const fetchNearbyColdStorages = async () => {
     if (!liveLocation) return;
     setIsLoading(true);
@@ -438,7 +469,7 @@ const NearbyColdStoragesMap = ({
       const district = address.state_district;
       const state = address.state;
 
-      console.log(district,' ,',state);
+      console.log(district,',',state);
 
       const response = await api.get(CUSTOM_API_URL, {
         params: {
@@ -551,14 +582,13 @@ const NearbyColdStoragesMap = ({
   };
 
   const handleMapError = (event) => {
-    console.error("Mapbox error:", event);
-    setError(
-      `Map loading failed: ${
-        event.error?.status === 403
-          ? "Invalid Mapbox token or style permissions"
-          : event.error?.message || "Failed to fetch map tiles"
-      }`
-    );
+    console.error("Mapbox error:", {
+      type: event?.type,
+      sourceId: event?.sourceId,
+      tile: event?.tile,
+      error: event?.error,
+    });
+    setError(getMapboxErrorMessage(event));
   };
 
   // Fly to specific storage
@@ -639,7 +669,7 @@ const NearbyColdStoragesMap = ({
   };
 
   return (
-    <div className="relative w-full h-[650px] rounded-xl shadow-xl mt-12 mb-12 overflow-hidden border border-gray-100">
+    <div className="relative w-full h-[60vh] min-h-[420px] sm:min-h-[500px] md:min-h-[580px] rounded-xl shadow-xl mt-8 md:mt-12 mb-8 md:mb-12 overflow-hidden border border-gray-100">
       {/* Loading overlay */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20 backdrop-blur-sm">
@@ -654,7 +684,7 @@ const NearbyColdStoragesMap = ({
 
       {/* Error message */}
       {error && (
-        <div className="absolute top-4 left-4 bg-red-100 p-3 rounded-lg text-red-700 z-10 shadow-lg flex items-center">
+        <div className="absolute top-4 left-4 right-4 sm:right-auto bg-red-100 p-3 rounded-lg text-red-700 z-10 shadow-lg flex items-center">
           <IoMdInformationCircleOutline className="mr-2 text-xl" />
           {error}
         </div>
@@ -686,19 +716,24 @@ const NearbyColdStoragesMap = ({
       </div>
 
       {/* Map */}
-      <Map
-        ref={mapRef}
-        mapboxAccessToken={MAPBOX_API_KEY}
-        initialViewState={{
-          longitude: liveLocation?.lon || 78.9629,
-          latitude: liveLocation?.lat || 20.5937,
-          zoom: 10,
-        }}
-        onLoad={handleMapLoad}
-        onError={handleMapError}
-        style={{ width: "100%", height: "100%" }}
-        mapStyle="mapbox://styles/mapbox/streets-v11"
-      >
+      {!MAPBOX_API_KEY ? (
+        <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-700 px-6 text-center">
+          Missing Mapbox token. Set `VITE_MAPBOX_API_KEY` and restart the frontend.
+        </div>
+      ) : (
+        <Map
+          ref={mapRef}
+          mapboxAccessToken={MAPBOX_API_KEY}
+          initialViewState={{
+            longitude: liveLocation?.lon || 78.9629,
+            latitude: liveLocation?.lat || 20.5937,
+            zoom: 10,
+          }}
+          onLoad={handleMapLoad}
+          onError={handleMapError}
+          style={{ width: "100%", height: "100%" }}
+          mapStyle="mapbox://styles/mapbox/streets-v11"
+        >
         {/* Navigation Controls */}
         <NavigationControl position="bottom-right" />
         <ScaleControl position="bottom-left" />
@@ -908,11 +943,12 @@ const NearbyColdStoragesMap = ({
             </div>
           </Popup>
         )}
-      </Map>
+        </Map>
+      )}
 
       {/* Side panel with list view */}
       <div
-        className={`absolute top-0 left-0 bottom-0 w-80 bg-white shadow-lg z-10 transition-transform duration-300 ${
+        className={`absolute top-0 left-0 bottom-0 w-full sm:w-80 bg-white shadow-lg z-10 transition-transform duration-300 ${
           showListView ? "translate-x-0" : "-translate-x-full"
         }`}
       >

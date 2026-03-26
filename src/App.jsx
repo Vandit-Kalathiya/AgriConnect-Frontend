@@ -33,11 +33,11 @@ import Insights from "./Component/MarketTrends/Pages/Insights";
 import CropDetail from "./Component/MarketTrends/Pages/CropDetail";
 
 const Layout = ({ children }) => (
-  <div className="flex flex-col h-screen font-poppins">
+  <div className="flex flex-col min-h-screen font-poppins">
     <Navbar />
-    <div className="flex flex-1 relative -mt-2">
+    <div className="flex flex-1 relative pt-14 sm:pt-16">
       <Sidebar />
-      <main className="flex-1 ml-16 md:ml-0">{children}</main>
+      <main className="flex-1 min-w-0">{children}</main>
     </div>
   </div>
 );

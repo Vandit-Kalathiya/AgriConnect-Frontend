@@ -222,7 +222,7 @@ export const CropListingPage = () => {
 
   /* ═══ render ═══ */
   return (
-    <div className="min-h-screen bg-[#f1f3f6] ml-0 md:ml-20 mt-14 sm:mt-16 font-poppins">
+    <div className="min-h-[calc(100vh-3.5rem)] bg-[#f1f3f6] md:ml-20 font-poppins overflow-x-hidden">
 
       {/* ════ MOBILE FILTER OVERLAY ════ */}
       {mobileSidebar && (
@@ -250,7 +250,7 @@ export const CropListingPage = () => {
       )}
 
       {/* ════ INNER LAYOUT ════ */}
-      <div className="flex min-h-screen" ref={topRef}>
+      <div className="flex min-h-[calc(100vh-3.5rem)]" ref={topRef}>
 
         {/* ── LEFT SIDEBAR (desktop) ── */}
         <aside className="hidden lg:block w-56 xl:w-60 flex-shrink-0">
@@ -265,8 +265,50 @@ export const CropListingPage = () => {
         {/* ── RIGHT CONTENT AREA ── */}
         <div className="flex-1 min-w-0">
 
-          {/* ── TOP BAR: title/crumb + search on right ── */}
-          <div className="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between gap-4 sticky top-14 sm:top-16 z-20">
+          {/* ── TOP BAR: MOBILE ── */}
+          <div className="md:hidden bg-white border-b border-gray-200 px-3 py-3 sticky top-0 z-20">
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-base font-semibold text-gray-800 truncate">
+                Fresh Produce Marketplace
+              </h1>
+              <span className="text-xs text-gray-500 ml-2 shrink-0">
+                {filteredListings.length} items
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setMobileSidebar(true)}
+                className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 bg-white shrink-0"
+              >
+                <SlidersHorizontal size={14} />
+                Filters
+                {activeFilterCount > 0 && (
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-green-600 text-white text-[9px] font-bold">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+              <div className="relative flex-1 min-w-0">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  ref={searchRef}
+                  type="text"
+                  value={searchInput}
+                  onChange={e => setSearchInput(e.target.value)}
+                  placeholder="Search crops, location"
+                  className="w-full pl-8 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all"
+                />
+                {searchInput && (
+                  <button onClick={() => setSearchInput("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── TOP BAR: DESKTOP/TABLET ── */}
+          <div className="hidden md:flex bg-white border-b border-gray-200 px-4 py-2.5 items-center justify-between gap-4 sticky top-0 z-20">
             <div className="flex items-center gap-1.5 text-xs text-gray-500 min-w-0">
               <span className="font-medium text-gray-700 text-sm truncate">Fresh Produce Marketplace</span>
               {debouncedSearch && (
@@ -328,7 +370,7 @@ export const CropListingPage = () => {
             <div className="bg-white border-b border-gray-200 px-4">
               <div className="flex items-center justify-between">
                 {/* sort tabs */}
-                <div className="flex items-center gap-0 overflow-x-auto scrollbar-none">
+                <div className="hidden md:flex items-center gap-0 overflow-x-auto scrollbar-none">
                   <span className="text-xs font-semibold text-gray-500 pr-3 whitespace-nowrap py-3 border-r border-gray-100 mr-2">Sort By</span>
                   {SORT_TABS.map(tab => (
                     <button
@@ -343,6 +385,21 @@ export const CropListingPage = () => {
                       {tab.label}
                     </button>
                   ))}
+                </div>
+                {/* mobile sort select */}
+                <div className="md:hidden flex items-center gap-2 py-2">
+                  <span className="text-xs font-semibold text-gray-500">Sort:</span>
+                  <select
+                    value={filters.sortBy}
+                    onChange={(e) => updateFilter({ sortBy: e.target.value })}
+                    className="text-xs border border-gray-200 rounded-md px-2 py-1.5 bg-white text-gray-700"
+                  >
+                    {SORT_TABS.map((tab) => (
+                      <option key={tab.value} value={tab.value}>
+                        {tab.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 {/* results count */}
                 <p className="text-xs text-gray-500 whitespace-nowrap pl-4 hidden sm:block">
@@ -374,7 +431,7 @@ export const CropListingPage = () => {
           )}
 
           {/* ── MAIN AREA ── */}
-          <div className="px-3 py-3">
+          <div className="px-3 py-3 pb-20 md:pb-3">
 
             {/* loading */}
             {loading && (
@@ -394,19 +451,24 @@ export const CropListingPage = () => {
 
             {/* no results */}
             {!loading && !error && filteredListings.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-24 text-center">
+              <div className="flex flex-col items-center justify-center py-16 md:py-24 text-center bg-white border border-gray-100 rounded-xl">
                 <PackageSearch size={56} className="text-gray-200 mb-4" />
-                <h3 className="text-lg font-bold text-gray-700 mb-1">No listings found</h3>
+                <h3 className="text-xl font-bold text-gray-700 mb-1">No listings found</h3>
                 <p className="text-gray-400 text-sm mb-5 max-w-xs">
                   {listings.length === 0
                     ? "No active listings yet. Check back soon!"
                     : "Try adjusting your search or filters."}
                 </p>
-                {listings.length > 0 && (
-                  <button onClick={clearAll} className="flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">
-                    <RefreshCw size={14} /> Clear filters
+                <div className="flex flex-col sm:flex-row gap-2">
+                  {listings.length > 0 && (
+                    <button onClick={clearAll} className="flex items-center justify-center gap-2 px-5 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">
+                      <RefreshCw size={14} /> Clear filters
+                    </button>
+                  )}
+                  <button onClick={fetchAllListings} className="flex items-center justify-center gap-2 px-5 py-2 border border-gray-200 bg-white text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors">
+                    Refresh
                   </button>
-                )}
+                </div>
               </div>
             )}
 

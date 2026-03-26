@@ -47,8 +47,8 @@ const QrDetailsPopup = () => {
   if (!cropData) return <div>No data available</div>;
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative">
+    <div className="fixed inset-0 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-md w-full relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={handleClose}
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"

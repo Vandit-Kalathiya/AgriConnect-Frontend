@@ -389,7 +389,7 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
 
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen ml-0 md:ml-20 mt-14 sm:mt-16 gap-3">
+      <div className="flex flex-col justify-center items-center min-h-[calc(100vh-3.5rem)] md:ml-20 gap-3 px-4">
         <Loader />
         <p className="text-sm text-gray-500">Loading listing details…</p>
       </div>
@@ -398,7 +398,7 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
 
   if (fetchError) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen ml-0 md:ml-20 mt-14 sm:mt-16 gap-4 px-4">
+      <div className="flex flex-col justify-center items-center min-h-[calc(100vh-3.5rem)] md:ml-20 gap-4 px-4">
         <div className="text-4xl">⚠️</div>
         <p className="text-lg font-semibold text-gray-800">Could not load listing</p>
         <p className="text-sm text-red-500 text-center max-w-sm">{fetchError}</p>
@@ -418,7 +418,7 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
     }`;
 
   return (
-    <div className="min-h-screen bg-gray-50 ml-0 md:ml-20 mt-14 sm:mt-16 px-4 md:px-6 lg:px-8 py-6">
+    <div className="min-h-[calc(100vh-3.5rem)] bg-gray-50 md:ml-20 px-3 sm:px-4 md:px-6 lg:px-8 py-6 overflow-x-hidden">
       <div className="max-w-4xl mx-auto">
         {/* ── Header ── */}
         <div className="flex items-center justify-between gap-3 mb-6">

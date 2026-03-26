@@ -9,6 +9,7 @@ import {
   FaBars,
   FaTimes,
   FaShoppingCart,
+  FaBoxes,
 } from "react-icons/fa";
 import { HiTrendingUp } from "react-icons/hi";
 import { RiContractLine } from "react-icons/ri";
@@ -25,15 +26,15 @@ const Sidebar = () => {
 
   return (
     <aside
-      className={`bg-white/95 backdrop-blur-md h-screen fixed top-0 left-0 shadow-xl border-r border-slate-200/50 transition-all duration-500 ease-in-out z-40 ${
+      className={`hidden md:block bg-white/95 backdrop-blur-md h-[calc(100vh-4rem)] md:h-[calc(100vh-3.5rem)] fixed top-14 sm:top-16 md:top-14 left-0 shadow-xl border-r border-slate-200/50 transition-all duration-500 ease-in-out z-40 ${
         isCollapsed ? "w-20" : "w-64"
       } hover:shadow-2xl`}
     >
       <div
         className={`${
           isCollapsed ? "space-y-4" : "space-y-3"
-        } overflow-y-auto scrollbar-thin scrollbar-thumb-jewel-300 scrollbar-track-transparent hover:scrollbar-thumb-jewel-400 transition-all duration-300 mt-18`}
-        style={{ maxHeight: "calc(100vh - 80px)" }}
+        } overflow-y-auto scrollbar-thin scrollbar-thumb-jewel-300 scrollbar-track-transparent hover:scrollbar-thumb-jewel-400 transition-all duration-300 mt-2 md:mt-3`}
+        style={{ maxHeight: "calc(100vh - 5rem)" }}
       >
         <SidebarSection
           title="Market"
@@ -55,7 +56,7 @@ const Sidebar = () => {
             toggleSidebar={toggleSidebar}
           />
           <SidebarItem
-            icon={<FaBox />}
+            icon={<FaBoxes />}
             text="My Products"
             to="/my-listing"
             isCollapsed={isCollapsed}

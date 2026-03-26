@@ -217,7 +217,7 @@ const PaymentProcess = () => {
 
   return (
     <>
-      <div className="mt-14 sm:mt-16 bg-gray-50 min-h-screen">
+      <div className="bg-gray-50 min-h-[calc(100vh-3.5rem)] md:ml-20 overflow-x-hidden">
         <div className="mx-auto max-w-4xl py-8 px-4 md:px-6">
           <div className="bg-white rounded-lg shadow-xl mb-6 overflow-hidden">
             <div className="p-6 pb-3 border-b">

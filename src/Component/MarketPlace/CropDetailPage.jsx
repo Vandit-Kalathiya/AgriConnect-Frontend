@@ -198,7 +198,7 @@ const CropDetailPage = () => {
   const isOwner = userPhone === cropData.contact;
 
   return (
-    <div className="bg-gray-50 py-8 md:ml-20 mt-14 sm:mt-16 min-h-screen pb-24">
+    <div className="bg-gray-50 py-6 md:py-8 md:ml-20 min-h-[calc(100vh-3.5rem)] pb-24 overflow-x-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
           <button

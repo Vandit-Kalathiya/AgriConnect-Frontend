@@ -8,10 +8,12 @@ const api = axios.create({
 // Attach JWT from cookie as Authorization header for every gateway request
 api.interceptors.request.use((config) => {
     try {
-        const token = document.cookie
+        const cookieToken = document.cookie
             .split('; ')
             .find((row) => row.startsWith('jwt_token='))
             ?.split('=')[1];
+        const storageToken = localStorage.getItem('jwt_token');
+        const token = cookieToken || storageToken;
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -29,6 +31,7 @@ api.interceptors.response.use(
         if (status === 401) {
             // Clear any stale cookie and redirect to login
             document.cookie = 'jwt_token=; Max-Age=0; path=/';
+            localStorage.removeItem('jwt_token');
             window.location.href = '/auth';
         }
 

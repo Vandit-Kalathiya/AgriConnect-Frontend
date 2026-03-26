@@ -1,14 +1,19 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
-  FaLeaf,
   FaUser,
   FaHeart,
   FaSignOutAlt,
   FaCog,
+  FaBox,
+  FaCloudSun,
+  FaMoneyBillWave,
   FaShoppingCart,
   FaBell,
 } from "react-icons/fa";
 import { GiHamburgerMenu, GiCrossedBones } from "react-icons/gi";
+import { IoMdAdd } from "react-icons/io";
+import { GrStorage } from "react-icons/gr";
+import { RiContractLine } from "react-icons/ri";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { BASE_URL, getCurrentUser } from "../../../helper";
 import api from "../../config/axiosInstance";
@@ -92,8 +97,10 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await api.post(`${BASE_URL}/auth/logout`, null);
+      localStorage.removeItem("jwt_token");
+      document.cookie = "jwt_token=; Max-Age=0; path=/";
       toast.success("Logged out successfully");
-      navigate("/");
+      navigate("/auth");
     } catch (error) {
       toast.error("Logout failed. Please try again.");
     }
@@ -109,24 +116,31 @@ const Navbar = () => {
     { name: "Market Trends", path: "/market-trends" },
   ];
 
+  const mobileQuickLinks = [
+    { name: "My Products", path: "/my-listing", icon: <FaBox /> },
+    { name: "List Product", path: "/list", icon: <IoMdAdd /> },
+    { name: "Cold Storage", path: "/cold-storage", icon: <GrStorage /> },
+    { name: "Weather", path: "/weather", icon: <FaCloudSun /> },
+    { name: "My Contracts", path: "/my-contracts", icon: <RiContractLine /> },
+    { name: "My Payments", path: "/my-payments", icon: <FaMoneyBillWave /> },
+    { name: "My Orders", path: "/orders", icon: <FaShoppingCart /> },
+  ];
+
   return (
     <>
-      <nav className="bg-white shadow-md px-3 sm:px-4 md:px-6 lg:px-10 xl:px-20 flex justify-between items-center fixed w-full top-0 z-50 h-14 sm:h-16">
+      <nav className="bg-white shadow-md px-3 sm:px-4 md:px-6 lg:px-10 xl:px-20 flex justify-between items-center fixed w-full top-0 z-50 h-14 sm:h-16 gap-2">
         {/* Logo */}
-        <Link
-          to="/"
-          className="flex items-center space-x-2 group transition-all duration-300"
-        >
+        <Link to="/" className="flex items-center space-x-2 group transition-all duration-300 min-w-0">
           <div className="relative">
             <img
               src={leafImg}
-              width={30}
+              width={28}
               alt="AgriConnect Logo"
-              className="group-hover:scale-110 transition-transform duration-300"
+              className="group-hover:scale-110 transition-transform duration-300 shrink-0"
             />
             <div className="absolute -inset-1 bg-green-100 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
           </div>
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 font-bold text-xl sm:text-2xl">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 font-bold text-base sm:text-2xl truncate">
             AgriConnect
           </span>
         </Link>
@@ -152,7 +166,7 @@ const Navbar = () => {
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+        <div className="flex items-center space-x-1 sm:space-x-3 md:space-x-4 shrink-0">
           {/* <Link
             to="/cart"
             className="hidden md:flex text-gray-600 hover:text-green-600 transition-colors duration-200 relative"
@@ -167,7 +181,7 @@ const Navbar = () => {
           <div className="relative">
             <button
               data-profile-toggle="true"
-              className="flex items-center space-x-2 border border-green-600 text-green-700 p-1 px-3 md:px-4 py-1.5 md:py-2 rounded-full hover:bg-green-50 transition-all duration-200 shadow-sm"
+              className="flex items-center space-x-2 border border-green-600 text-green-700 p-1 px-2 sm:px-3 md:px-4 py-1.5 md:py-2 rounded-full hover:bg-green-50 transition-all duration-200 shadow-sm"
               onClick={toggleProfile}
             >
               <div className="h-6 w-6 md:h-7 md:w-7 rounded-full bg-green-200 flex items-center justify-center overflow-hidden">
@@ -181,7 +195,7 @@ const Navbar = () => {
                   <FaUser size={14} className="text-green-600" />
                 )}
               </div>
-              <span className="hidden xl:inline text-sm font-medium">
+              <span className="hidden lg:inline xl:inline text-sm font-medium max-w-24 truncate">
                 {user?.username || "Account"}
               </span>
             </button>
@@ -281,7 +295,7 @@ const Navbar = () => {
           <div className="lg:hidden">
             <button
               onClick={toggleMenu}
-              className="text-gray-700 hover:text-green-600 transition-colors focus:outline-none p-1"
+              className="text-gray-700 hover:text-green-600 transition-colors focus:outline-none p-2 rounded-lg hover:bg-gray-100"
             >
               {isMenuOpen ? (
                 <GiCrossedBones size={20} />
@@ -314,25 +328,22 @@ const Navbar = () => {
                   <span>{link.name}</span>
                 </Link>
               ))}
-              <Link
-                to="/list-product"
-                className="flex items-center space-x-2 w-full py-3 px-2 text-gray-700 hover:bg-gray-50 rounded-md"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <FaLeaf className="text-green-500" />
-                <span>List Product</span>
-              </Link>
-              <Link
-                to="/cart"
-                className="flex items-center space-x-2 w-full py-3 px-2 text-gray-700 hover:bg-gray-50 rounded-md"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <FaShoppingCart className="text-blue-600" />
-                <span>Shopping Cart</span>
-                <span className="ml-auto bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  2
-                </span>
-              </Link>
+              <div className="pt-2 mt-2 border-t border-gray-100">
+                <p className="px-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  Quick Access
+                </p>
+                {mobileQuickLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className="flex items-center space-x-2 w-full py-3 px-2 text-gray-700 hover:bg-gray-50 rounded-md"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <span className="text-green-600">{link.icon}</span>
+                    <span>{link.name}</span>
+                  </Link>
+                ))}
+              </div>
               <div className="pt-2 border-t border-gray-100 mt-2">
                 <button
                   onClick={() => {

@@ -264,8 +264,8 @@ const OrderItem = ({
   // Confirmation Modal
   const ConfirmationModal = () => {
     return (
-      <div className="fixed inset-0 backdrop-blur-md bg-black/60 z-50 flex items-center justify-center p-4 animate-fadeIn">
-        <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl transform transition-all duration-300 scale-100">
+      <div className="fixed inset-0 backdrop-blur-md bg-black/60 z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
+        <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto">
           <div className="flex items-center text-amber-600 mb-4">
             <FaExclamationTriangle size={24} className="mr-2" />
             <h3 className="text-xl font-bold">Confirm Delivery Approval</h3>

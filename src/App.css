@@ -245,3 +245,17 @@
     background-color: rgba(255, 255, 255, 0.9);
   }
 }
+
+/* Global responsive safety rules */
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

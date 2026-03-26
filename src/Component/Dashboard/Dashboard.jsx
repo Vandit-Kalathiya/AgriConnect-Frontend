@@ -368,7 +368,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <main className="flex-1 p-4 pl-8 sm:pl-8 md:p-6 lg:p-8 md:pl-24 lg:ml-20 mt-14 sm:mt-16 min-h-screen bg-gradient-to-br from-gray-50 via-green-50 to-blue-50">
+    <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 md:ml-20 min-h-[calc(100vh-3.5rem)] bg-gradient-to-br from-gray-50 via-green-50 to-blue-50 overflow-x-hidden">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -408,10 +408,10 @@ const Dashboard = () => {
         transition={{ delay: 0.15 }}
         className="mb-6"
       >
-        <div className="bg-white rounded-2xl shadow-lg p-2 inline-flex gap-2">
+        <div className="bg-white rounded-2xl shadow-lg p-2 inline-flex flex-wrap gap-2 w-full md:w-auto">
           <button
             onClick={() => setActiveRole("farmer")}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
+            className={`px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
               activeRole === "farmer"
                 ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg"
                 : "text-gray-600 hover:bg-gray-100"
@@ -422,7 +422,7 @@ const Dashboard = () => {
           </button>
           <button
             onClick={() => setActiveRole("buyer")}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
+            className={`px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
               activeRole === "buyer"
                 ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg"
                 : "text-gray-600 hover:bg-gray-100"
@@ -599,7 +599,7 @@ const Dashboard = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 + index * 0.1 }}
-                    className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-green-50 rounded-xl hover:shadow-md transition-all duration-300"
+                    className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-0 justify-between p-4 bg-gradient-to-r from-gray-50 to-green-50 rounded-xl hover:shadow-md transition-all duration-300"
                   >
                     <div className="flex items-center gap-3">
                       <div

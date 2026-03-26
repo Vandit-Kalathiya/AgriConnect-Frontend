@@ -23,13 +23,13 @@ const BookingModal = ({
 
   return (
     isModalOpen && (
-      <div className="fixed inset-0 bg-opacity-60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fadeIn">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl border border-gray-100">
+      <div className="fixed inset-0 bg-opacity-60 backdrop-blur-sm z-50 flex justify-center items-center p-3 sm:p-4 animate-fadeIn">
+        <div className="relative bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 w-full max-w-2xl border border-gray-100 max-h-[92vh] overflow-y-auto">
           <button
             onClick={() => setIsModalOpen(false)}
-            className="absolute top-10 right-10 text-gray-500 hover:text-gray-700 transition"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-700 transition"
           >
-            <FaTimes size={24} />
+            <FaTimes size={20} />
           </button>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
             Book Cold Storage
@@ -129,7 +129,7 @@ const BookingModal = ({
                 ))}
               </select>
             </div>
-            <div className="flex justify-end gap-4 mt-8">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}

@@ -64,9 +64,9 @@ const Trends = () => {
   ];
 
   return (
-    <div className="min-h-screen max-w-screen overflow-x-hidden pt-20 pb-12 mt-5">
-      <div className="pl-20">
-        <div className="container mx-auto px-4">
+    <div className="min-h-[calc(100vh-3.5rem)] max-w-screen overflow-x-hidden pb-8 md:pb-12 md:ml-20">
+      <div>
+        <div className="container mx-auto px-3 sm:px-4 md:px-5">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold mb-4 flex items-center gap-2">
               <TrendingUp className="text-green-600" />

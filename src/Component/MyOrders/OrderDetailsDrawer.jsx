@@ -398,9 +398,9 @@ const OrderDetailsDrawer = ({
       ></div>
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full md:w-[600px] lg:w-[700px] bg-white shadow-2xl z-50 overflow-y-auto animate-slideIn">
+      <div className="fixed right-0 top-0 h-full w-full sm:w-[92vw] md:w-[600px] lg:w-[700px] bg-white shadow-2xl z-50 overflow-y-auto animate-slideIn">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-green-600 to-green-700 text-white p-6 flex justify-between items-center z-10 shadow-lg">
+        <div className="sticky top-0 bg-gradient-to-r from-green-600 to-green-700 text-white p-4 sm:p-6 flex justify-between items-center z-10 shadow-lg">
           <div>
             <h2 className="text-2xl font-bold">Order Details</h2>
             <p className="text-green-100 text-sm mt-1">
@@ -416,11 +416,11 @@ const OrderDetailsDrawer = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6">
           {/* Product Image & Info */}
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 shadow-md">
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="w-full md:w-48 h-48 rounded-xl overflow-hidden shadow-lg">
+            <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
+              <div className="w-full md:w-48 h-52 sm:h-56 md:h-48 rounded-xl overflow-hidden shadow-lg">
                 {!imageError && image ? (
                   <img
                     src={image}
@@ -584,7 +584,7 @@ const OrderDetailsDrawer = ({
           )}
 
           {/* Action Buttons */}
-          <div className="sticky bottom-0 bg-white pt-4 pb-2 border-t border-gray-200 -mx-6 px-6">
+          <div className="sticky bottom-0 bg-white pt-4 pb-2 border-t border-gray-200 -mx-4 sm:-mx-6 px-4 sm:px-6">
             {order.status === "delivered" && !isFarmer ? (
               <div className="flex flex-col sm:flex-row gap-3">
                 <button

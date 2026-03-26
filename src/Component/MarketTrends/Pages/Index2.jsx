@@ -22,10 +22,10 @@ const Index2 = () => {
   const currentYear = getCurrentYear();
 
   return (
-    <div className="min-h-screen max-w-screen overflow-x-hidden">
+    <div className="min-h-[calc(100vh-3.5rem)] max-w-screen overflow-x-hidden md:ml-20">
       {/* <Header /> */}
-      <div className="pl-16">
-        <div className="container mx-auto px-5 py-10 pl-10">
+      <div>
+        <div className="container mx-auto px-3 sm:px-4 md:px-5 py-8 md:py-10">
           <Hero />
           <div className="mb-8">
             <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">

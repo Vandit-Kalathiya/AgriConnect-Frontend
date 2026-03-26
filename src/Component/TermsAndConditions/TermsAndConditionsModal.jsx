@@ -149,10 +149,10 @@ const TermsAndConditionsModal = ({ isOpen, onClose, onAccept }) => {
   ];
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-      <div className="bg-white rounded-xl max-w-4xl w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 animate-fadeIn">
+      <div className="bg-white rounded-xl max-w-4xl w-full shadow-2xl max-h-[94vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-jewel-50 to-white sticky top-0 z-10">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-jewel-50 to-white sticky top-0 z-10">
           <div className="flex items-center gap-2">
             <Shield className="h-6 w-6 text-jewel-600" />
             <h2 className="text-xl font-bold text-gray-800">
@@ -169,7 +169,7 @@ const TermsAndConditionsModal = ({ isOpen, onClose, onAccept }) => {
         </div>
 
         {/* Introduction Banner */}
-        <div className="bg-gradient-to-r from-jewel-100 to-jewel-50 p-5 border-b border-jewel-200">
+        <div className="bg-gradient-to-r from-jewel-100 to-jewel-50 p-4 sm:p-5 border-b border-jewel-200">
           <div className="flex items-start gap-4">
             <AlertCircle className="h-6 w-6 text-jewel-700 mt-1 flex-shrink-0" />
             <div>
@@ -226,7 +226,7 @@ const TermsAndConditionsModal = ({ isOpen, onClose, onAccept }) => {
           {/* Main content */}
           <div
             ref={contentRef}
-            className="flex-1 overflow-y-auto p-6 space-y-8 text-gray-700"
+            className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8 text-gray-700"
             onScroll={handleScroll}
           >
             {sections.map((section) => (

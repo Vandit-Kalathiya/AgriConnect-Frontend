@@ -217,7 +217,7 @@ const WeatherDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center px-4 md:mt-0 md:ml-16 min-h-screen">
+      <div className="flex justify-center items-center px-4 md:ml-20 min-h-[calc(100vh-3.5rem)]">
         <Loader />
       </div>
     );
@@ -225,7 +225,7 @@ const WeatherDashboard = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 md:ml-16">
+      <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center px-4 md:ml-20">
         <div className="text-center p-6 md:p-8 w-full max-w-md bg-white rounded-xl shadow-lg">
           <div className="text-red-500 text-4xl md:text-5xl mb-4">⚠️</div>
           <h2 className="text-lg md:text-2xl font-bold text-slate-800 mb-2">
@@ -273,7 +273,7 @@ const WeatherDashboard = () => {
     .slice(0, 5);
 
   return (
-    <div className="bg-gray-50 px-4 md:px-6 lg:px-8 py-6 ml-0 md:ml-16 mt-14 sm:mt-16 min-h-screen">
+    <div className="bg-gray-50 px-3 sm:px-4 md:px-6 lg:px-8 py-6 md:ml-20 min-h-[calc(100vh-3.5rem)] overflow-x-hidden">
       <div className="max-w-full md:max-w-5xl mx-auto">
         {/* Header */}
         <header className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-4 mb-4 md:mb-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-center">

@@ -181,8 +181,8 @@ const Contracts = () => {
     if (!contract) return null;
 
     return (
-      <div className="fixed inset-0 backdrop-blur-sm bg-opacity-70 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 backdrop-blur-sm bg-opacity-70 flex items-center justify-center z-50 p-3 sm:p-4">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[92vh] overflow-y-auto">
           <div className="bg-gradient-to-r from-jewel-600 to-jewel-800 px-6 py-4 rounded-t-lg">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-white flex items-center">
@@ -276,7 +276,7 @@ const Contracts = () => {
   };
 
   return (
-    <div className="bg-gray-50 py-8 md:py-12 px-4 md:px-6 lg:px-8 ml-0 md:ml-20 md:mt-18 min-h-screen">
+    <div className="bg-gray-50 py-6 md:py-12 px-3 sm:px-4 md:px-6 lg:px-8 md:ml-20 min-h-[calc(100vh-3.5rem)] overflow-x-hidden">
       <div className="max-w-full md:max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="flex flex-col items-center justify-center mb-8">

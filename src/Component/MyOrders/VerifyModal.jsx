@@ -13,7 +13,7 @@ const VerifyModal = ({
 }) => {
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl">
+      <div className="bg-white rounded-lg max-w-md w-full p-4 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
         {!verificationComplete ? (
           <>
             <h3 className="text-xl font-semibold text-gray-900 mb-4">
@@ -25,7 +25,7 @@ const VerifyModal = ({
                 is in accordance with your purchase.
               </p>
             </div>
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
               <button
                 className="border border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50"
                 onClick={() => setShowVerifyModal(false)}

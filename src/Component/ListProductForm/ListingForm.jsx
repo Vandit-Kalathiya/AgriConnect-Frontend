@@ -360,7 +360,7 @@ const ListingForm = () => {
   }, []);
 
   return (
-    <div className="flex justify-center items-center px-4 md:px-6 lg:px-8 py-6 md:py-12 ml-0 md:ml-20 mt-5 min-h-screen bg-gray-50">
+    <div className="flex justify-center items-center px-3 sm:px-4 md:px-6 lg:px-8 py-6 md:py-12 md:ml-20 min-h-[calc(100vh-3.5rem)] bg-gray-50 overflow-x-hidden">
       <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 w-full max-w-full sm:max-w-lg md:max-w-4xl">
         <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-jewel-700">
           {step === 4 ? "Review Listing" : "Create New Listing"}

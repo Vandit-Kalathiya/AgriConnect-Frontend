@@ -5,7 +5,8 @@ import ProduceList from "../../assets/process1.jpeg";
 import ConnectWith from "../../assets/process2.jpeg";
 import SecurePayment from "../../assets/process3.jpeg";
 import { useNavigate } from "react-router-dom";
-import { getTokenFromCookie } from "../../../helper";
+import { BASE_URL, getCurrentUser, getTokenFromCookie } from "../../../helper";
+import api from "../../config/axiosInstance";
 import { motion, useInView, useAnimation } from "framer-motion";
 import {
   ShoppingBag,
@@ -277,7 +278,44 @@ const HomePage = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [profilePicture, setProfilePicture] = useState("");
   const navigate = useNavigate();
+  const isLoggedIn = Boolean(getTokenFromCookie());
+
+  useEffect(() => {
+    let objectUrl = "";
+    const fetchLoggedInUser = async () => {
+      if (!isLoggedIn) return;
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+      if (user?.id) {
+        try {
+          const profileResponse = await api.get(
+            `${BASE_URL}/users/profile-image/${user.id}`,
+            { responseType: "arraybuffer" }
+          );
+          const profileBlob = new Blob([profileResponse.data], {
+            type: "image/jpeg",
+          });
+          objectUrl = URL.createObjectURL(profileBlob);
+          setProfilePicture(objectUrl);
+        } catch {
+          setProfilePicture("");
+        }
+      }
+    };
+
+    fetchLoggedInUser();
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [isLoggedIn]);
+
+  const getUserInitials = (name) => {
+    if (!name) return "US";
+    return name.trim().slice(0, 2).toUpperCase();
+  };
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 60);
@@ -302,10 +340,10 @@ const HomePage = () => {
             : "bg-transparent py-4"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <img src={leafImg} width={28} alt="AgriConnect" />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 font-bold text-xl">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-12 flex justify-between items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 min-w-0">
+            <img src={leafImg} width={26} alt="AgriConnect" className="shrink-0" />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 font-bold text-lg sm:text-xl truncate">
               AgriConnect
             </span>
           </div>
@@ -338,27 +376,39 @@ const HomePage = () => {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
-            {!getTokenFromCookie() && (
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {!isLoggedIn && (
               <button
                 onClick={() => goAuth("login")}
-                className={`hidden md:block px-4 py-2 text-sm font-medium rounded-full border transition-all duration-200 ${
-                  isScrolled
-                    ? "border-green-600 text-green-600 hover:bg-green-50"
-                    : "border-green-700 text-green-700 hover:bg-green-50"
-                }`}
+                className="px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold bg-green-600 text-white rounded-full hover:bg-green-700 shadow-md hover:shadow-lg transition-all duration-200 whitespace-nowrap"
               >
                 Login
               </button>
             )}
+            {isLoggedIn && (
+              <button
+                onClick={() => navigate("/profile")}
+                className="flex items-center gap-2 border border-green-500 bg-green-50 hover:bg-green-100 text-green-700 rounded-full pl-1.5 pr-3 py-1.5 transition-all"
+                title="Go to profile"
+              >
+                <div className="h-8 w-8 rounded-full bg-green-200 overflow-hidden flex items-center justify-center text-xs font-bold text-green-700">
+                  {profilePicture ? (
+                    <img
+                      src={profilePicture}
+                      alt="Profile"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    getUserInitials(currentUser?.username)
+                  )}
+                </div>
+                <span className="hidden sm:inline text-sm font-semibold max-w-28 truncate">
+                  {currentUser?.username || "Profile"}
+                </span>
+              </button>
+            )}
             <button
-              onClick={() => goAuth("signup")}
-              className="px-5 py-2 text-sm font-semibold bg-green-600 text-white rounded-full hover:bg-green-700 shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
-            >
-              Get Started Free
-            </button>
-            <button
-              className="md:hidden p-2 text-gray-700"
+              className="md:hidden p-2 text-gray-700 rounded-lg hover:bg-gray-100"
               onClick={() => setMenuOpen(!menuOpen)}
             >
               <div className="space-y-1.5">
@@ -393,10 +443,44 @@ const HomePage = () => {
                 </a>
               )
             ))}
-            <div className="pt-3 flex flex-col gap-2">
-              <button onClick={() => goAuth("login")} className="w-full py-2.5 border border-green-600 text-green-600 rounded-lg font-medium text-sm">Login</button>
-              <button onClick={() => goAuth("signup")} className="w-full py-2.5 bg-green-600 text-white rounded-lg font-medium text-sm">Get Started</button>
-            </div>
+            {!isLoggedIn && (
+              <div className="pt-3 flex flex-col gap-2">
+                <button
+                  onClick={() => goAuth("login")}
+                  className="w-full py-2.5 border border-green-600 text-green-600 rounded-lg font-medium text-sm"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => goAuth("signup")}
+                  className="w-full py-2.5 bg-green-600 text-white rounded-lg font-medium text-sm"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+            {isLoggedIn && (
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/profile");
+                }}
+                className="mt-3 w-full py-2.5 border border-green-600 text-green-700 rounded-lg font-medium text-sm flex items-center justify-center gap-2"
+              >
+                <span className="h-6 w-6 rounded-full bg-green-200 overflow-hidden flex items-center justify-center text-[10px] font-bold text-green-700">
+                  {profilePicture ? (
+                    <img
+                      src={profilePicture}
+                      alt="Profile"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    getUserInitials(currentUser?.username)
+                  )}
+                </span>
+                {currentUser?.username || "Profile"}
+              </button>
+            )}
           </div>
         )}
       </header>

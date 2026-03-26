@@ -15,6 +15,11 @@ import { getCurrentUser, BASE_URL } from "../../../helper";
 import api from "../../config/axiosInstance";
 import toast from "react-hot-toast";
 
+const PROFILE_FALLBACK =
+  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><rect width='100%25' height='100%25' fill='%23e5e7eb'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%236b7280' font-family='Arial' font-size='18'>Profile</text></svg>";
+const SIGNATURE_FALLBACK =
+  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='80'><rect width='100%25' height='100%25' fill='%23f3f4f6'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%236b7280' font-family='Arial' font-size='14'>No Signature</text></svg>";
+
 const UserProfile = () => {
   const [userData, setUserData] = useState({});
   const [editMode, setEditMode] = useState(false);
@@ -215,7 +220,7 @@ const UserProfile = () => {
   return (
     <>
       {isLoading && <Loader message="Saving your profile..." />}
-      <div className="bg-gray-50 py-6 md:py-12 px-4 md:px-6 lg:px-8 ml-0 md:ml-20 mt-14 sm:mt-16 min-h-screen">
+      <div className="bg-gray-50 py-6 md:py-12 px-3 sm:px-4 md:px-6 lg:px-8 md:ml-20 min-h-[calc(100vh-3.5rem)] overflow-x-hidden">
         <div className="max-w-full md:max-w-4xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold text-green-900 mb-6 md:mb-10 text-center drop-shadow-md">
             Your Profile
@@ -252,15 +257,12 @@ const UserProfile = () => {
               <div className="flex flex-col items-center">
                 <div className="relative">
                   <img
-                    src={
-                      profilePictureUrl ||
-                      "https://via.placeholder.com/150?text=Profile"
-                    }
+                    src={profilePictureUrl || PROFILE_FALLBACK}
                     alt="Profile"
                     className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-green-300 shadow-sm"
                     onError={(e) => {
-                      e.target.src =
-                        "https://via.placeholder.com/150?text=Profile";
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = PROFILE_FALLBACK;
                     }}
                   />
                   {editMode && (
@@ -289,8 +291,8 @@ const UserProfile = () => {
                       alt="Signature"
                       className="w-40 h-20 md:w-48 md:h-24 object-contain border border-gray-300 rounded-lg shadow-sm"
                       onError={(e) => {
-                        e.target.src =
-                          "https://via.placeholder.com/150?text=No+Signature";
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = SIGNATURE_FALLBACK;
                       }}
                     />
                   ) : (
