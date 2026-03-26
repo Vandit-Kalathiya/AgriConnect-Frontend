@@ -134,10 +134,7 @@ const Navbar = () => {
     { to: "/wishlist", icon: <FaHeart className="text-red-500" />, label: "My Wishlist" },
     { to: "/orders", icon: <FaShoppingCart className="text-blue-600" />, label: "My Orders" },
     { to: "/settings", icon: <FaCog className="text-gray-600" />, label: "Account Settings" },
-  ];
-
-  console.log(signature);
-  
+  ];  
 
   return (
     <>
