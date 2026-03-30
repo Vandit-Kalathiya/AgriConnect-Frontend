@@ -35,7 +35,7 @@ const normalizeError = async (response) => {
 };
 
 export const postAi = async (endpoint, body, options = {}) => {
-  const { headers = {}, signal, credentials = "include", timeoutMs = DEFAULT_TIMEOUT_MS } = options;
+  const { headers = {}, signal, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
   const url = `${AI_BASE_PATH}${endpoint}`;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -45,7 +45,7 @@ export const postAi = async (endpoint, body, options = {}) => {
   try {
     response = await fetch(url, {
       method: "POST",
-      credentials,
+      credentials: "include",
       headers: buildHeaders(body, headers),
       body: isFormData(body) ? body : JSON.stringify(body),
       signal: activeSignal,
