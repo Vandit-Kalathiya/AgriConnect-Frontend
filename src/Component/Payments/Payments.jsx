@@ -136,7 +136,7 @@ const Payments = () => {
   const paymentData = calculatePaymentData();
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-gray-50 py-6 md:py-12 px-3 sm:px-4 md:px-6 lg:px-8 md:ml-20 overflow-x-hidden">
+    <div className="min-h-[calc(100vh-3.5rem)] bg-gray-50 py-6 md:py-12 px-3 sm:px-4 md:px-6 lg:px-8 md:ml-14 overflow-x-hidden">
       <div className="max-w-full md:max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">

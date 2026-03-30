@@ -59,22 +59,22 @@ const ChatMessage = ({ message }) => {
   return (
     React.createElement('div', { 
       className: cn(
-        "flex gap-3 mb-4",
+        "flex gap-2 mb-3",
         message.type === 'user' ? "justify-end" : "justify-start"
       )
     },
       message.type === 'bot' && (
-        React.createElement('div', { className: "w-9 h-9 rounded-full bg-green-100 flex-shrink-0 flex items-center justify-center mt-1" },
-          React.createElement('span', { className: "text-lg" }, '🌱')
+        React.createElement('div', { className: "w-7 h-7 rounded-full bg-green-100 flex-shrink-0 flex items-center justify-center mt-1" },
+          React.createElement('span', { className: "text-sm" }, '🌱')
         )
       ),
       
       React.createElement('div', { 
         className: cn(
-          "px-4 py-3 rounded-2xl max-w-[85%] relative shadow-sm",
+          "px-3 py-2.5 rounded-2xl max-w-[82%] relative shadow-sm",
           message.type === 'user' 
             ? "bg-gradient-to-r from-green-600 to-green-700 text-white" 
-            : "bg-gradient-to-r from-green-100 to-green-200 text-gray-800"
+            : "bg-gradient-to-r from-green-50 to-green-100 text-gray-800 border border-green-100"
         )
       },
         React.createElement('div', { className: "relative" },
@@ -91,15 +91,15 @@ const ChatMessage = ({ message }) => {
           ) : (
             React.createElement('div', { className: "chat-content" },
               message.type === 'bot' ? (
-                React.createElement('div', { className: "bot-message-content prose-sm prose-green" },
+                React.createElement('div', { className: "bot-message-content prose prose-sm prose-green text-sm" },
                   React.createElement(ReactMarkdown, null, enhanceText(message.text))
                 )
               ) : (
-                React.createElement('p', null, message.text)
+                React.createElement('p', { className: "text-sm" }, message.text)
               ),
               
               message.type === 'bot' && (
-                React.createElement('div', { className: "flex items-center justify-between mt-2 pt-2 border-t border-green-300/50" },
+                React.createElement('div', { className: "flex items-center justify-between mt-1.5 pt-1.5 border-t border-green-200/50" },
                   React.createElement('div', { className: "flex items-center gap-2" },
                     React.createElement('span', { className: "inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700" }, 
                       getLanguageLabel()
@@ -132,11 +132,11 @@ const ChatMessage = ({ message }) => {
       
       message.type === 'user' && (
         React.createElement('div', { className: "flex flex-col items-end" },
-          React.createElement('div', { className: "w-9 h-9 rounded-full bg-green-500 flex-shrink-0 flex items-center justify-center mb-1" },
-            React.createElement('span', { className: "text-lg" }, '👨‍🌾')
+          React.createElement('div', { className: "w-7 h-7 rounded-full bg-green-500 flex-shrink-0 flex items-center justify-center mb-0.5" },
+            React.createElement('span', { className: "text-sm" }, '👨‍🌾')
           ),
-          React.createElement('span', { className: "text-xs text-green-700 flex items-center gap-1 mr-1" },
-            React.createElement(Clock, { size: 10 }),
+          React.createElement('span', { className: "text-[10px] text-green-700 flex items-center gap-1 mr-0.5" },
+            React.createElement(Clock, { size: 9 }),
             formatTime(message.timestamp)
           )
         )

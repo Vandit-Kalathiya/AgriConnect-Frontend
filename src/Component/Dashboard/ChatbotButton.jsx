@@ -1,18 +1,19 @@
 import React from "react";
 import { FaRobot } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
+const HIDDEN_PATHS = ["/support", "/crop-advisory", "/recommendations"];
 
 const ChatbotButton = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
-  const handleChatbotClick = () => {
-    // window.location.href = "http://localhost:8080";
-    navigate('/support')
-  };
+  // Don't show when user is already on a chatbot page
+  if (HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null;
 
   return (
     <button
-      onClick={handleChatbotClick}
+      onClick={() => navigate("/support")}
       className="fixed bottom-4 right-6 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 flex items-center justify-center z-50 group overflow-hidden"
       title="Ask Kisan Mitra"
     >

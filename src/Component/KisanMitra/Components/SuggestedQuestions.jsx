@@ -111,18 +111,18 @@ const SuggestedQuestions = ({
   const header = suggestedQuestionsHeader[language] || suggestedQuestionsHeader.en;
   
   return (
-    React.createElement('div', { className: "px-4 py-3 border-t" },
-      React.createElement('div', { className: "flex items-center gap-2 mb-3" },
-        React.createElement(Sparkles, { size: 16, className: "text-green-500" }),
-        React.createElement('h3', { className: "text-sm font-medium text-gray-700" }, header)
+    React.createElement('div', { className: "px-4 py-2.5 border-t border-gray-100" },
+      React.createElement('div', { className: "flex items-center gap-2 mb-2" },
+        React.createElement(Sparkles, { size: 13, className: "text-green-500" }),
+        React.createElement('h3', { className: "text-xs font-medium text-gray-600" }, header)
       ),
       
-      React.createElement('div', { className: "flex flex-wrap gap-2" },
+      React.createElement('div', { className: "flex flex-wrap gap-1.5" },
         questions.map((question, index) => (
           React.createElement('button', {
             key: index,
             onClick: () => onQuestionClick(question),
-            className: "bg-green-50 hover:bg-green-100 text-gray-700 text-sm rounded-full px-4 py-1.5 transition-colors"
+            className: "bg-green-50 hover:bg-green-100 text-gray-700 text-xs rounded-full px-3 py-1 transition-colors border border-green-100"
           },
             question
           )

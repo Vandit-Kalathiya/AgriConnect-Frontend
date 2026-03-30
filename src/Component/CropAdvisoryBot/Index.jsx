@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ArrowLeftIcon,
   Leaf,
@@ -18,6 +18,7 @@ import MarketTrends from "./components/MarketTrends";
 import CropCard from "./components/CropCard";
 import { Button } from "./components/ui/Button";
 import { motion } from "framer-motion";
+import { fetchCropAdvisoryHistory } from "../../api/aiHistoryApi";
 
 const Index = () => {
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -26,6 +27,42 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("chat");
   const [showLocationSelector, setShowLocationSelector] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [historyItems, setHistoryItems] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [selectedHistoryKey, setSelectedHistoryKey] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [historySearch, setHistorySearch] = useState("");
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        setHistoryLoading(true);
+        const data = await fetchCropAdvisoryHistory({ page: 0, size: 20 });
+        const list = data?.history || [];
+        setHistoryItems(Array.isArray(list) ? list : []);
+      } catch (error) {
+        console.error("Failed to load crop advisory history:", error);
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+    loadHistory();
+  }, []);
+
+  const filteredHistoryItems = historyItems.filter((item) => {
+    const q = historySearch.trim().toLowerCase();
+    if (!q) return true;
+    const district = String(item?.district || "").toLowerCase();
+    const state = String(item?.state || "").toLowerCase();
+    const season = String(item?.season || "").toLowerCase();
+    const soilType = String(item?.soilType || "").toLowerCase();
+    return (
+      district.includes(q) ||
+      state.includes(q) ||
+      season.includes(q) ||
+      soilType.includes(q)
+    );
+  });
 
   const handleLocationSelect = (location) => {
     setIsLoading(true);
@@ -41,9 +78,9 @@ const Index = () => {
     setRecommendedCrops([]);
   };
 
-  const handleRecommendationsReceived = (crops) => {
+  const handleRecommendationsReceived = useCallback((crops) => {
     setRecommendedCrops(crops);
-  };
+  }, []);
 
   const handleCropSelect = (crop) => {
     setSelectedCrop(crop);
@@ -60,6 +97,23 @@ const Index = () => {
     setSelectedLocation(null);
     setRecommendedCrops([]);
     setSelectedCrop(null);
+    setSelectedHistoryKey("");
+  };
+
+  const handleReuseHistory = (item, index) => {
+    const location = {
+      district: item?.district || "",
+      state: item?.state || "",
+      soilType: item?.soilType || "",
+      season: item?.season || "",
+    };
+    setSelectedHistoryKey(`${item?.createdAt || ""}-${index}`);
+    setSelectedLocation(location);
+    setShowLocationSelector(false);
+    setSelectedCrop(null);
+    setRecommendedCrops([]);
+    setActiveTab("chat");
+    setSidebarOpen(false);
   };
 
   // Animation variants
@@ -86,10 +140,10 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] w-full relative overflow-hidden bg-gradient-to-b from-background to-background/80 md:ml-20">
+    <div className="min-h-[calc(100vh-3.5rem)] w-full relative overflow-hidden bg-gradient-to-b from-background to-background/80 md:ml-14">
       <AnimatedBackground />
 
-      <main className="container max-w-5xl mx-auto px-4 py-12 relative z-10">
+      <main className="container max-w-[1380px] mx-auto px-3 md:px-6 py-6 relative z-10">
         <motion.header
           className="text-center mb-12"
           initial={{ opacity: 0, y: -20 }}
@@ -114,11 +168,93 @@ const Index = () => {
         </motion.header>
 
         <motion.div
-          className="flex flex-col items-center max-w-4xl mx-auto"
+          className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)] max-w-[1380px] mx-auto"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
+          <div className="lg:hidden flex items-center justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              className="rounded-md text-xs"
+            >
+              {sidebarOpen ? "Hide advisory chats" : "Show advisory chats"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleChooseNewLocation}
+              className="rounded-md text-xs"
+            >
+              New
+            </Button>
+          </div>
+          <motion.aside
+            className={`${sidebarOpen ? "block" : "hidden"} lg:block rounded-2xl border border-white/30 bg-white/90 p-3 shadow-md backdrop-blur-lg h-[72vh] lg:h-[calc(100vh-220px)] overflow-hidden`}
+            variants={itemVariants}
+          >
+            <div className="sticky top-0 z-10 mb-2 flex items-center justify-between bg-white/90 pb-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-jewel-700">
+                Crop Advisory Chats
+              </h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleChooseNewLocation}
+                className="h-7 rounded-md px-2 text-xs"
+              >
+                New
+              </Button>
+            </div>
+            <div className="mb-2">
+              <input
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                placeholder="Search history..."
+                className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs outline-none focus:ring-2 focus:ring-jewel-200"
+              />
+            </div>
+            <div className="h-[calc(72vh-76px)] lg:h-[calc(100vh-296px)] space-y-2 overflow-y-auto pr-1">
+              {historyLoading ? (
+                <div className="p-2 text-xs text-gray-500">Loading chats...</div>
+              ) : filteredHistoryItems.length === 0 ? (
+                <div className="p-2 text-xs text-gray-500">No advisory history found.</div>
+              ) : (
+                filteredHistoryItems.map((item, index) => {
+                  const key = `${item?.createdAt || ""}-${index}`;
+                  const active = selectedHistoryKey === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleReuseHistory(item, index)}
+                      className={`w-full rounded-lg border px-3 py-2 text-left transition ${
+                        active
+                          ? "border-jewel-400 bg-jewel-50 shadow-sm"
+                          : "border-gray-200 bg-white hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="truncate text-sm font-medium text-gray-900">
+                        {(item?.district || "-") + ", " + (item?.state || "-")}
+                      </div>
+                      <div className="mt-1 line-clamp-2 text-xs text-gray-600">
+                        {(item?.season ? `Season: ${item.season}` : "") +
+                          (item?.soilType ? ` | Soil: ${item.soilType}` : "")}
+                      </div>
+                      <div className="mt-1 text-[11px] text-gray-500">
+                        {item?.createdAt
+                          ? new Date(item.createdAt).toLocaleString()
+                          : "Unknown time"}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </motion.aside>
+
+          <div>
           {showLocationSelector ? (
             <motion.div
               className="w-full max-w-2xl mx-auto mb-8"
@@ -197,6 +333,8 @@ const Index = () => {
                     <ChatInterface
                       selectedLocation={selectedLocation}
                       onRecommendationsReceived={handleRecommendationsReceived}
+                      onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+                      sidebarOpen={sidebarOpen}
                     />
                   ) : (
                     <SoilTips location={selectedLocation} />
@@ -274,6 +412,7 @@ const Index = () => {
               </motion.div>
             </>
           )}
+          </div>
         </motion.div>
 
         {/* <footer className="mt-16 text-center text-sm text-muted-foreground/70">

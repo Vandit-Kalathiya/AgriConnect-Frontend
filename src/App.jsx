@@ -3,7 +3,7 @@ import "./App.css";
 import Navbar from "./Component/Navbar/Navbar";
 import Dashboard from "./Component/Dashboard/Dashboard";
 import Sidebar from "./Component/Dashboard/Sidebar";
-import { BrowserRouter, Route, Routes, Navigate, Link } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { CropListingPage } from "./Component/MarketPlace/CropListingPage";
 import CropDetailPage from "./Component/MarketPlace/CropDetailPage";
 import { MyListing } from "./Component/MyProducts/MyListing";
@@ -31,11 +31,14 @@ import Trends from "./Component/MarketTrends/Pages/Trends";
 import Market from "./Component/MarketTrends/Pages/Market";
 import Insights from "./Component/MarketTrends/Pages/Insights";
 import CropDetail from "./Component/MarketTrends/Pages/CropDetail";
+import HistoryTabsLayout from "./features/history/HistoryTabsLayout";
+import KisanMitraHistory from "./features/history/KisanMitraHistory";
+import CropAdvisoryHistory from "./features/history/CropAdvisoryHistory";
 
 const Layout = ({ children }) => (
   <div className="flex flex-col min-h-screen font-poppins">
     <Navbar />
-    <div className="flex flex-1 relative pt-14 sm:pt-16">
+    <div className="flex flex-1 relative pt-14">
       <Sidebar />
       <main className="flex-1 min-w-0">{children}</main>
     </div>
@@ -291,6 +294,21 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/history"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <HistoryTabsLayout />
+              </Layout>
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<Navigate to="/history/kisan-mitra" replace />} />
+          <Route path="kisan-mitra" element={<KisanMitraHistory />} />
+          <Route path="crop-advisory" element={<CropAdvisoryHistory />} />
+        </Route>
+        <Route path="/ai-history" element={<Navigate to="/history/kisan-mitra" replace />} />
         <Route
           path="/support"
           element={

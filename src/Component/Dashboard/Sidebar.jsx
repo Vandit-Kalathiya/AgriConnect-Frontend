@@ -10,6 +10,7 @@ import {
   FaTimes,
   FaShoppingCart,
   FaBoxes,
+  FaHistory,
 } from "react-icons/fa";
 import { HiTrendingUp } from "react-icons/hi";
 import { RiContractLine } from "react-icons/ri";
@@ -26,15 +27,15 @@ const Sidebar = () => {
 
   return (
     <aside
-      className={`hidden md:block bg-white/95 backdrop-blur-md h-[calc(100vh-4rem)] md:h-[calc(100vh-3.5rem)] fixed top-14 sm:top-16 md:top-14 left-0 shadow-xl border-r border-slate-200/50 transition-all duration-500 ease-in-out z-40 ${
-        isCollapsed ? "w-20" : "w-64"
+      className={`hidden md:block bg-white/95 backdrop-blur-md h-[calc(100vh-3.5rem)] fixed top-14 left-0 shadow-xl border-r border-slate-200/50 transition-all duration-500 ease-in-out z-40 ${
+        isCollapsed ? "w-14" : "w-56"
       } hover:shadow-2xl`}
     >
       <div
         className={`${
           isCollapsed ? "space-y-4" : "space-y-3"
         } overflow-y-auto scrollbar-thin scrollbar-thumb-jewel-300 scrollbar-track-transparent hover:scrollbar-thumb-jewel-400 transition-all duration-300 mt-2 md:mt-3`}
-        style={{ maxHeight: "calc(100vh - 5rem)" }}
+        style={{ maxHeight: "calc(100vh - 3.5rem)" }}
       >
         <SidebarSection
           title="Market"
@@ -104,6 +105,13 @@ const Sidebar = () => {
             isCollapsed={isCollapsed}
             toggleSidebar={toggleSidebar}
           />
+          <SidebarItem
+            icon={<FaHistory />}
+            text="AI History"
+            to="/history/kisan-mitra"
+            isCollapsed={isCollapsed}
+            toggleSidebar={toggleSidebar}
+          />
         </SidebarSection>
 
         <SidebarSection
@@ -141,7 +149,7 @@ const Sidebar = () => {
 const SidebarSection = ({ title, children, isCollapsed, toggleSidebar }) => (
   <div
     className={`${
-      isCollapsed ? "px-3 py-3" : "px-4 py-3"
+      isCollapsed ? "px-2 py-2" : "px-3 py-2"
     } transition-all duration-300 ease-in-out`}
   >
     {/* Section header with toggle button for first section */}
@@ -154,12 +162,12 @@ const SidebarSection = ({ title, children, isCollapsed, toggleSidebar }) => (
         )}
         <button
           onClick={toggleSidebar}
-          className={`text-gray-600 hover:text-jewel-700 focus:outline-none cursor-pointer transition-all duration-300 ease-in-out hover:scale-110 hover:bg-jewel-50 rounded-lg p-2 active:scale-95 ${
+          className={`text-gray-600 hover:text-jewel-700 focus:outline-none cursor-pointer transition-all duration-300 ease-in-out hover:scale-110 hover:bg-jewel-50 rounded-lg p-1.5 active:scale-95 ${
             isCollapsed ? "mx-auto" : "ml-auto"
           }`}
         >
           <div className="transition-transform duration-300 ease-in-out">
-            {isCollapsed ? <FaBars size={20} /> : <FaTimes size={20} />}
+            {isCollapsed ? <FaBars size={16} /> : <FaTimes size={16} />}
           </div>
         </button>
       </div>
@@ -195,7 +203,7 @@ const SidebarItem = ({ icon, text, to, isCollapsed, toggleSidebar }) => {
         to={to}
         onClick={handleClick}
         className={({ isActive }) =>
-          `flex items-center gap-3 mx-2 px-3 py-3 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 ${
+          `flex items-center gap-2 mx-1 px-2 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 ${
             isActive
               ? "bg-gradient-to-r from-jewel-500 to-jewel-600 text-white rounded-xl shadow-lg shadow-jewel-500/25"
               : "text-gray-700 hover:bg-gradient-to-r hover:from-jewel-50 hover:to-jewel-100 hover:text-jewel-700 rounded-xl hover:shadow-md"
@@ -205,8 +213,8 @@ const SidebarItem = ({ icon, text, to, isCollapsed, toggleSidebar }) => {
         {/* Background animation effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-jewel-400 to-jewel-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300 ease-in-out rounded-xl"></div>
 
-        <span
-          className={`text-lg transition-all duration-300 ease-in-out relative z-10 ${
+          <span
+          className={`text-base transition-all duration-300 ease-in-out relative z-10 ${
             isCollapsed ? "transform group-hover:scale-110" : ""
           }`}
         >
@@ -214,7 +222,7 @@ const SidebarItem = ({ icon, text, to, isCollapsed, toggleSidebar }) => {
         </span>
 
         {!isCollapsed && (
-          <span className="text-sm md:text-base font-medium transition-all duration-300 ease-in-out relative z-10 group-hover:translate-x-1">
+          <span className="text-sm font-medium transition-all duration-300 ease-in-out relative z-10 group-hover:translate-x-1">
             {text}
           </span>
         )}

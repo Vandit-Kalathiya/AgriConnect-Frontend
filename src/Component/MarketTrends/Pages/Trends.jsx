@@ -64,7 +64,7 @@ const Trends = () => {
   ];
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] max-w-screen overflow-x-hidden pb-8 md:pb-12 md:ml-20">
+    <div className="min-h-[calc(100vh-3.5rem)] max-w-screen overflow-x-hidden pb-8 md:pb-12 md:ml-14">
       <div>
         <div className="container mx-auto px-3 sm:px-4 md:px-5">
           <div className="mb-8">

@@ -222,7 +222,7 @@ export const CropListingPage = () => {
 
   /* ═══ render ═══ */
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-[#f1f3f6] md:ml-20 font-poppins overflow-x-hidden">
+    <div className="min-h-[calc(100vh-3.5rem)] bg-[#f1f3f6] md:ml-14 font-poppins overflow-x-hidden">
 
       {/* ════ MOBILE FILTER OVERLAY ════ */}
       {mobileSidebar && (
@@ -254,7 +254,7 @@ export const CropListingPage = () => {
 
         {/* ── LEFT SIDEBAR (desktop) ── */}
         <aside className="hidden lg:block w-56 xl:w-60 flex-shrink-0">
-          <div className="sticky top-14 sm:top-16 h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] overflow-y-auto bg-white border-r border-gray-200 scrollbar-thin scrollbar-thumb-gray-200 px-4 pt-4 pb-8">
+          <div className="sticky top-11  h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-3.5rem)] overflow-y-auto bg-white border-r border-gray-200 scrollbar-thin scrollbar-thumb-gray-200 px-4 pt-4 pb-8">
             <FilterSidebar filters={filters} onFilterChange={updateFilter} onClearAll={clearAll}
               cropTypes={cropTypes} grades={grades} locations={locations}
               certificationsList={certificationsList} priceRange={priceRange}

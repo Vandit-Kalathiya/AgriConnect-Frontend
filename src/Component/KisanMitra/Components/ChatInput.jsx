@@ -9,13 +9,13 @@ const ChatInput = ({ onSendMessage, language, isProcessing }) => {
   const [transcript, setTranscript] = useState('');
   const [detectedLanguage, setDetectedLanguage] = useState(undefined);
   const inputRef = useRef(null);
-  
+
   useEffect(() => {
     if (inputRef.current && !isListening) {
       inputRef.current.focus();
     }
   }, [isListening]);
-  
+
   const handleSendMessage = () => {
     if (message.trim()) {
       onSendMessage(message, detectedLanguage);
@@ -23,22 +23,22 @@ const ChatInput = ({ onSendMessage, language, isProcessing }) => {
       setDetectedLanguage(undefined);
     }
   };
-  
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
-  
+
   const toggleListening = () => {
     if (isListening) {
       voiceService.stopListening();
       setIsListening(false);
-      
+
       if (transcript.trim()) {
         detectLanguage(transcript)
-          .then(detectedLang => {
+          .then((detectedLang) => {
             setDetectedLanguage(detectedLang);
             setMessage(transcript);
             setTimeout(() => {
@@ -48,8 +48,8 @@ const ChatInput = ({ onSendMessage, language, isProcessing }) => {
               setDetectedLanguage(undefined);
             }, 500);
           })
-          .catch(err => {
-            console.error("Error detecting language:", err);
+          .catch((err) => {
+            console.error('Error detecting language:', err);
             setMessage(transcript);
             setTimeout(() => {
               onSendMessage(transcript);
@@ -71,86 +71,81 @@ const ChatInput = ({ onSendMessage, language, isProcessing }) => {
           setIsListening(false);
         }
       );
-      
+
       if (started) {
         setIsListening(true);
         setTranscript('');
       }
     }
   };
-  
+
   return (
-    React.createElement('div', { className: "p-4 border-t border-green-200 bg-gradient-to-r from-green-200 to-green-100" },
-      React.createElement('div', { className: "relative flex items-center w-full" },
-        React.createElement('input', {
-          ref: inputRef,
-          type: "text",
-          placeholder: "Type or speak your farming question here...",
-          className: "flex-1 border border-green-300 rounded-full py-3 pl-5 pr-28 focus:outline-none focus:ring-2 focus:ring-green-500/50 bg-white shadow-md",
-          value: isListening ? transcript || 'Listening...' : message,
-          onChange: (e) => setMessage(e.target.value),
-          onKeyDown: handleKeyDown,
-          disabled: isListening || isProcessing
-        }),
-        
-        React.createElement('div', { className: "absolute right-2 flex items-center gap-2" },
-          React.createElement('button', {
-            onClick: toggleListening,
-            disabled: isProcessing,
-            className: `w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+    <div className="px-3 sm:px-4 py-2 border-t border-green-200 bg-gradient-to-r from-green-200 to-green-100">
+      {/* Input row — full width on mobile, centered/capped on larger screens */}
+      <div className="relative flex items-center w-full sm:max-w-xl sm:mx-auto">
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Type or speak your question..."
+          className="flex-1 min-w-0 border border-green-300 rounded-full py-2 pl-4 pr-[4.5rem] text-sm focus:outline-none focus:ring-2 focus:ring-green-500/50 bg-white shadow-sm"
+          value={isListening ? transcript || 'Listening...' : message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={isListening || isProcessing}
+        />
+
+        <div className="absolute right-1.5 flex items-center gap-1">
+          <button
+            onClick={toggleListening}
+            disabled={isProcessing}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0 ${
               isListening
-                ? 'bg-red-500 text-white shadow-lg' 
-                : 'bg-green-200 text-green-700 hover:bg-green-300 shadow-md'
-            }`,
-            "aria-label": isListening ? 'Stop listening' : 'Start voice input',
-            title: isListening ? 'Stop listening' : 'Start voice input'
-          },
-            isListening 
-              ? React.createElement(MicOff, { size: 18 })
-              : React.createElement(Mic, { size: 18 })
-          ),
-          
-          React.createElement('button', {
-            onClick: handleSendMessage,
-            disabled: !message.trim() || isProcessing || isListening,
-            className: `w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
+                ? 'bg-red-500 text-white shadow-sm'
+                : 'bg-green-200 text-green-700 hover:bg-green-300 shadow-sm'
+            }`}
+            aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+            title={isListening ? 'Stop listening' : 'Start voice input'}
+          >
+            {isListening ? <MicOff size={14} /> : <Mic size={14} />}
+          </button>
+
+          <button
+            onClick={handleSendMessage}
+            disabled={!message.trim() || isProcessing || isListening}
+            className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
               message.trim() && !isProcessing && !isListening
-                ? 'bg-gradient-to-r from-green-600 to-green-700 text-white'
-                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-            }`,
-            "aria-label": "Send message",
-            title: "Send message"
-          },
-            React.createElement(Send, { size: 18 })
-          )
-        ),
-        
-        isListening && (
-          React.createElement('div', { className: "absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg px-3 py-2 flex items-center space-x-2 border border-green-200 z-10" },
-            React.createElement('span', { className: "text-sm text-gray-700" }, "Listening..."),
-            React.createElement('div', { className: "listening-animation" },
-              [1, 2, 3, 4].map((i) => (
-                React.createElement('div', {
-                  key: i,
-                  className: "listening-bar h-3 bg-gradient-to-t from-green-500 to-green-600",
-                  style: {
-                    animationName: 'wave',
-                    animationDuration: '1.5s',
-                    animationIterationCount: 'infinite',
-                    animationDelay: `${i * 0.2}s`,
-                  }
-                })
-              ))
-            )
-          )
-        )
-      ),
-      
-      React.createElement('div', { className: "text-xs text-center mt-2 text-gray-600 flex items-center justify-center" },
-        React.createElement(Info, { size: 12, className: "mr-1" }),
-        React.createElement('span', null, "Press Enter to send • Your language will be automatically detected")
-      )
-    )
+                ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-sm'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+            aria-label="Send message"
+            title="Send message"
+          >
+            <Send size={14} />
+          </button>
+        </div>
+
+        {isListening && (
+          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-lg px-3 py-2 flex items-center gap-2 border border-green-200 z-10 whitespace-nowrap">
+            <span className="text-xs text-gray-700">Listening...</span>
+            <div className="flex items-end gap-0.5 h-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="w-0.5 bg-gradient-to-t from-green-500 to-green-600 rounded-full animate-bounce"
+                  style={{ height: '60%', animationDelay: `${i * 0.15}s` }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Hint text */}
+      <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-gray-500">
+        <Info size={9} />
+        <span>Press Enter to send • Language auto-detected</span>
+      </div>
+    </div>
   );
 };
 

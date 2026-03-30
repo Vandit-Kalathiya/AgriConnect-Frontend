@@ -269,14 +269,14 @@ const CropDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-3.5rem)] md:ml-20">
+      <div className="flex justify-center items-center min-h-[calc(100vh-3.5rem)] md:ml-14">
         <Loader />
       </div>
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] pb-8 md:pb-12 md:ml-20 overflow-x-hidden">
+    <div className="min-h-[calc(100vh-3.5rem)] pb-8 md:pb-12 md:ml-14 overflow-x-hidden">
       <div className="container mx-auto px-3 sm:px-4 md:px-5">
         <div className="mb-8">
           <Link

@@ -13,8 +13,9 @@ let previousActiveUserId = getActiveAiUserId();
 const syncUserContextIfChanged = () => {
   const currentUserId = getActiveAiUserId();
   if (currentUserId !== previousActiveUserId) {
+    // Clear only the previous user's thread key to avoid cross-user leakage.
+    // Do not clear current user key, otherwise resumed chats start as new threads.
     clearConversationIdByUserId(previousActiveUserId);
-    clearConversationIdByUserId(currentUserId);
     previousActiveUserId = currentUserId;
   }
 };
@@ -37,24 +38,23 @@ export const getChatResponse = async (messages, language) => {
       return { text: responseCache.get(cacheKey) || "" };
     }
 
-    const conversationHistory = messages.length > 2 ? messages.slice(-5) : messages;
+    // Backend already manages thread context by conversationId.
+    // Send only latest user message as per API contract.
+    const payloadMessages = [lastUserMessage];
+    const requestedConversationId = conversationId || null;
 
-    let response;
-    try {
-      response = await fetchChatResponseFromAi(
-        conversationHistory,
-        language,
-        conversationId
-      );
-    } catch {
-      response = await fetchChatResponseFromAi(
-        [lastUserMessage],
-        language,
-        conversationId
-      );
+    const response = await fetchChatResponseFromAi(
+      payloadMessages,
+      language,
+      requestedConversationId
+    );
+
+    // Keep the active thread stable when continuing an existing conversation.
+    const resolvedConversationId =
+      requestedConversationId || response.conversationId || null;
+    if (resolvedConversationId) {
+      persistConversationIdForActiveUser(resolvedConversationId);
     }
-
-    persistConversationIdForActiveUser(response.conversationId);
 
     if (!isFollowUpQuestion) {
       if (responseCache.size > 100) {
@@ -64,7 +64,10 @@ export const getChatResponse = async (messages, language) => {
       responseCache.set(cacheKey, response.text);
     }
 
-    return response;
+    return {
+      ...response,
+      conversationId: resolvedConversationId,
+    };
   } catch (error) {
     console.error("Error getting chat response:", error);
     return {

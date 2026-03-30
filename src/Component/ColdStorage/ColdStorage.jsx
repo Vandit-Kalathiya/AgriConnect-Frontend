@@ -239,7 +239,7 @@
 //     : staticColdStorages;
 
 //   return (
-//     <div className="min-h-screen bg-gray-50 p-4 md:p-8 md:ml-20 mt-16">
+//     <div className="min-h-screen bg-gray-50 p-4 md:p-8 md:ml-14 mt-16">
 //       {/* Header */}
 //       <div className="flex flex-col md:flex-row justify-between items-center mb-8 animate-fadeIn">
 //         <div className="px-8 pt-4">
@@ -780,7 +780,7 @@ const ColdStoragePage = () => {
   console.log(coldStorages);
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-gray-50 p-3 sm:p-4 md:p-8 md:ml-20 overflow-x-hidden">
+    <div className="min-h-[calc(100vh-3.5rem)] bg-gray-50 p-3 sm:p-4 md:p-8 md:ml-14 overflow-x-hidden">
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <div className="px-8 pt-4">
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">

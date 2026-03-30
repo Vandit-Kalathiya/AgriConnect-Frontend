@@ -11,6 +11,7 @@ import {
   LeafIcon,
   SunIcon,
   DropletIcon,
+  PanelLeftIcon,
 } from "lucide-react";
 import { useToast } from "../Hooks/use-toast";
 import { fetchCropRecommendationsByLocation } from "../lib/aiApi";
@@ -101,7 +102,12 @@ const generateBotResponse = (userInput, location) => {
   return `I can help you with:\n\n🌾 Crop recommendations for your region\n📊 Market trends and price analysis\n💧 Irrigation and water management\n🌱 Soil health and fertilization\n🐛 Pest and disease management\n💰 Government schemes and subsidies\n📈 Maximizing farm profitability\n\nPlease ask me a specific question, and I'll provide detailed guidance!`;
 };
 
-const ChatInterface = ({ selectedLocation, onRecommendationsReceived }) => {
+const ChatInterface = ({
+  selectedLocation,
+  onRecommendationsReceived,
+  onToggleSidebar,
+  sidebarOpen = false,
+}) => {
   const [messages, setMessages] = useState([
     {
       id: "1",
@@ -114,6 +120,9 @@ const ChatInterface = ({ selectedLocation, onRecommendationsReceived }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  // Use a ref so the callback never becomes a useEffect dependency
+  const onRecommendationsRef = useRef(onRecommendationsReceived);
+  useEffect(() => { onRecommendationsRef.current = onRecommendationsReceived; });
   const { toast } = useToast();
 
   const scrollToBottom = () => {
@@ -163,35 +172,22 @@ These recommendations consider current market prices, projected demand, and grow
       };
 
       setMessages((prev) => [...prev, recommendationsMessage]);
-      onRecommendationsReceived(recommendedCrops);
+      onRecommendationsRef.current?.(recommendedCrops);
     } catch (error) {
       console.error("Error getting crop recommendations:", error);
 
       const errorMessage = {
         id: (Date.now() + 1).toString(),
         sender: "bot",
-        text: `I've provided general crop recommendations for your region. While I couldn't connect to the AI service for real-time analysis, these recommendations are based on traditional agricultural practices and market trends for ${location.district}, ${location.state}.`,
+        text: `I couldn't connect to the AI service for real-time analysis right now. Please try refreshing or ask me a specific question about crops, soil, or market trends for ${location.district}, ${location.state}.`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
-      
-      // Still try to get recommendations from fallback
-      try {
-        const fallbackData = await fetchCropRecommendationsByLocation(location);
-        if (fallbackData && fallbackData.crops) {
-          const recommendedCrops = fallbackData.crops.map((crop, index) => ({
-            ...crop,
-            id: (index + 1).toString(),
-          }));
-          onRecommendationsReceived(recommendedCrops);
-        }
-      } catch (fallbackError) {
-        console.error("Fallback also failed:", fallbackError);
-      }
     } finally {
       setIsLoading(false);
     }
-  }, [onRecommendationsReceived]);
+  // Only re-create when location identity changes — ref keeps callback stable
+  }, []);
 
   useEffect(() => {
     if (selectedLocation) {
@@ -246,8 +242,8 @@ These recommendations consider current market prices, projected demand, and grow
   };
 
   return (
-    <Card className="flex flex-col h-[550px] overflow-hidden border border-green-100 shadow-lg bg-gradient-to-b from-green-50 to-white rounded-xl">
-      <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between border-b border-green-100 bg-gradient-to-r from-green-100 to-green-50">
+    <Card className="flex flex-col h-[68vh] lg:h-[calc(100vh-220px)] overflow-hidden border border-green-100/80 shadow-md bg-gradient-to-b from-green-50 to-white rounded-2xl">
+      <CardHeader className="sticky top-0 z-10 p-4 pb-2 flex flex-row items-center justify-between border-b border-green-100 bg-gradient-to-r from-green-100/95 to-green-50/95 backdrop-blur">
         <div className="flex items-center gap-3">
           {/* Improved Logo */}
           <div className="h-10 w-10 bg-green-500 rounded-full ring-2 ring-green-200 shadow-sm flex items-center justify-center">
@@ -261,6 +257,25 @@ These recommendations consider current market prices, projected demand, and grow
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {typeof onToggleSidebar === "function" && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onToggleSidebar}
+                    className="h-8 w-8 text-green-700 hover:bg-green-100 hover:text-green-900 rounded-full"
+                  >
+                    <PanelLeftIcon className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-green-800 text-white">
+                  <p>{sidebarOpen ? "Hide history panel" : "Show history panel"}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           {selectedLocation && (
             <TooltipProvider>
               <Tooltip>
@@ -301,7 +316,7 @@ These recommendations consider current market prices, projected demand, and grow
         </div>
       </CardHeader>
 
-      <ScrollArea className="flex-1 p-4 bg-gradient-to-b from-green-50/50 to-white">
+      <ScrollArea className="flex-1 p-4 bg-gradient-to-b from-green-50/40 to-white">
         <div className="space-y-4">
           {messages.map((message) => (
             <div
@@ -372,7 +387,7 @@ These recommendations consider current market prices, projected demand, and grow
         </div>
       </ScrollArea>
 
-      <CardFooter className="p-4 pt-2 border-t border-green-100 bg-green-50 flex flex-col gap-3">
+      <CardFooter className="p-4 pt-2 border-t border-green-100 bg-green-50/80 flex flex-col gap-3">
         {/* Feature indicators moved above the input field */}
         <div className="w-full flex items-center justify-between mb-2 bg-white/50 rounded-lg py-2 px-4">
           <div className="flex items-center gap-2 text-xs text-green-600 transition-colors hover:text-green-800 cursor-pointer">

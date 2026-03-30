@@ -276,7 +276,7 @@ const Contracts = () => {
   };
 
   return (
-    <div className="bg-gray-50 py-6 md:py-12 px-3 sm:px-4 md:px-6 lg:px-8 md:ml-20 min-h-[calc(100vh-3.5rem)] overflow-x-hidden">
+    <div className="bg-gray-50 py-6 md:py-12 px-3 sm:px-4 md:px-6 lg:px-8 md:ml-14 min-h-[calc(100vh-3.5rem)] overflow-x-hidden">
       <div className="max-w-full md:max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="flex flex-col items-center justify-center mb-8">

@@ -1,11 +1,13 @@
 import React from 'react';
-import { RefreshCw } from 'lucide-react';
+import { PanelLeft, RefreshCw } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
 
 const ChatHeader = ({
   language,
   onLanguageChange,
-  onResetChat
+  onResetChat,
+  onToggleSidebar,
+  sidebarOpen = false,
 }) => {
   return (
     React.createElement('div', { className: "flex items-center justify-between p-3 bg-green-100 border-b" },
@@ -39,6 +41,16 @@ const ChatHeader = ({
       ),
       
       React.createElement('div', { className: "flex items-center gap-2" },
+        typeof onToggleSidebar === "function"
+          ? React.createElement('button', {
+              onClick: onToggleSidebar,
+              className: "w-8 h-8 flex items-center justify-center rounded-full hover:bg-green-100 transition-colors",
+              "aria-label": sidebarOpen ? "Hide chat history sidebar" : "Show chat history sidebar",
+              title: sidebarOpen ? "Hide sidebar" : "Show sidebar",
+            },
+              React.createElement(PanelLeft, { size: 16, className: "text-green-600" })
+            )
+          : null,
         React.createElement('button', {
           onClick: onResetChat,
           className: "w-8 h-8 flex items-center justify-center rounded-full hover:bg-green-100 transition-colors",

@@ -140,19 +140,19 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white shadow-md px-3 sm:px-4 md:px-6 lg:px-10 xl:px-20 flex justify-between items-center fixed w-full top-0 z-50 h-14 sm:h-16 gap-2">
+      <nav className="bg-white shadow-md px-3 sm:px-4 md:px-6 lg:px-10 xl:px-20 flex justify-between items-center fixed w-full top-0 z-50 h-14 gap-2">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2 group transition-all duration-300 min-w-0">
           <div className="relative">
             <img
               src={leafImg}
-              width={28}
+              width={26}
               alt="AgriConnect Logo"
               className="group-hover:scale-110 transition-transform duration-300 shrink-0"
             />
             <div className="absolute -inset-1 bg-green-100 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
           </div>
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 font-bold text-base sm:text-2xl truncate">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 font-bold text-sm sm:text-xl truncate">
             AgriConnect
           </span>
         </Link>
@@ -193,7 +193,7 @@ const Navbar = () => {
           <div className="relative">
             <button
               data-profile-toggle="true"
-              className="flex items-center space-x-2 border border-green-600 text-green-700 p-1 px-2 sm:px-3 md:px-4 py-1.5 md:py-2 rounded-full hover:bg-green-50 transition-all duration-200 shadow-sm"
+              className="flex items-center space-x-2 border border-green-600 text-green-700 px-2 sm:px-3 py-1.5 rounded-full hover:bg-green-50 transition-all duration-200 shadow-sm"
               onClick={toggleProfile}
             >
               <div className="h-6 w-6 md:h-7 md:w-7 rounded-full bg-green-200 flex items-center justify-center overflow-hidden">
@@ -327,7 +327,7 @@ const Navbar = () => {
         {isMenuOpen && (
           <div
             ref={menuRef}
-            className="lg:hidden absolute top-14 sm:top-16 left-0 w-full bg-white shadow-lg border-t border-gray-200 z-40"
+            className="lg:hidden absolute top-14 left-0 w-full bg-white shadow-lg border-t border-gray-200 z-40"
             style={{ animation: "slideDown 0.3s ease-out" }}
           >
             <div className="flex flex-col p-4 space-y-1">
