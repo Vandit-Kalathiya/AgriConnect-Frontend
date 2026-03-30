@@ -56,7 +56,7 @@ import { Separator } from "../components/ui/Separator";
 import {
   generateCropAnalysis,
   generateRecommendations,
-} from "../components/GeminiService";
+} from "../components/AiService";
 import { toast } from "sonner";
 import {
   Dialog,

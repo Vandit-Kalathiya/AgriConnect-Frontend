@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { ScrollArea } from "./ui/ScrollArea";
@@ -13,18 +13,14 @@ import {
   DropletIcon,
 } from "lucide-react";
 import { useToast } from "../Hooks/use-toast";
-import GeminiApiKeyInput from "./GeminiApiKeyInput";
-import { generateCropRecommendations } from "../lib/geminiApi";
+import { fetchCropRecommendationsByLocation } from "../lib/aiApi";
 import { cn } from "../lib/utils";
 import {
   Card,
   CardHeader,
   CardTitle,
-  CardContent,
   CardFooter,
 } from "./ui/Card";
-import { Avatar } from "./ui/Avtar";
-import { Separator } from "./ui/Separator";
 import {
   Tooltip,
   TooltipContent,
@@ -116,26 +112,9 @@ const ChatInterface = ({ selectedLocation, onRecommendationsReceived }) => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [geminiApiKey, setGeminiApiKey] = useState(
-    import.meta.env.VITE_GEMINI_API_KEY || ""
-  );
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (selectedLocation && geminiApiKey) {
-      handleLocationSelected(selectedLocation);
-    } else if (selectedLocation && !geminiApiKey) {
-      const newMessage = {
-        id: Date.now().toString(),
-        sender: "bot",
-        text: `Please enter your Gemini API key below to receive personalized crop recommendations for ${selectedLocation.district}, ${selectedLocation.state}.`,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, newMessage]);
-    }
-  }, [selectedLocation, geminiApiKey]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -145,35 +124,18 @@ const ChatInterface = ({ selectedLocation, onRecommendationsReceived }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleApiKeySet = (key) => {
-    setGeminiApiKey(key);
-    toast({
-      title: "API Key Set",
-      description: "Your Gemini API key has been saved for this session.",
-      variant: "success",
-    });
-
-    if (selectedLocation) {
-      handleLocationSelected(selectedLocation);
-    }
-  };
-
-  const handleLocationSelected = async (location) => {
-    if (!geminiApiKey) {
-      return;
-    }
-
+  const handleLocationSelected = useCallback(async (location) => {
     setIsLoading(true);
     const newMessage = {
       id: Date.now().toString(),
       sender: "bot",
-      text: `Analyzing agricultural conditions and market trends for ${location.district}, ${location.state} using Gemini AI...`,
+      text: `Analyzing agricultural conditions and market trends for ${location.district}, ${location.state} using AI service...`,
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, newMessage]);
 
     try {
-      const responseData = await generateCropRecommendations(location);
+      const responseData = await fetchCropRecommendationsByLocation(location);
 
       const recommendedCrops = responseData.crops.map((crop, index) => ({
         ...crop,
@@ -215,7 +177,7 @@ These recommendations consider current market prices, projected demand, and grow
       
       // Still try to get recommendations from fallback
       try {
-        const fallbackData = await generateCropRecommendations(location);
+        const fallbackData = await fetchCropRecommendationsByLocation(location);
         if (fallbackData && fallbackData.crops) {
           const recommendedCrops = fallbackData.crops.map((crop, index) => ({
             ...crop,
@@ -229,7 +191,13 @@ These recommendations consider current market prices, projected demand, and grow
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onRecommendationsReceived]);
+
+  useEffect(() => {
+    if (selectedLocation) {
+      handleLocationSelected(selectedLocation);
+    }
+  }, [selectedLocation, handleLocationSelected]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -404,32 +372,24 @@ These recommendations consider current market prices, projected demand, and grow
         </div>
       </ScrollArea>
 
-      {!geminiApiKey && (
-        <div className="p-4 border-t border-green-100 bg-green-50">
-          <GeminiApiKeyInput onApiKeySet={handleApiKeySet} />
-        </div>
-      )}
-
       <CardFooter className="p-4 pt-2 border-t border-green-100 bg-green-50 flex flex-col gap-3">
         {/* Feature indicators moved above the input field */}
-        {geminiApiKey && (
-          <div className="w-full flex items-center justify-between mb-2 bg-white/50 rounded-lg py-2 px-4">
-            <div className="flex items-center gap-2 text-xs text-green-600 transition-colors hover:text-green-800 cursor-pointer">
-              <SunIcon className="h-4 w-4 text-amber-500" />
-              <span>Weather-based tips</span>
-            </div>
-            <div className="h-4 w-px bg-green-100"></div>
-            <div className="flex items-center gap-2 text-xs text-green-600 transition-colors hover:text-green-800 cursor-pointer">
-              <DropletIcon className="h-4 w-4 text-blue-500" />
-              <span>Irrigation advice</span>
-            </div>
-            <div className="h-4 w-px bg-green-100"></div>
-            <div className="flex items-center gap-2 text-xs text-green-600 transition-colors hover:text-green-800 cursor-pointer">
-              <InfoIcon className="h-4 w-4 text-green-500" />
-              <span>Try asking about market trends</span>
-            </div>
+        <div className="w-full flex items-center justify-between mb-2 bg-white/50 rounded-lg py-2 px-4">
+          <div className="flex items-center gap-2 text-xs text-green-600 transition-colors hover:text-green-800 cursor-pointer">
+            <SunIcon className="h-4 w-4 text-amber-500" />
+            <span>Weather-based tips</span>
           </div>
-        )}
+          <div className="h-4 w-px bg-green-100"></div>
+          <div className="flex items-center gap-2 text-xs text-green-600 transition-colors hover:text-green-800 cursor-pointer">
+            <DropletIcon className="h-4 w-4 text-blue-500" />
+            <span>Irrigation advice</span>
+          </div>
+          <div className="h-4 w-px bg-green-100"></div>
+          <div className="flex items-center gap-2 text-xs text-green-600 transition-colors hover:text-green-800 cursor-pointer">
+            <InfoIcon className="h-4 w-4 text-green-500" />
+            <span>Try asking about market trends</span>
+          </div>
+        </div>
 
         {/* Input form */}
         <form onSubmit={handleSubmit} className="flex gap-2 w-full">
@@ -440,7 +400,7 @@ These recommendations consider current market prices, projected demand, and grow
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="pr-24 pl-4 py-6 border-green-700 focus:border-green-400 shadow-sm bg-white placeholder:text-green-300 h-12 rounded-full"
-              disabled={isLoading || !geminiApiKey}
+              disabled={isLoading}
             />
             <TooltipProvider>
               <Tooltip>
@@ -448,7 +408,7 @@ These recommendations consider current market prices, projected demand, and grow
                   <Button
                     type="submit"
                     size="sm"
-                    disabled={isLoading || !input.trim() || !geminiApiKey}
+                    disabled={isLoading || !input.trim()}
                     className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white shadow-sm rounded-full px-5 h-10 flex items-center justify-center"
                   >
                     {isLoading ? (

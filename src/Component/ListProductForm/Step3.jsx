@@ -10,13 +10,7 @@ import {
   FaLightbulb,
   FaExclamationTriangle,
 } from "react-icons/fa";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-// Initialize the Gemini API client with the provided API key
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-console.log(GEMINI_API_KEY);
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+import { postAi } from "../../services/aiApi";
 
 const Step3 = ({
   formData,
@@ -48,40 +42,19 @@ const Step3 = ({
     setPriceCalculated(false);
 
     try {
-      // Craft a strong prompt for the Gemini API with emphasis on numeric price per kg
-      const prompt = `
-        You are an agricultural pricing expert. Based on the following details, provide a fair price suggestion PER KILOGRAM for the product (not total price), along with proper recommendations which can be useful for farmers to get best prices:
-        - Product: ${formData.productName}
-        - Quantity: ${formData.quantity} kg
-        - Location: ${formData.location}
+      const parsedData = await postAi("/listing/price-suggestion", {
+        productName: formData.productName,
+        qualityGrade: formData.qualityGrade,
+        quantityKg: Number(formData.quantity),
+        location: formData.location,
+      });
 
-        IMPORTANT: For the price field, provide ONLY a numeric value per kg without any currency symbols, units or formatting. For example: "245.50" not "₹245.50 per kg" or "Rs. 245.50".
-
-        In the recommendations, highlight important market terms, actions, or price indicators by putting them between <highlight> and </highlight> tags.
-
-        Respond in the following JSON format:
-        {
-          "price": "A numeric value only representing price per kg, e.g. 245.50",
-          "recommendations": ["Recommendation 1 with <highlight>important terms</highlight> highlighted", "Recommendation 2", "Recommendation 3", "Recommendation 4", "Recommendation 5"],
-        }
-      `;
-
-      // Call the Gemini API
-      const result = await model.generateContent(prompt);
-      const responseText = result.response.text();
-      console.log("Gemini API raw response:", responseText);
-
-      // Extract JSON from the response text using a regular expression
-      const jsonMatch = responseText.match(/\{.*\}/s);
-      if (!jsonMatch) {
-        throw new Error("Failed to extract JSON from API response.");
+      const priceField = parsedData?.pricePerKg ?? parsedData?.price;
+      const numericPrice = Number(priceField);
+      if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+        throw new Error("Invalid price value from AI backend");
       }
-
-      // Parse the JSON response
-      const parsedData = JSON.parse(jsonMatch[0]);
-
-      // Clean the price value to ensure it's a valid number
-      let cleanPrice = parsedData.price.toString().trim();
+      const cleanPrice = numericPrice.toFixed(2);
       console.log("Cleaned AI Price per kg:", cleanPrice);
 
       // Update AI-generated price in form data

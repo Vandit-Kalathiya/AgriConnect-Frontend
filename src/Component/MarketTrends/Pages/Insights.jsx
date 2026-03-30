@@ -20,7 +20,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '../components/ui/Select';
-import { generateRecommendations } from '../components/GeminiService';
+import { generateRecommendations } from '../components/AiService';
 import { toast } from 'sonner';
 
 const Insights = () => {

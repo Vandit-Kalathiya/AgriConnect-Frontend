@@ -12,7 +12,12 @@ import {
   detectLanguage,
   LANGUAGES,
 } from "../Services/LanguageService";
-import { getChatResponse, getFallbackResponse } from "../Services/ChatService";
+import {
+  getChatResponse,
+  getFallbackResponse,
+  getRateLimitedFallbackResponse,
+  resetChatConversationContext,
+} from "../Services/ChatService";
 
 const Index_Bot = () => {
   const [messages, setMessages] = useState([]);
@@ -144,8 +149,8 @@ const Index_Bot = () => {
       ]);
 
       if (response.error) {
-        console.error("Error in Gemini response:", response.error);
-        throw new Error(response.error);
+        console.error("Error in AI response:", response.error);
+        throw response.error;
       }
 
       setMessages((prev) =>
@@ -162,7 +167,10 @@ const Index_Bot = () => {
     } catch (error) {
       console.error("Error getting response:", error);
 
-      const fallbackResponse = getFallbackResponse(userLanguage);
+      const fallbackResponse =
+        error?.status === 429
+          ? getRateLimitedFallbackResponse(userLanguage)
+          : getFallbackResponse(userLanguage);
 
       toast.error("Could not get a response. Please try again.");
 
@@ -189,6 +197,7 @@ const Index_Bot = () => {
   };
 
   const handleResetChat = () => {
+    resetChatConversationContext();
     setMessages([
       {
         id: uuidv4(),

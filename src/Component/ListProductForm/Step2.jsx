@@ -1,13 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import PhotoUpload from "./PhotoUpload";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import toast from "react-hot-toast";
-
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-console.log(GEMINI_API_KEY);
-
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+import { postAi } from "../../services/aiApi";
 
 const Step2 = ({
   formData,
@@ -22,7 +16,7 @@ const Step2 = ({
 }) => {
   const [isLoadingShelfLife, setIsLoadingShelfLife] = useState(false);
   const [harvestDateError, setHarvestDateError] = useState("");
-  const dateInputRef = React.useRef(null);
+  const dateInputRef = useRef(null);
 
   const isStep2Valid =
     formData.productPhotos.length > 0 &&
@@ -34,7 +28,7 @@ const Step2 = ({
     !isNaN(formData.shelfLife) &&
     Number(formData.shelfLife) > 0;
 
-  // Function to predict shelf life using Gemini API
+  // Function to predict shelf life using backend AI API
   const predictShelfLife = async (cropType) => {
     if (!cropType) {
       toast.error("Please select a crop type first");
@@ -43,28 +37,24 @@ const Step2 = ({
 
     setIsLoadingShelfLife(true);
 
-    const productName = formData.productName || "product"; // Use product name if available, or default to "product"
-    const prompt = `Predict the average shelf life in days for ${productName}, which is a ${cropType}. Return only a number value.`;
-
     try {
-      const result = await model.generateContent(prompt);
-
-      const responseText = result.response.text();
-      console.log("Gemini response:", responseText);
-
-      // Ensure responseText contains a valid number
-      const matches = responseText.match(/\d+/);
-      if (matches) {
-        const shelfLifeDays = matches[0];
+      const data = await postAi("/listing/shelf-life", {
+        productName: formData.productName || "product",
+        cropType,
+        storageConditions: formData.storageConditions || undefined,
+      });
+      const shelfLifeDays = Number(data?.shelfLifeDays);
+      if (Number.isFinite(shelfLifeDays) && shelfLifeDays > 0) {
+        const normalizedShelfLife = Math.round(shelfLifeDays).toString();
 
         // Update form data with the predicted shelf life
         handleInputChange({
-          target: { name: "shelfLife", value: shelfLifeDays },
+          target: { name: "shelfLife", value: normalizedShelfLife },
         });
 
-        toast.success(`Shelf life predicted: ${shelfLifeDays} days`);
+        toast.success(`Shelf life predicted: ${normalizedShelfLife} days`);
       } else {
-        console.error("No valid number found in the response:", responseText);
+        console.error("No valid shelf life returned from backend:", data);
         toast.error("Failed to predict shelf life. Please try again.");
       }
     } catch (error) {
@@ -76,7 +66,7 @@ const Step2 = ({
   };
 
   // Validate that harvest date is NOT more than a week ago (within the past week)
-  const validateHarvestDate = (date) => {
+  const validateHarvestDate = useCallback((date) => {
     if (!date) return;
 
     const harvestDate = new Date(date);
@@ -110,7 +100,7 @@ const Step2 = ({
         });
       return true;
     }
-  };
+  }, [setErrors]);
 
   // Handle harvest date change with validation
   const handleHarvestDateChange = (e) => {
@@ -140,7 +130,7 @@ const Step2 = ({
   // Validate harvest date on component mount and when it changes
   useEffect(() => {
     validateHarvestDate(formData.harvestDate);
-  }, [formData.harvestDate]);
+  }, [formData.harvestDate, validateHarvestDate]);
 
   // Calculate the minimum allowed harvest date (7 days ago)
   const calculateMinHarvestDate = () => {
