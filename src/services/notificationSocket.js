@@ -1,13 +1,9 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { API_CONFIG } from '../config/apiConfig';
 
-// In development, use a same-origin path so Vite proxies the request to the
-// local notification service.
-const WS_URL = import.meta.env.DEV
-    ? `${window.location.origin}/notifications/ws`
-    : API_CONFIG.NOTIFICATION_WS;
-const BROKER_URL = WS_URL.replace(/^http/i, 'ws');
+// Use a same-origin endpoint by default so browser requests do not depend on
+// cross-origin CORS headers in production.
+const WS_URL = `${window.location.origin}/notifications/ws`;
 
 /**
  * Singleton WebSocket service using STOMP over SockJS.
@@ -41,6 +37,12 @@ class NotificationSocketService {
         this.disconnect();
 
         const clientConfig = {
+            // SockJS over same-origin path.
+            webSocketFactory: () =>
+                new SockJS(WS_URL, undefined, {
+                    // Restrict to HTTP transports to avoid iframe/eventsource noise.
+                    transports: ['xhr-streaming', 'xhr-polling'],
+                }),
             reconnectDelay: this._getReconnectDelay(),
 
             // JWT in STOMP CONNECT frame for gateway auth
@@ -81,17 +83,6 @@ class NotificationSocketService {
                 this._reconnectAttempts++;
             },
         };
-
-        if (import.meta.env.DEV) {
-            // Local dev: keep SockJS through Vite proxy.
-            clientConfig.webSocketFactory = () =>
-                new SockJS(WS_URL, undefined, {
-                    transports: ['xhr-streaming', 'xhr-polling'],
-                });
-        } else {
-            // Production: use native WebSocket STOMP to avoid SockJS /info CORS/502 issues.
-            clientConfig.brokerURL = BROKER_URL;
-        }
 
         this._client = new Client(clientConfig);
 

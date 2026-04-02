@@ -1,4 +1,10 @@
-const GATEWAY = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8080';
+const shouldUseSameOriginGateway =
+    import.meta.env.PROD &&
+    (import.meta.env.VITE_USE_SAME_ORIGIN_GATEWAY ?? 'true') === 'true';
+
+const GATEWAY = shouldUseSameOriginGateway
+    ? window.location.origin
+    : (import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8080');
 
 export const API_CONFIG = {
         MAIN_BACKEND:            `${GATEWAY}`,
