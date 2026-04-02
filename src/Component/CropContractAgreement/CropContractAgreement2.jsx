@@ -1849,24 +1849,20 @@ export const CropContractAgreement = () => {
         additionalNotes: fetchedAgreementDetails.additionalNotes,
       };
 
-      const response = await fetch(`${API_CONFIG.GENERATE_AGREEMENT}/contracts/generate`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/pdf",
+      const response = await api.post(
+        `${API_CONFIG.GENERATE_AGREEMENT}/contracts/generate`,
+        contractRequest,
+        {
+          withCredentials: true,
+          responseType: "blob",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/pdf",
+          },
         },
-        body: JSON.stringify(contractRequest),
-      });
+      );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Failed to generate PDF: ${response.status} - ${errorText}`,
-        );
-      }
-
-      const blob = await response.blob();
+      const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -3228,24 +3224,20 @@ export const CropContractAgreement = () => {
         additionalNotes: fetchedAgreementDetails.additionalNotes,
       };
 
-      const response = await fetch(`${API_CONFIG.GENERATE_AGREEMENT}/contracts/generate`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/pdf",
+      const response = await api.post(
+        `${API_CONFIG.GENERATE_AGREEMENT}/contracts/generate`,
+        contractRequest,
+        {
+          withCredentials: true,
+          responseType: "blob",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/pdf",
+          },
         },
-        body: JSON.stringify(contractRequest),
-      });
+      );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Failed to generate PDF: ${response.status} - ${errorText}`,
-        );
-      }
-
-      const blob = await response.blob();
+      const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;

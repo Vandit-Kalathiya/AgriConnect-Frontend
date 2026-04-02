@@ -21,7 +21,8 @@ const Login = ({ onNavigateToSignUp, onNavigateToForgotPassword }) => {
 
   const validate = () => {
     if (!phoneNumber.trim()) return "Please enter your phone number";
-    if (phoneNumber.length !== 10) return "Please enter a valid 10-digit phone number";
+    if (phoneNumber.length !== 10)
+      return "Please enter a valid 10-digit phone number";
     if (!password.trim()) return "Please enter your password";
     return "";
   };
@@ -87,7 +88,9 @@ const Login = ({ onNavigateToSignUp, onNavigateToForgotPassword }) => {
       {error && <p className="mb-3 text-sm text-red-700">{error}</p>}
 
       <div className="mb-4">
-        <label className="block text-[#275434] mb-2 font-medium">Phone Number</label>
+        <label className="block text-[#275434] mb-2 font-medium">
+          Phone Number
+        </label>
         <input
           type="tel"
           placeholder="Enter 10-digit phone number"
@@ -102,7 +105,9 @@ const Login = ({ onNavigateToSignUp, onNavigateToForgotPassword }) => {
       </div>
 
       <div className="mb-2">
-        <label className="block text-[#275434] mb-2 font-medium">Password</label>
+        <label className="block text-[#275434] mb-2 font-medium">
+          Password
+        </label>
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}

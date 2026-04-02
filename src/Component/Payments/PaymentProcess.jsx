@@ -121,19 +121,22 @@ const PaymentProcess = () => {
         order_id: razorpayData.razorpayOrderId,
         handler: async function (response) {
           try {
-            const verifyResponse = await fetch(
+            const verifyResponse = await api.post(
               `${API_CONFIG.CONTRACT_FARMING}/api/payments/payment-callback`,
+              new URLSearchParams({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }).toString(),
               {
-                method: "POST",
-                credentials: "include",
+                withCredentials: true,
                 headers: {
                   "Content-Type": "application/x-www-form-urlencoded",
                 },
-                body: `razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${response.razorpay_signature}`,
-              },
+              }
             );
 
-            const verifyData = await verifyResponse.json();
+            const verifyData = verifyResponse.data || {};
             console.log(verifyData);
 
             if (verifyData.success) {

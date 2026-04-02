@@ -106,27 +106,20 @@ const OrderItem = ({
         additionalNotes: fetchedAgreementDetails.additionalNotes,
       };
 
-      const response = await fetch(
+      const response = await api.post(
         `${API_CONFIG.GENERATE_AGREEMENT}/contracts/generate`,
+        contractRequest,
         {
-          method: "POST",
-          credentials: "include",
+          withCredentials: true,
+          responseType: "blob",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/pdf",
           },
-          body: JSON.stringify(contractRequest),
         }
       );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Failed to generate PDF: ${response.status} - ${errorText}`
-        );
-      }
-
-      const blob = await response.blob();
+      const blob = response.data;
 
       const farmerResponse = await api.get(
         `${API_CONFIG.MAIN_BACKEND}/users/${contractRequest.farmerInfo.farmerContact}`,
