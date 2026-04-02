@@ -24,6 +24,31 @@ export const clearAuthToken = () => {
     inMemoryJwtToken = null;
 };
 
+const clearJwtCookie = () => {
+    document.cookie = 'jwt_token=; Max-Age=0; path=/; SameSite=Lax';
+};
+
+const shouldInvalidateSessionFor401 = (error) => {
+    const data = error?.response?.data;
+    const message = (
+        typeof data === 'string'
+            ? data
+            : data?.message || data?.error || ''
+    ).toLowerCase();
+
+    // Only invalidate auth when backend explicitly indicates token/session failure.
+    return (
+        message.includes('token expired') ||
+        message.includes('jwt expired') ||
+        message.includes('invalid token') ||
+        message.includes('invalid jwt') ||
+        message.includes('malformed jwt') ||
+        message.includes('signature') ||
+        message.includes('expired jwt') ||
+        message.includes('unauthorized')
+    );
+};
+
 // Attach JWT from cookie as Authorization header for every gateway request
 api.interceptors.request.use((config) => {
     try {
@@ -43,10 +68,15 @@ api.interceptors.response.use(
         const status = error.response?.status;
 
         if (status === 401) {
-            // Clear stale cookie and redirect to login
+            // Keep cookie for generic 401s. Only clear session when backend explicitly
+            // reports token/session invalidation.
             clearAuthToken();
-            document.cookie = 'jwt_token=; Max-Age=0; path=/';
-            window.location.href = '/auth';
+            if (shouldInvalidateSessionFor401(error)) {
+                clearJwtCookie();
+                if (window.location.pathname !== '/auth') {
+                    window.location.href = '/auth';
+                }
+            }
         }
 
         if (status === 503) {

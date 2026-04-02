@@ -7,10 +7,12 @@ export const BASE_URL = API_CONFIG.MAIN_BACKEND;
 // Function to get the username from the token
 export const getUsernameFromToken = () => {
     try {
-        const token = document.cookie
+        const cookie = document.cookie
             .split('; ')
-            .find(row => row.startsWith('jwt_token='))
-            ?.split('=')[1];
+            .find((row) => row.startsWith('jwt_token='));
+        const token = cookie
+            ? decodeURIComponent(cookie.slice('jwt_token='.length))
+            : null;
 
         if (!token) return null;
 
@@ -24,12 +26,12 @@ export const getUsernameFromToken = () => {
 // Function to get the token from the cookie
 export const getTokenFromCookie = () => {
     try {
-        const token = document.cookie
+        const cookie = document.cookie
             .split('; ')
-            .find(row => row.startsWith('jwt_token='))
-            ?.split('=')[1];
-
-        return token || null;
+            .find((row) => row.startsWith('jwt_token='));
+        return cookie
+            ? decodeURIComponent(cookie.slice('jwt_token='.length))
+            : null;
     } catch (error) {
         return null;
     }
