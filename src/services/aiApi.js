@@ -12,6 +12,7 @@ const buildHeaders = (body, headers = {}) => {
 
   return {
     "Content-Type": "application/json",
+    "Credentials": "include",
     ...headers,
   };
 };

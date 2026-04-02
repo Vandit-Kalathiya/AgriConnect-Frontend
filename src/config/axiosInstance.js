@@ -5,15 +5,29 @@ const api = axios.create({
     withCredentials: true,
 });
 
+let inMemoryJwtToken = null;
+
+const readJwtFromCookie = () => {
+    const cookie = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('jwt_token='));
+    if (!cookie) return null;
+    const rawValue = cookie.slice('jwt_token='.length);
+    return decodeURIComponent(rawValue || '');
+};
+
+export const setAuthToken = (token) => {
+    inMemoryJwtToken = token || null;
+};
+
+export const clearAuthToken = () => {
+    inMemoryJwtToken = null;
+};
+
 // Attach JWT from cookie as Authorization header for every gateway request
 api.interceptors.request.use((config) => {
     try {
-        const cookieToken = document.cookie
-            .split('; ')
-            .find((row) => row.startsWith('jwt_token='))
-            ?.split('=')[1];
-        const storageToken = localStorage.getItem('jwt_token');
-        const token = cookieToken || storageToken;
+        const token = inMemoryJwtToken || readJwtFromCookie();
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -29,9 +43,9 @@ api.interceptors.response.use(
         const status = error.response?.status;
 
         if (status === 401) {
-            // Clear any stale cookie and redirect to login
+            // Clear stale cookie and redirect to login
+            clearAuthToken();
             document.cookie = 'jwt_token=; Max-Age=0; path=/';
-            localStorage.removeItem('jwt_token');
             window.location.href = '/auth';
         }
 

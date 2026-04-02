@@ -4,12 +4,12 @@ const GUEST_USER_ID = "guest";
 const STORAGE_PREFIX = "ai:chat:conversationId";
 
 const readTokenFromClient = () => {
-  const cookieToken = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("jwt_token="))
-    ?.split("=")[1];
-  const localToken = localStorage.getItem("jwt_token");
-  return cookieToken || localToken || null;
+  return (
+    document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('jwt_token='))
+      ?.split('=')[1] || null
+  );
 };
 
 export const getActiveAiUserId = () => {

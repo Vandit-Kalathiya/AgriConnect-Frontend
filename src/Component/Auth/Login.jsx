@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import api from "../../config/axiosInstance";
+import api, { setAuthToken } from "../../config/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../../helper";
@@ -42,9 +42,9 @@ const Login = ({ onNavigateToSignUp, onNavigateToForgotPassword }) => {
       });
       const { jwtToken } = response.data || {};
       if (jwtToken) {
-        localStorage.setItem("jwt_token", jwtToken);
+        setAuthToken(jwtToken);
         const maxAge = 7 * 24 * 60 * 60;
-        document.cookie = `jwt_token=${jwtToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+        document.cookie = `jwt_token=${encodeURIComponent(jwtToken)}; path=/; max-age=${maxAge}; SameSite=Lax`;
       }
       toast.success("Login successful!");
       navigate("/dashboard");

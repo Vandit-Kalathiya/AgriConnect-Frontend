@@ -15,10 +15,13 @@ import { IoMdAdd } from "react-icons/io";
 import { GrStorage } from "react-icons/gr";
 import { RiContractLine } from "react-icons/ri";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { BASE_URL, getCurrentUser } from "../../../helper";
-import api from "../../config/axiosInstance";
+import { BASE_URL, getCurrentUser, getTokenFromCookie } from "../../../helper";
+import api, { clearAuthToken } from "../../config/axiosInstance";
 import leafImg from "../../assets/leaf.png";
 import toast from "react-hot-toast";
+import NotificationDrawer from "../Notifications/NotificationDrawer";
+import NotificationToast from "../Notifications/NotificationToast";
+import { useNotificationStore } from "../../stores/notificationStore";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,10 +30,15 @@ const Navbar = () => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [signature, setSignature] = useState(null);
   const [showSignature, setShowSignature] = useState(false);
+
+  // Notification state from Zustand store
+  const { unreadCount, isDrawerOpen, openDrawer, closeDrawer, initForUser, disconnect } =
+    useNotificationStore();
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  const menuRef = useRef(null);
+  const menuRef    = useRef(null);
   const profileRef = useRef(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -61,8 +69,12 @@ const Navbar = () => {
       const user1 = await getCurrentUser();
       setUser(user1);
 
-      // Fetch profile picture
       if (user1?.id) {
+        // Initialise notification store: loads data + connects WebSocket
+        const jwtToken = getTokenFromCookie() ?? '';
+        initForUser(user1.id, jwtToken);
+
+        // Fetch profile picture
         const profileResponse = await api.get(
           `${BASE_URL}/users/profile-image/${user1.id}`,
           { responseType: "arraybuffer" },
@@ -91,6 +103,8 @@ const Navbar = () => {
     fetchUser();
 
     return () => {
+      // Disconnect WebSocket on unmount (e.g. full page unload)
+      disconnect();
       if (profilePicture) URL.revokeObjectURL(profilePicture);
       if (signature) URL.revokeObjectURL(signature);
     };
@@ -99,7 +113,8 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await api.post(`${BASE_URL}/auth/logout`, null);
-      localStorage.removeItem("jwt_token");
+      disconnect(); // close WebSocket before clearing auth
+      clearAuthToken();
       document.cookie = "jwt_token=; Max-Age=0; path=/";
       toast.success("Logged out successfully");
       navigate("/auth");
@@ -301,11 +316,33 @@ const Navbar = () => {
             )}
           </div>
 
-          <button className="hidden lg:flex text-gray-600 hover:text-green-600 transition-colors duration-200 relative">
+          <button
+            data-notification-bell="true"
+            onClick={() => isDrawerOpen ? closeDrawer() : openDrawer()}
+            className="hidden lg:flex text-gray-600 hover:text-green-600 transition-colors duration-200 relative"
+            aria-label="Open notifications"
+          >
             <FaBell size={20} />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-              3
-            </span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center leading-none">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* Mobile bell */}
+          <button
+            data-notification-bell="true"
+            onClick={() => isDrawerOpen ? closeDrawer() : openDrawer()}
+            className="lg:hidden text-gray-600 hover:text-green-600 transition-colors duration-200 relative p-1"
+            aria-label="Open notifications"
+          >
+            <FaBell size={18} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full h-3.5 w-3.5 flex items-center justify-center leading-none">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
 
           {/* Hamburger Menu */}
@@ -400,6 +437,12 @@ const Navbar = () => {
           }
         }
       `}</style>
+
+      {/* Notification drawer — reads isDrawerOpen from Zustand, rendered via portal */}
+      <NotificationDrawer userId={user?.id ?? null} />
+
+      {/* Real-time toast popups driven by WebSocket */}
+      <NotificationToast userId={user?.id ?? null} />
     </>
   );
 };

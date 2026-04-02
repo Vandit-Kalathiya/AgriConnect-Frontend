@@ -7,16 +7,12 @@ export const BASE_URL = API_CONFIG.MAIN_BACKEND;
 // Function to get the username from the token
 export const getUsernameFromToken = () => {
     try {
-        const cookieToken = document.cookie
+        const token = document.cookie
             .split('; ')
             .find(row => row.startsWith('jwt_token='))
             ?.split('=')[1];
-        const storageToken = localStorage.getItem('jwt_token');
-        const token = cookieToken || storageToken;
 
-        if (!token) {
-            return null;
-        }
+        if (!token) return null;
 
         const decodedToken = jwtDecode(token);
         return decodedToken?.sub || null;
@@ -28,16 +24,10 @@ export const getUsernameFromToken = () => {
 // Function to get the token from the cookie
 export const getTokenFromCookie = () => {
     try {
-        const cookieToken = document.cookie
+        const token = document.cookie
             .split('; ')
             .find(row => row.startsWith('jwt_token='))
             ?.split('=')[1];
-        const storageToken = localStorage.getItem('jwt_token');
-        const token = cookieToken || storageToken;
-        
-        if (!token) {
-            return null;
-        }
 
         return token || null;
     } catch (error) {
