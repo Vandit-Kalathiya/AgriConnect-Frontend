@@ -68,7 +68,7 @@ const usePaginatedHistory = (
     if (autoLoad) {
       refresh(initialPage, initialSize);
     }
-  }, [autoLoad, initialPage, initialSize]);
+  }, [autoLoad, initialPage, initialSize, refresh]);
 
   return {
     items,

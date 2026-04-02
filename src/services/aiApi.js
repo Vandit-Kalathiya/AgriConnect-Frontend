@@ -18,10 +18,10 @@ const normalizeAxiosError = (error) => {
   const errorCode = body?.code || "";
 
   const message = `AI API request failed (${status})${details ? `: ${details}` : ""}`;
-  const error = new Error(message);
-  error.status = status;
-  error.code = errorCode;
-  return error;
+  const normalizedError = new Error(message);
+  normalizedError.status = status;
+  normalizedError.code = errorCode;
+  return normalizedError;
 };
 
 export const postAi = async (endpoint, body, options = {}) => {
