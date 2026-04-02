@@ -3,12 +3,11 @@ import { Client } from '@stomp/stompjs';
 import { API_CONFIG } from '../config/apiConfig';
 
 // In development, use a same-origin path so Vite proxies the request to the
-// gateway — this avoids the CORS errors that occur when the browser tries to
-// make XHR polling requests cross-origin (localhost:5000 → localhost:8080).
-// In production the frontend and gateway share an origin so the full URL works.
+// local notification service.
 const WS_URL = import.meta.env.DEV
     ? `${window.location.origin}/notifications/ws`
     : API_CONFIG.NOTIFICATION_WS;
+const BROKER_URL = WS_URL.replace(/^http/i, 'ws');
 
 /**
  * Singleton WebSocket service using STOMP over SockJS.
@@ -41,14 +40,7 @@ class NotificationSocketService {
         this._currentUserId = userId;
         this.disconnect();
 
-        this._client = new Client({
-            // SockJS over gateway HTTP URL — stable transports only
-            // Skips websocket/eventsource/iframe probes that fail behind the gateway
-            webSocketFactory: () =>
-                new SockJS(WS_URL, undefined, {
-                    transports: ['xhr-streaming', 'xhr-polling'],
-                }),
-
+        const clientConfig = {
             reconnectDelay: this._getReconnectDelay(),
 
             // JWT in STOMP CONNECT frame for gateway auth
@@ -88,7 +80,20 @@ class NotificationSocketService {
             onWebSocketClose: () => {
                 this._reconnectAttempts++;
             },
-        });
+        };
+
+        if (import.meta.env.DEV) {
+            // Local dev: keep SockJS through Vite proxy.
+            clientConfig.webSocketFactory = () =>
+                new SockJS(WS_URL, undefined, {
+                    transports: ['xhr-streaming', 'xhr-polling'],
+                });
+        } else {
+            // Production: use native WebSocket STOMP to avoid SockJS /info CORS/502 issues.
+            clientConfig.brokerURL = BROKER_URL;
+        }
+
+        this._client = new Client(clientConfig);
 
         this._client.activate();
     }
