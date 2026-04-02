@@ -51,9 +51,17 @@ export const getCurrentUser = async () => {
         }
 
         const response = await api.get(`${BASE_URL}/users/${phoneNumber}`);
+        const body = response?.data;
+        // Support both plain and wrapped API shapes.
+        const user =
+            body?.user ||
+            body?.data ||
+            body?.result ||
+            body;
 
-        return response.data;
+        return user && typeof user === 'object' ? user : null;
     } catch (error) {
+        console.warn('getCurrentUser failed:', error?.response?.data || error?.message);
         return null;
     }
 };

@@ -42,6 +42,8 @@ const Login = ({ onNavigateToSignUp, onNavigateToForgotPassword }) => {
       });
       const { jwtToken } = response.data || {};
       if (jwtToken) {
+        // Remove legacy token key if older builds saved it in localStorage.
+        localStorage.removeItem("jwt_token");
         setAuthToken(jwtToken);
         const maxAge = 7 * 24 * 60 * 60;
         document.cookie = `jwt_token=${encodeURIComponent(jwtToken)}; path=/; max-age=${maxAge}; SameSite=Lax`;
