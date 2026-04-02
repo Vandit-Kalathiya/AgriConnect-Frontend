@@ -82,7 +82,13 @@ export const CropListingPage = () => {
         api.get(`${BASE_URL}/listings/all/active`, { withCredentials: true }),
         getCurrentUser(),
       ]);
-      const raw = res.data.filter(l => l.contactOfFarmer !== user.phoneNumber);
+      const payload = res?.data;
+      const listingsArray = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.content)
+          ? payload.content
+          : [];
+      const raw = listingsArray.filter(l => l.contactOfFarmer !== user.phoneNumber);
       const mapped = raw.map(l => ({
         id:               l.id,
         images:           l.images,
@@ -116,7 +122,12 @@ export const CropListingPage = () => {
       }
       setError(null);
     } catch (err) {
-      setError(`Failed to fetch listings: ${err.response?.data || err.message}`);
+      const rawError = err?.response?.data;
+      const safeMessage =
+        typeof rawError === "string"
+          ? rawError
+          : rawError?.message || err?.message || "Unknown error";
+      setError(`Failed to fetch listings: ${safeMessage}`);
     } finally {
       setLoading(false);
     }
