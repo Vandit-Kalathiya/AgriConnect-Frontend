@@ -57,7 +57,8 @@ api.interceptors.request.use((config) => {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
     } catch {
-        // ignore cookie read errors
+        console.error('Failed to read JWT from cookie');
+        throw new Error('Failed to read JWT from cookie');
     }
     return config;
 });

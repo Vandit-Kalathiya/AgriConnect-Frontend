@@ -115,7 +115,6 @@ const CropContractAgreement = ({ quantity }) => {
           withCredentials: true,
         },
       );
-      console.log("Listing details:", response.data);
       setListing(response.data);
       return response.data;
     } catch (err) {
@@ -131,7 +130,6 @@ const CropContractAgreement = ({ quantity }) => {
           withCredentials: true,
         },
       );
-      console.log("Farmer details:", response.data);
       setFarmer(response.data);
       setFarmerAddress(response.data.uniqueHexAddress);
       return response.data;
@@ -171,7 +169,6 @@ const CropContractAgreement = ({ quantity }) => {
     const initializeFormData = async () => {
       const user = await fetchUser();
       const listingData = await fetchListingById();
-      console.log(listingData);
 
       if (listingData) {
         setFormData((prevFormData) => ({
@@ -238,7 +235,7 @@ const CropContractAgreement = ({ quantity }) => {
   };
 
   const saveFormData = () => {
-    console.log("Saving form data locally:", formData);
+    // Form data saved locally
   };
 
   const handleSubmit = async () => {
@@ -283,8 +280,6 @@ const CropContractAgreement = ({ quantity }) => {
         },
       );
 
-      console.log("Contract saved successfully:", saveResponse.data);
-
       const agreementId = saveResponse.data.id;
       if (!agreementId) {
         throw new Error("Agreement ID not returned from save response");
@@ -322,9 +317,7 @@ const CropContractAgreement = ({ quantity }) => {
     //     formData.cropDetails.quantity.split(" ")[0]
     // );
 
-    console.log(formData);
     const agreementId = await handleSubmit();
-    console.log(agreementId);
 
     const orderRequest = {
       farmerAddress: far.uniqueHexAddress,

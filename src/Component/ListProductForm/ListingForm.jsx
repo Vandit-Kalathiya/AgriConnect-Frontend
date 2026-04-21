@@ -52,7 +52,7 @@ const ListingForm = () => {
         contactInfo: user.phoneNumber || "", // Use user's phone number if available
       }));
     } catch (err) {
-      console.log("User not found");
+      // User not found
     }
   };
 
@@ -75,7 +75,7 @@ const ListingForm = () => {
     const files = Array.from(e.target.files);
     const newPhotos = files.slice(
       0,
-      MAX_PHOTOS - formData.productPhotos.length
+      MAX_PHOTOS - formData.productPhotos.length,
     );
 
     if (formData.productPhotos.length + newPhotos.length > MAX_PHOTOS) {
@@ -92,7 +92,7 @@ const ListingForm = () => {
       ...formData,
       productPhotos: [...formData.productPhotos, ...photosWithPreviews].slice(
         0,
-        MAX_PHOTOS
+        MAX_PHOTOS,
       ),
     });
   };
@@ -211,13 +211,13 @@ const ListingForm = () => {
     submissionData.append("finalPrice", formData.finalPrice.toString().trim());
     submissionData.append(
       "shelfLifetime",
-      formData.shelfLife.toString().trim()
+      formData.shelfLife.toString().trim(),
     );
     submissionData.append("location", formData.location);
     submissionData.append("contactOfFarmer", formData.contactInfo);
     submissionData.append(
       "aiGeneratedPrice",
-      formData.aiGeneratedPrice.toString().trim()
+      formData.aiGeneratedPrice.toString().trim(),
     );
 
     // Append multiple files
@@ -230,10 +230,9 @@ const ListingForm = () => {
     try {
       const response = await api.post(
         `${BASE_URL}/listings/add`,
-        submissionData
+        submissionData,
       );
 
-      console.log("Backend response:", response.data);
       toast.success("Listing added successfully");
 
       // Reset form
@@ -263,7 +262,7 @@ const ListingForm = () => {
       alert(
         `Failed to submit listing: ${
           error.response?.data?.message || "Please try again"
-        }`
+        }`,
       );
     }
   };
@@ -287,7 +286,7 @@ const ListingForm = () => {
           formData.productName,
           formData.quantity,
           formData.harvestDate || formData.availabilityDate,
-          formData.shelfLife
+          formData.shelfLife,
         );
         setFormData((prev) => ({
           ...prev,
@@ -330,7 +329,7 @@ const ListingForm = () => {
     const freshnessFactor =
       Math.max(
         0,
-        30 - Math.abs(new Date(date) - new Date()) / (1000 * 60 * 60 * 24)
+        30 - Math.abs(new Date(date) - new Date()) / (1000 * 60 * 60 * 24),
       ) / 30;
     const shelfFactor = Number(shelf) / 100;
     return (

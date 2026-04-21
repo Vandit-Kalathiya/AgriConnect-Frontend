@@ -1,8 +1,64 @@
-# React + Vite
+# AgriConnect Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite application for AgriConnect platform.
 
-Currently, two official plugins are available:
+## 🚀 Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Notifications
+
+- [QUICK_START_NOTIFICATIONS.md](./QUICK_START_NOTIFICATIONS.md) - Quick notification setup
+
+### Deployment
+
+- [QUICK_DEPLOYMENT.md](./QUICK_DEPLOYMENT.md) - Quick deployment commands
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](./docs/) folder:
+
+- **Deployment & CI/CD** - Pipeline setup, feature flags, migration guides
+- **Notification System** - Architecture, feature flags, implementation
+- **AI Integration** - AI features and persistence guides
+
+See [`docs/README.md`](./docs/README.md) for the complete documentation index.
+
+## 🛠️ Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Lint code
+npm run lint
+```
+
+## 📦 Docker
+
+```bash
+# Build image
+docker build -t agriconnect-frontend .
+
+# Run container
+docker compose up -d
+```
+
+## 🔧 Configuration
+
+- `.env` - Environment variables (not committed)
+- `.env.example` - Environment template
+- `.deployment-config.yml` - Deployment feature flag
+
+## 📖 Tech Stack
+
+- React 18
+- Vite
+- Zustand (State Management)
+- React Router
+- Tailwind CSS
+- Docker

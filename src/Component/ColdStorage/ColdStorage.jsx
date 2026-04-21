@@ -706,7 +706,7 @@ const ColdStoragePage = () => {
     setIsLoading(true);
     try {
       const response = await api.get(
-        `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/bookings?farmerId=${farmerId}`
+        `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/bookings?farmerId=${farmerId}`,
       );
       setBookings(response.data);
     } catch (error) {
@@ -733,7 +733,7 @@ const ColdStoragePage = () => {
       };
       const response = await api.post(
         `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/book`,
-        bookingData
+        bookingData,
       );
       setBookingStatus({
         type: "success",
@@ -768,7 +768,7 @@ const ColdStoragePage = () => {
   const confirmApproveBooking = async () => {
     try {
       await api.put(
-        `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/approve/${selectedBookingId}`
+        `${API_CONFIG.GENERATE_AGREEMENT}/coldStorage/approve/${selectedBookingId}`,
       );
       setIsApproveModalOpen(false);
       fetchBookings(user.id);
@@ -776,8 +776,6 @@ const ColdStoragePage = () => {
       console.error("Approval failed:", error);
     }
   };
-
-  console.log(coldStorages);
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-gray-50 p-3 sm:p-4 md:p-8 md:ml-14 overflow-x-hidden">

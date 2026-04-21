@@ -6,23 +6,28 @@ import { BASE_URL } from "../../../helper";
 import { Eye, EyeOff } from "lucide-react";
 
 const Login = ({ onNavigateToSignUp, onNavigateToForgotPassword }) => {
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handlePhoneNumberChange = (e) => {
-    const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
-    setPhoneNumber(cleaned);
+  const validateUsername = (value) => {
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    const isPhone = /^[0-9]{10}$/.test(value);
+    return isEmail || isPhone;
+  };
+
+  const handleUsernameChange = (e) => {
+    setUsername(e.target.value);
     if (error) setError("");
   };
 
   const validate = () => {
-    if (!phoneNumber.trim()) return "Please enter your phone number";
-    if (phoneNumber.length !== 10)
-      return "Please enter a valid 10-digit phone number";
+    if (!username.trim()) return "Please enter your email or phone number";
+    if (!validateUsername(username.trim()))
+      return "Please enter a valid email or 10-digit phone number";
     if (!password.trim()) return "Please enter your password";
     return "";
   };
@@ -38,7 +43,7 @@ const Login = ({ onNavigateToSignUp, onNavigateToForgotPassword }) => {
     setError("");
     try {
       const response = await api.post(`${BASE_URL}/auth/login`, {
-        phoneNumber,
+        username,
         password,
       });
       const { jwtToken } = response.data || {};
@@ -54,7 +59,7 @@ const Login = ({ onNavigateToSignUp, onNavigateToForgotPassword }) => {
     } catch (err) {
       let errorMessage = "Failed to login. Please try again.";
       if (err.response?.status === 401) {
-        errorMessage = "Invalid phone number or password";
+        errorMessage = "Invalid email/phone or password";
       } else if (typeof err.response?.data === "string") {
         errorMessage = err.response.data;
       } else if (err.response?.data?.message) {
@@ -89,18 +94,17 @@ const Login = ({ onNavigateToSignUp, onNavigateToForgotPassword }) => {
 
       <div className="mb-4">
         <label className="block text-[#275434] mb-2 font-medium">
-          Phone Number
+          Email or Phone Number
         </label>
         <input
-          type="tel"
-          placeholder="Enter 10-digit phone number"
+          type="text"
+          placeholder="Enter email or 10-digit phone number"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#45a25e]"
-          value={phoneNumber}
-          onChange={handlePhoneNumberChange}
+          value={username}
+          onChange={handleUsernameChange}
           onKeyDown={handleKeyDown}
-          maxLength={10}
           disabled={isLoading}
-          autoComplete="tel"
+          autoComplete="username"
         />
       </div>
 
@@ -144,12 +148,12 @@ const Login = ({ onNavigateToSignUp, onNavigateToForgotPassword }) => {
 
       <button
         className={`w-full py-3 rounded-md transition duration-200 font-medium ${
-          isLoading || !phoneNumber || !password
+          isLoading || !username || !password
             ? "bg-gray-300 text-gray-500 cursor-not-allowed"
             : "bg-[#45a25e] text-white hover:bg-[#34854a]"
         }`}
         onClick={handleLogin}
-        disabled={isLoading || !phoneNumber || !password}
+        disabled={isLoading || !username || !password}
       >
         {isLoading ? "Logging in..." : "Login"}
       </button>

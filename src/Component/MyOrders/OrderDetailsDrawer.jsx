@@ -51,7 +51,7 @@ const OrderDetailsDrawer = ({
       const response2 = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/api/payments/verify-delivery/${orderId}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       const agreementId = order.agreementId;
@@ -63,11 +63,10 @@ const OrderDetailsDrawer = ({
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       const fetchedAgreementDetails = fetchResponse.data;
-      console.log("Fetched agreement details:", fetchedAgreementDetails);
 
       const contractRequest = {
         farmerInfo: fetchedAgreementDetails.farmerInfo,
@@ -89,7 +88,7 @@ const OrderDetailsDrawer = ({
             "Content-Type": "application/json",
             Accept: "application/pdf",
           },
-        }
+        },
       );
 
       const blob = response.data;
@@ -101,7 +100,7 @@ const OrderDetailsDrawer = ({
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       const buyerResponse = await api.get(
@@ -111,26 +110,25 @@ const OrderDetailsDrawer = ({
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       await handleUploadContract(
         blob,
         farmerResponse.data.uniqueHexAddress,
-        buyerResponse.data.uniqueHexAddress
+        buyerResponse.data.uniqueHexAddress,
       );
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = `AgriConnect_Contract_${contractRequest.farmerInfo.farmerName.replace(
         /\s+/g,
-        "_"
+        "_",
       )}_${contractRequest.buyerInfo.buyerName.replace(/\s+/g, "_")}.pdf`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      console.log("Contract PDF generated successfully");
 
       toast.success("Contract PDF Generated Successfully");
 
@@ -138,7 +136,7 @@ const OrderDetailsDrawer = ({
       const quantity = order.quantity;
 
       const updateListingStatus = await api.put(
-        `${API_CONFIG.MARKET_ACCESS}/listings/${listingId}/purchased/${quantity}`
+        `${API_CONFIG.MARKET_ACCESS}/listings/${listingId}/purchased/${quantity}`,
       );
 
       if (updateListingStatus.status === 200) {
@@ -172,11 +170,10 @@ const OrderDetailsDrawer = ({
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       toast.success("Contract uploaded successfully!");
-      console.log("Upload response:", response.data);
     } catch (err) {
       toast.error("Failed to upload contract!");
       console.error("Upload error:", err);
@@ -383,7 +380,7 @@ const OrderDetailsDrawer = ({
   return (
     <>
       {showConfirmModal && <ConfirmationModal />}
-      
+
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
@@ -450,7 +447,8 @@ const OrderDetailsDrawer = ({
                       Total Amount
                     </span>
                     <span className="font-bold text-blue-600 text-xl">
-                      ₹{order.amount.toLocaleString("en-IN", {
+                      ₹
+                      {order.amount.toLocaleString("en-IN", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
@@ -547,7 +545,9 @@ const OrderDetailsDrawer = ({
                   {farmerDetails?.username && (
                     <div className="flex items-center text-gray-700 bg-white px-4 py-3 rounded-lg">
                       <FaUser className="mr-3 text-green-500" size={16} />
-                      <span className="font-medium">{farmerDetails.username}</span>
+                      <span className="font-medium">
+                        {farmerDetails.username}
+                      </span>
                     </div>
                   )}
                   {(farmerDetails?.phoneNumber || listing?.contactOfFarmer) && (
@@ -560,12 +560,17 @@ const OrderDetailsDrawer = ({
                   )}
                   {farmerDetails?.location && (
                     <div className="flex items-center text-gray-700 bg-white px-4 py-3 rounded-lg">
-                      <FaMapMarkerAlt className="mr-3 text-green-500" size={16} />
+                      <FaMapMarkerAlt
+                        className="mr-3 text-green-500"
+                        size={16}
+                      />
                       <span>{farmerDetails.location}</span>
                     </div>
                   )}
                   <div className="bg-white px-4 py-3 rounded-lg">
-                    <div className="text-xs text-gray-500 mb-1">Blockchain Address</div>
+                    <div className="text-xs text-gray-500 mb-1">
+                      Blockchain Address
+                    </div>
                     <div className="font-mono text-sm text-gray-600">
                       {order.farmerAddress.slice(0, 20)}...
                       {order.farmerAddress.slice(-12)}
@@ -707,4 +712,3 @@ const OrderDetailsDrawer = ({
 };
 
 export default OrderDetailsDrawer;
-

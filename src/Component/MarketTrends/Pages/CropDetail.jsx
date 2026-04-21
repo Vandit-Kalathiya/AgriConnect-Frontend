@@ -108,7 +108,6 @@ const CropDetail = () => {
         if (formattedName) {
           try {
             const analysisData = await generateCropAnalysis(formattedName);
-            console.log("Successfully generated crop analysis:", analysisData);
             setCropData(analysisData);
           } catch (analysisError) {
             console.error("Error in crop analysis:", analysisError);
@@ -147,7 +146,7 @@ const CropDetail = () => {
           setTimeout(() => fetchCropData(), 2000);
         } else {
           toast.error(
-            "Could not load complete data. Showing available information."
+            "Could not load complete data. Showing available information.",
           );
           setIsLoading(false);
         }

@@ -75,12 +75,12 @@ const Index_Bot = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     loadConversations();
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (selectedConversationId) {
       const stillExists = conversations.some(
-        (item) => item?.conversationId === selectedConversationId
+        (item) => item?.conversationId === selectedConversationId,
       );
       if (!stillExists) {
         setSelectedConversationId(null);
@@ -218,10 +218,13 @@ const Index_Bot = () => {
     setShowSuggestions(false);
     persistConversationIdForActiveUser(conversation.conversationId);
     try {
-      const data = await fetchConversationMessages(conversation.conversationId, {
-        page: 0,
-        size: 100,
-      });
+      const data = await fetchConversationMessages(
+        conversation.conversationId,
+        {
+          page: 0,
+          size: 100,
+        },
+      );
       const rawMessages = data?.history || data?.messages || [];
       const mapped = rawMessages
         .map((message, index) => {
@@ -323,10 +326,6 @@ const Index_Bot = () => {
             userLanguage = detectedLang;
             setLanguage(detectedLang);
             toast.info(`Detected ${langLabel}. Switching language.`);
-          } else {
-            console.log(
-              `Detected ${langLabel} but keeping current language preference.`
-            );
           }
         }
       } catch (error) {
@@ -366,7 +365,7 @@ const Index_Bot = () => {
       const response = await Promise.race([
         getChatResponse([...messages, userMessage], userLanguage),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Response took too long")), 30000)
+          setTimeout(() => reject(new Error("Response took too long")), 30000),
         ),
       ]);
 
@@ -383,8 +382,8 @@ const Index_Bot = () => {
                 text: response.text,
                 isProcessing: false,
               }
-            : msg
-        )
+            : msg,
+        ),
       );
       if (response?.conversationId) {
         setSelectedConversationId(response.conversationId);
@@ -408,8 +407,8 @@ const Index_Bot = () => {
                 text: fallbackResponse,
                 isProcessing: false,
               }
-            : msg
-        )
+            : msg,
+        ),
       );
     } finally {
       setIsProcessing(false);
@@ -444,7 +443,6 @@ const Index_Bot = () => {
   // Full-viewport chat layout — fills the main content area provided by Layout
   return (
     <div className="flex h-[calc(100vh-3.5rem)] md:ml-14 bg-white">
-
       {/* ── Mobile sidebar backdrop ─────────────────────────────────── */}
       {sidebarOpen && (
         <div
@@ -470,15 +468,23 @@ const Index_Bot = () => {
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-base">🌱</span>
-            <span className="text-sm font-semibold text-gray-800">Kisan Mitra</span>
+            <span className="text-sm font-semibold text-gray-800">
+              Kisan Mitra
+            </span>
           </div>
           <button
             onClick={handleNewChatFromSidebar}
             className="flex items-center gap-1 rounded-lg bg-green-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-green-700 transition-colors"
             title="Start a new chat"
           >
-            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M12 5v14M5 12h14" strokeLinecap="round"/>
+            <svg
+              className="w-3 h-3"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <path d="M12 5v14M5 12h14" strokeLinecap="round" />
             </svg>
             New
           </button>
@@ -505,11 +511,14 @@ const Index_Bot = () => {
             <div className="px-3 py-8 text-center">
               <div className="text-3xl mb-2">💬</div>
               <p className="text-xs text-gray-400">No chats yet.</p>
-              <p className="text-xs text-gray-400 mt-0.5">Start a conversation.</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Start a conversation.
+              </p>
             </div>
           ) : (
             filteredConversations.map((conversation, index) => {
-              const isActive = selectedConversationId === conversation?.conversationId;
+              const isActive =
+                selectedConversationId === conversation?.conversationId;
               return (
                 <button
                   key={conversation?.conversationId || index}
@@ -528,7 +537,11 @@ const Index_Bot = () => {
                     {conversation?.lastMessagePreview || "No preview"}
                   </div>
                   <div className="mt-1 text-[11px] text-gray-400">
-                    {formatRelative(conversation?.updatedAt || conversation?.createdAt || Date.now())}
+                    {formatRelative(
+                      conversation?.updatedAt ||
+                        conversation?.createdAt ||
+                        Date.now(),
+                    )}
                   </div>
                 </button>
               );
@@ -542,8 +555,18 @@ const Index_Bot = () => {
             to="/history/kisan-mitra"
             className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 hover:text-green-700 transition-colors"
           >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg
+              className="w-3.5 h-3.5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             Full chat history
           </Link>
@@ -552,7 +575,6 @@ const Index_Bot = () => {
 
       {/* ── Chat panel ──────────────────────────────────────────────── */}
       <div className="flex flex-1 flex-col overflow-hidden min-w-0 bg-white">
-
         {/* Chat header */}
         <div className="shrink-0 flex items-center justify-between px-3 sm:px-4 py-2.5 border-b border-gray-100 bg-white">
           <div className="flex items-center gap-3">
@@ -562,9 +584,15 @@ const Index_Bot = () => {
               className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors"
               title={sidebarOpen ? "Close sidebar" : "Open sidebar"}
             >
-              <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <path d="M9 3v18"/>
+              <svg
+                className="w-4 h-4 text-gray-600"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M9 3v18" />
               </svg>
             </button>
 
@@ -574,10 +602,16 @@ const Index_Bot = () => {
                 🌱
               </div>
               <div>
-                <div className="text-sm font-semibold text-gray-900 leading-tight">Kisan Mitra</div>
+                <div className="text-sm font-semibold text-gray-900 leading-tight">
+                  Kisan Mitra
+                </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px] font-medium text-green-700 bg-green-50 border border-green-100 px-1.5 py-px rounded-full">AI</span>
-                  <span className="text-[10px] text-gray-400">Farming assistant</span>
+                  <span className="text-[10px] font-medium text-green-700 bg-green-50 border border-green-100 px-1.5 py-px rounded-full">
+                    AI
+                  </span>
+                  <span className="text-[10px] text-gray-400">
+                    Farming assistant
+                  </span>
                 </div>
               </div>
             </div>
@@ -590,9 +624,23 @@ const Index_Bot = () => {
               className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors"
               title="Start over"
             >
-              <svg className="w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M1 4v6h6M23 20v-6h-6" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg
+                className="w-4 h-4 text-gray-500"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  d="M1 4v6h6M23 20v-6h-6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
             <LanguageSelector

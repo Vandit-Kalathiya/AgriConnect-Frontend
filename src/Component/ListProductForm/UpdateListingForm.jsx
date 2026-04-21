@@ -6,11 +6,20 @@ import toast from "react-hot-toast";
 import { API_CONFIG } from "../../config/apiConfig";
 import Loader from "../Loader/Loader";
 import {
-  ArrowLeft, Upload, X, Save, ImagePlus, CheckCircle,
+  ArrowLeft,
+  Upload,
+  X,
+  Save,
+  ImagePlus,
+  CheckCircle,
 } from "lucide-react";
 import {
-  FaMapMarkerAlt, FaPhone, FaCoins, FaChartLine,
-  FaExclamationTriangle, FaInfoCircle,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaCoins,
+  FaChartLine,
+  FaExclamationTriangle,
+  FaInfoCircle,
 } from "react-icons/fa";
 
 const BASE_URL = API_CONFIG.MARKET_ACCESS;
@@ -29,7 +38,7 @@ const askGroq = async (systemPrompt, userPrompt) => {
     model: GROQ_MODEL,
     messages: [
       { role: "system", content: systemPrompt },
-      { role: "user",   content: userPrompt },
+      { role: "user", content: userPrompt },
     ],
     temperature: 0.4,
   });
@@ -37,15 +46,15 @@ const askGroq = async (systemPrompt, userPrompt) => {
 };
 
 const CROP_TYPES = [
-  { value: "Grains",     label: "Grains (e.g., Rice, Wheat)" },
-  { value: "Fruits",     label: "Fruits (e.g., Mango, Apple)" },
+  { value: "Grains", label: "Grains (e.g., Rice, Wheat)" },
+  { value: "Fruits", label: "Fruits (e.g., Mango, Apple)" },
   { value: "Vegetables", label: "Vegetables (e.g., Tomato, Potato)" },
-  { value: "Pulses",     label: "Pulses (e.g., Lentils, Chickpeas)" },
-  { value: "Spices",     label: "Spices (e.g., Turmeric, Chili)" },
-  { value: "Oilseeds",   label: "Oilseeds (e.g., Soybean, Mustard)" },
-  { value: "Herbs",      label: "Herbs (e.g., Basil, Mint)" },
-  { value: "Nuts",       label: "Nuts (e.g., Almond, Cashew)" },
-  { value: "Sweetener",  label: "Sweetener (e.g., Jaggery)" },
+  { value: "Pulses", label: "Pulses (e.g., Lentils, Chickpeas)" },
+  { value: "Spices", label: "Spices (e.g., Turmeric, Chili)" },
+  { value: "Oilseeds", label: "Oilseeds (e.g., Soybean, Mustard)" },
+  { value: "Herbs", label: "Herbs (e.g., Basil, Mint)" },
+  { value: "Nuts", label: "Nuts (e.g., Almond, Cashew)" },
+  { value: "Sweetener", label: "Sweetener (e.g., Jaggery)" },
 ];
 
 const STORAGE_CONDITIONS = [
@@ -65,35 +74,35 @@ const UpdateListingForm = () => {
   // tracks all blob URLs created so we can safely revoke on unmount
   const blobUrlsRef = useRef([]);
 
-  const [loading, setLoading]             = useState(true);
-  const [fetchError, setFetchError]       = useState(null);
-  const [submitting, setSubmitting]       = useState(false);
-  const [showConfirm, setShowConfirm]     = useState(false);
-  const [aiLoading, setAiLoading]         = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [deletingIndex, setDeletingIndex] = useState(null);
   const [imagesModified, setImagesModified] = useState(false);
   const [formData, setFormData] = useState({
-    productName:       "",
-    cropType:          "",
-    description:       "",
-    quantity:          "",
-    unitOfQuantity:    "kg",
-    productPhotos:     [],
-    harvestDate:       "",
+    productName: "",
+    cropType: "",
+    description: "",
+    quantity: "",
+    unitOfQuantity: "kg",
+    productPhotos: [],
+    harvestDate: "",
     storageConditions: "",
-    certifications:    "",
-    shelfLife:         "",
-    location:          "",
-    contactInfo:       "",
-    aiGeneratedPrice:  "",
-    finalPrice:        "",
+    certifications: "",
+    shelfLife: "",
+    location: "",
+    contactInfo: "",
+    aiGeneratedPrice: "",
+    finalPrice: "",
   });
   const [errors, setErrors] = useState({});
 
   // revoke all tracked blob URLs on unmount
   useEffect(() => {
     return () => {
-      blobUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+      blobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);
 
@@ -114,9 +123,6 @@ const UpdateListingForm = () => {
       });
       const l = response.data;
 
-      // log so we can inspect field names in the browser console
-      console.log("[EditListing] raw API response:", l);
-
       if (!l || typeof l !== "object") {
         toast.error("Listing not found.");
         navigate("/my-listing");
@@ -125,46 +131,45 @@ const UpdateListingForm = () => {
 
       // Normalise the harvest date: backend may return a full ISO timestamp
       // like "2024-01-15T00:00:00.000+05:30" — date inputs need "YYYY-MM-DD"
-      const toDateInput = (val) =>
-        val ? String(val).split("T")[0] : "";
+      const toDateInput = (val) => (val ? String(val).split("T")[0] : "");
 
       // Normalise cropType: the old create form default was "all" which should
       // map to an empty selection so the user has to confirm/pick a type.
-      const normCropType = (val) =>
-        (!val || val === "all") ? "" : val;
+      const normCropType = (val) => (!val || val === "all" ? "" : val);
 
       // Safely convert any numeric / null / undefined field to a trimmed string
       const toStr = (val) =>
-        (val !== null && val !== undefined) ? String(val).trim() : "";
+        val !== null && val !== undefined ? String(val).trim() : "";
 
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        productName:       toStr(l.productName),
-        cropType:          normCropType(l.productType),
-        description:       toStr(l.productDescription),
-        quantity:          toStr(l.quantity),
-        unitOfQuantity:    l.unitOfQuantity || "kg",
-        harvestDate:       toDateInput(l.harvestedDate),
+        productName: toStr(l.productName),
+        cropType: normCropType(l.productType),
+        description: toStr(l.productDescription),
+        quantity: toStr(l.quantity),
+        unitOfQuantity: l.unitOfQuantity || "kg",
+        harvestDate: toDateInput(l.harvestedDate),
         storageConditions: toStr(l.storageCondition),
-        certifications:    toStr(l.certifications),
-        shelfLife:         toStr(l.shelfLifetime),
-        location:          toStr(l.location),
-        contactInfo:       toStr(l.contactOfFarmer),
-        aiGeneratedPrice:  toStr(l.aiGeneratedPrice),
-        finalPrice:        toStr(l.finalPrice),
-        productPhotos:     [],
+        certifications: toStr(l.certifications),
+        shelfLife: toStr(l.shelfLifetime),
+        location: toStr(l.location),
+        contactInfo: toStr(l.contactOfFarmer),
+        aiGeneratedPrice: toStr(l.aiGeneratedPrice),
+        finalPrice: toStr(l.finalPrice),
+        productPhotos: [],
       }));
 
       if (l.images && l.images.length > 0) {
         const photos = await fetchExistingImages(l.images);
-        setFormData(prev => ({ ...prev, productPhotos: photos }));
+        setFormData((prev) => ({ ...prev, productPhotos: photos }));
       }
     } catch (error) {
       console.error("[EditListing] fetch error:", error);
-      const msg = error.response?.data?.message
-        || error.response?.data
-        || error.message
-        || "Unknown error";
+      const msg =
+        error.response?.data?.message ||
+        error.response?.data ||
+        error.message ||
+        "Unknown error";
       toast.error(`Failed to load listing: ${msg}`);
       setFetchError(msg);
     } finally {
@@ -186,17 +191,15 @@ const UpdateListingForm = () => {
         const preview = URL.createObjectURL(blob);
         blobUrlsRef.current.push(preview);
         return { file, preview, existingId: img.id };
-      })
+      }),
     );
-    return results
-      .filter(r => r.status === "fulfilled")
-      .map(r => r.value);
+    return results.filter((r) => r.status === "fulfilled").map((r) => r.value);
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handlePhotoUpload = (e) => {
@@ -206,12 +209,12 @@ const UpdateListingForm = () => {
       toast.error(`Maximum ${MAX_PHOTOS} photos allowed.`);
       return;
     }
-    const newPhotos = files.slice(0, remaining).map(file => {
+    const newPhotos = files.slice(0, remaining).map((file) => {
       const preview = URL.createObjectURL(file);
       blobUrlsRef.current.push(preview);
       return { file, preview };
     });
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       productPhotos: [...prev.productPhotos, ...newPhotos],
     }));
@@ -221,7 +224,6 @@ const UpdateListingForm = () => {
 
   const removePhoto = async (index) => {
     const photo = formData.productPhotos[index];
-    console.log(photo);
 
     if (photo.existingId) {
       // delete from server first
@@ -240,7 +242,7 @@ const UpdateListingForm = () => {
     }
 
     // remove from local state using existingId/preview as stable key to avoid index drift
-    setFormData(prev => {
+    setFormData((prev) => {
       const updated = prev.productPhotos.filter((_, i) => i !== index);
       return { ...prev, productPhotos: updated };
     });
@@ -288,19 +290,18 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
 }`;
 
       const text = await askGroq(system, user);
-      console.log("[AiPrice] Groq raw response:", text);
 
       // extract the JSON block — model sometimes adds markdown fences
       const match = text.match(/\{[\s\S]*\}/);
       if (!match) throw new Error("No JSON found in AI response");
 
       const parsed = JSON.parse(match[0]);
-      const price  = parseFloat(parsed.price);
+      const price = parseFloat(parsed.price);
 
       if (isNaN(price) || price <= 0) throw new Error("Invalid price from AI");
 
       const priceStr = price.toFixed(2);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         aiGeneratedPrice: priceStr,
         finalPrice: prev.finalPrice || priceStr,
@@ -313,7 +314,9 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
       toast.success(`AI suggests ₹${priceStr} per ${formData.unitOfQuantity}`);
     } catch (err) {
       console.error("[AiPrice] error:", err);
-      toast.error("AI price suggestion failed. Please enter the price manually.");
+      toast.error(
+        "AI price suggestion failed. Please enter the price manually.",
+      );
     } finally {
       setAiLoading(false);
     }
@@ -321,20 +324,33 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
 
   const validate = () => {
     const e = {};
-    if (!formData.productName.trim())     e.productName = "Product name is required";
-    if (!formData.description.trim())     e.description = "Description is required";
-    if (!formData.quantity || isNaN(formData.quantity) || Number(formData.quantity) <= 0)
+    if (!formData.productName.trim())
+      e.productName = "Product name is required";
+    if (!formData.description.trim()) e.description = "Description is required";
+    if (
+      !formData.quantity ||
+      isNaN(formData.quantity) ||
+      Number(formData.quantity) <= 0
+    )
       e.quantity = "Quantity must be a positive number";
     if (!formData.cropType || formData.cropType === "all")
       e.cropType = "Please select a crop type";
     if (!formData.storageConditions)
       e.storageConditions = "Storage condition is required";
-    if (!formData.shelfLife || isNaN(formData.shelfLife) || Number(formData.shelfLife) <= 0)
+    if (
+      !formData.shelfLife ||
+      isNaN(formData.shelfLife) ||
+      Number(formData.shelfLife) <= 0
+    )
       e.shelfLife = "Shelf life must be a positive number";
-    if (!formData.location.trim())        e.location = "Location is required";
+    if (!formData.location.trim()) e.location = "Location is required";
     if (!formData.contactInfo.trim() || !/^\d{10}$/.test(formData.contactInfo))
       e.contactInfo = "Contact must be a 10-digit mobile number";
-    if (!formData.finalPrice || isNaN(formData.finalPrice) || Number(formData.finalPrice) <= 0)
+    if (
+      !formData.finalPrice ||
+      isNaN(formData.finalPrice) ||
+      Number(formData.finalPrice) <= 0
+    )
       e.finalPrice = "Final price must be a positive number";
     if (formData.productPhotos.length === 0)
       e.productPhotos = "At least one photo is required";
@@ -345,25 +361,25 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
   const handleSubmit = async () => {
     setShowConfirm(false);
     const data = new FormData();
-    data.append("productName",       formData.productName);
+    data.append("productName", formData.productName);
     data.append("productDescription", formData.description);
-    data.append("productType",        formData.cropType);
-    data.append("quantity",           formData.quantity);
-    data.append("unitOfQuantity",     formData.unitOfQuantity);
-    data.append("harvestedDate",      formData.harvestDate);
-    data.append("storageCondition",   formData.storageConditions);
-    data.append("finalPrice",         formData.finalPrice);
-    data.append("shelfLifetime",      formData.shelfLife);
-    data.append("location",           formData.location);
-    data.append("contactOfFarmer",    formData.contactInfo);
-    data.append("aiGeneratedPrice",   formData.aiGeneratedPrice || "0");
+    data.append("productType", formData.cropType);
+    data.append("quantity", formData.quantity);
+    data.append("unitOfQuantity", formData.unitOfQuantity);
+    data.append("harvestedDate", formData.harvestDate);
+    data.append("storageCondition", formData.storageConditions);
+    data.append("finalPrice", formData.finalPrice);
+    data.append("shelfLifetime", formData.shelfLife);
+    data.append("location", formData.location);
+    data.append("contactOfFarmer", formData.contactInfo);
+    data.append("aiGeneratedPrice", formData.aiGeneratedPrice || "0");
     if (formData.certifications) {
-      data.append("certifications",   formData.certifications);
+      data.append("certifications", formData.certifications);
     }
     // only send new (non-existing) photos; existing photos that weren't
     // deleted are already on the server and preserved automatically
-    const newPhotos = formData.productPhotos.filter(p => !p.existingId);
-    newPhotos.forEach(photo => data.append("images", photo.file));
+    const newPhotos = formData.productPhotos.filter((p) => !p.existingId);
+    newPhotos.forEach((photo) => data.append("images", photo.file));
 
     try {
       setSubmitting(true);
@@ -376,7 +392,7 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
     } catch (error) {
       console.error("Update error:", error);
       toast.error(
-        `Failed to update: ${error.response?.data?.message || "Please try again"}`
+        `Failed to update: ${error.response?.data?.message || "Please try again"}`,
       );
     } finally {
       setSubmitting(false);
@@ -400,8 +416,12 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
     return (
       <div className="flex flex-col justify-center items-center min-h-[calc(100vh-3.5rem)] md:ml-14 gap-4 px-4">
         <div className="text-4xl">⚠️</div>
-        <p className="text-lg font-semibold text-gray-800">Could not load listing</p>
-        <p className="text-sm text-red-500 text-center max-w-sm">{fetchError}</p>
+        <p className="text-lg font-semibold text-gray-800">
+          Could not load listing
+        </p>
+        <p className="text-sm text-red-500 text-center max-w-sm">
+          {fetchError}
+        </p>
         <button
           onClick={() => navigate("/my-listing")}
           className="px-5 py-2 bg-jewel-600 text-white rounded-lg text-sm font-semibold hover:bg-jewel-700"
@@ -676,11 +696,14 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
               {/* ── AI Price Button ── */}
               <div className="md:col-span-2">
                 <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-start gap-2 mb-3">
-                  <span className="text-green-600 text-lg flex-shrink-0">🌾</span>
+                  <span className="text-green-600 text-lg flex-shrink-0">
+                    🌾
+                  </span>
                   <p className="text-xs text-green-800">
-                    <strong>AgriAdvisor AI</strong> — powered by OpenRouter. Fill in the
-                    product details above, then click the button to get a fair mandi-aligned
-                    price and actionable market tips for your crop.
+                    <strong>AgriAdvisor AI</strong> — powered by OpenRouter.
+                    Fill in the product details above, then click the button to
+                    get a fair mandi-aligned price and actionable market tips
+                    for your crop.
                   </p>
                 </div>
                 <button
@@ -713,7 +736,9 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
                   </span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                    ₹
+                  </span>
                   <input
                     type="number"
                     name="aiGeneratedPrice"
@@ -740,7 +765,9 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
                   </span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                    ₹
+                  </span>
                   <input
                     type="number"
                     name="finalPrice"
@@ -748,20 +775,28 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
                     onChange={handleInputChange}
                     step="0.01"
                     className={`mt-1 block w-full pl-7 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-jewel-500 focus:border-jewel-500 sm:text-sm ${
-                      errors.finalPrice ? "border-red-500 bg-red-50" : "border-gray-300 bg-gray-50"
+                      errors.finalPrice
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-300 bg-gray-50"
                     }`}
                     placeholder="e.g., 250.00"
                   />
                 </div>
                 {errors.finalPrice && (
-                  <p className="mt-1 text-xs text-red-600">{errors.finalPrice}</p>
+                  <p className="mt-1 text-xs text-red-600">
+                    {errors.finalPrice}
+                  </p>
                 )}
                 {formData.finalPrice && formData.quantity && (
                   <p className="mt-1 text-xs text-gray-500 flex items-center gap-1">
                     <FaInfoCircle size={10} />
                     Total value:{" "}
                     <strong>
-                      ₹{(parseFloat(formData.finalPrice) * parseFloat(formData.quantity)).toFixed(2)}
+                      ₹
+                      {(
+                        parseFloat(formData.finalPrice) *
+                        parseFloat(formData.quantity)
+                      ).toFixed(2)}
                     </strong>{" "}
                     for {formData.quantity} {formData.unitOfQuantity}
                   </p>
@@ -782,7 +817,10 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
                   </div>
                   <ul className="space-y-2">
                     {aiInsights.map((tip, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-xs text-green-900">
+                      <li
+                        key={i}
+                        className="flex items-start gap-2.5 text-xs text-green-900"
+                      >
                         <span className="flex-shrink-0 mt-0.5 h-5 w-5 rounded-full bg-green-200 text-green-800 font-bold flex items-center justify-center text-[10px]">
                           {i + 1}
                         </span>
@@ -791,7 +829,9 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
                     ))}
                   </ul>
                   <p className="mt-3 text-[10px] text-green-600 italic">
-                    * Suggestions are AI-generated based on current market trends. Always verify with your local mandi or agriculture officer.
+                    * Suggestions are AI-generated based on current market
+                    trends. Always verify with your local mandi or agriculture
+                    officer.
                   </p>
                 </div>
               )}

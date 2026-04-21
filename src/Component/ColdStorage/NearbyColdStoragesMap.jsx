@@ -462,14 +462,11 @@ const NearbyColdStoragesMap = ({
           headers: {
             "Accept-Language": "en",
           },
-        }
+        },
       );
       const address = res.data.address;
-      console.log(address);
       const district = address.state_district;
       const state = address.state;
-
-      console.log(district,',',state);
 
       const response = await api.get(CUSTOM_API_URL, {
         params: {
@@ -481,7 +478,6 @@ const NearbyColdStoragesMap = ({
       });
       const storages = response.data;
       if (storages.length === 0) {
-        console.log("No cold storages found nearby.");
         setLocalColdStorages([]);
         setColdStorages([]);
       } else {
@@ -718,7 +714,8 @@ const NearbyColdStoragesMap = ({
       {/* Map */}
       {!MAPBOX_API_KEY ? (
         <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-700 px-6 text-center">
-          Missing Mapbox token. Set `VITE_MAPBOX_API_KEY` and restart the frontend.
+          Missing Mapbox token. Set `VITE_MAPBOX_API_KEY` and restart the
+          frontend.
         </div>
       ) : (
         <Map
@@ -734,215 +731,218 @@ const NearbyColdStoragesMap = ({
           style={{ width: "100%", height: "100%" }}
           mapStyle="mapbox://styles/mapbox/streets-v11"
         >
-        {/* Navigation Controls */}
-        <NavigationControl position="bottom-right" />
-        <ScaleControl position="bottom-left" />
+          {/* Navigation Controls */}
+          <NavigationControl position="bottom-right" />
+          <ScaleControl position="bottom-left" />
 
-        {/* User Location Marker */}
-        {liveLocation && (
-          <Marker longitude={liveLocation.lon} latitude={liveLocation.lat}>
-            <div className="relative">
-              <div className="w-6 h-6 bg-blue-600 rounded-full border-2 border-white shadow-md pulse-animation z-10" />
-              <div className="absolute top-0 left-0 w-6 h-6 bg-blue-400 rounded-full opacity-50 animate-ping" />
-            </div>
-          </Marker>
-        )}
-
-        {/* Cold Storage Markers */}
-        {localColdStorages.map((storage) => (
-          <Marker
-            key={storage.id}
-            longitude={storage.lon}
-            latitude={storage.lat}
-            onClick={(e) => {
-              e.originalEvent.stopPropagation();
-              setSelectedStorage(storage);
-            }}
-          >
-            <div className="relative cursor-pointer transform transition-transform duration-200 hover:scale-110">
-              <FaLocationDot
-                size={36}
-                color={
-                  selectedStorage?.id === storage.id ? "#e74c3c" : "#2ecc71"
-                }
-                className="drop-shadow-lg"
-              />
-              {/* Custom marker label */}
-              <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap bg-white px-2 py-0.5 rounded-full text-xs font-bold shadow-md">
-                {storage.name.split(" ")[0]}
+          {/* User Location Marker */}
+          {liveLocation && (
+            <Marker longitude={liveLocation.lon} latitude={liveLocation.lat}>
+              <div className="relative">
+                <div className="w-6 h-6 bg-blue-600 rounded-full border-2 border-white shadow-md pulse-animation z-10" />
+                <div className="absolute top-0 left-0 w-6 h-6 bg-blue-400 rounded-full opacity-50 animate-ping" />
               </div>
-            </div>
-          </Marker>
-        ))}
+            </Marker>
+          )}
 
-        {/* Selected Storage Popup */}
-        {selectedStorage && (
-          <Popup
-            longitude={selectedStorage.lon}
-            latitude={selectedStorage.lat}
-            onClose={() => setSelectedStorage(null)}
-            closeOnClick={false}
-            anchor="bottom"
-            maxWidth="340px"
-            className="custom-popup"
-            closeButton={false}
-          >
-            <div className="p-0 bg-white rounded-lg shadow-lg w-full max-w-xs overflow-hidden">
-              {/* Close button */}
-              <button
-                onClick={() => setSelectedStorage(null)}
-                className="absolute top-2 right-2 z-10 bg-black/30 hover:bg-black/50 text-white p-1 rounded-full transition-colors"
-              >
-                <AiOutlineClose size={16} />
-              </button>
+          {/* Cold Storage Markers */}
+          {localColdStorages.map((storage) => (
+            <Marker
+              key={storage.id}
+              longitude={storage.lon}
+              latitude={storage.lat}
+              onClick={(e) => {
+                e.originalEvent.stopPropagation();
+                setSelectedStorage(storage);
+              }}
+            >
+              <div className="relative cursor-pointer transform transition-transform duration-200 hover:scale-110">
+                <FaLocationDot
+                  size={36}
+                  color={
+                    selectedStorage?.id === storage.id ? "#e74c3c" : "#2ecc71"
+                  }
+                  className="drop-shadow-lg"
+                />
+                {/* Custom marker label */}
+                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap bg-white px-2 py-0.5 rounded-full text-xs font-bold shadow-md">
+                  {storage.name.split(" ")[0]}
+                </div>
+              </div>
+            </Marker>
+          ))}
 
-              {/* Storage Photo */}
-              <div className="relative h-40 w-full bg-gray-100">
-                {selectedStorage.photos ? (
-                  <img
-                    src={`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${
-                      JSON.parse(selectedStorage.photos)[0]?.photo_reference
-                    }&key=${GOOGLE_MAPS_API_KEY}`}
-                    alt={selectedStorage.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                      console.error("Failed to load photo:", e);
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
-                    <FaWarehouse size={48} className="text-white opacity-80" />
-                  </div>
-                )}
-
-                {/* Favorites button */}
+          {/* Selected Storage Popup */}
+          {selectedStorage && (
+            <Popup
+              longitude={selectedStorage.lon}
+              latitude={selectedStorage.lat}
+              onClose={() => setSelectedStorage(null)}
+              closeOnClick={false}
+              anchor="bottom"
+              maxWidth="340px"
+              className="custom-popup"
+              closeButton={false}
+            >
+              <div className="p-0 bg-white rounded-lg shadow-lg w-full max-w-xs overflow-hidden">
+                {/* Close button */}
                 <button
-                  onClick={() => toggleFavorite(selectedStorage.id)}
-                  className="absolute top-2 left-2 z-10 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-md transition-colors"
+                  onClick={() => setSelectedStorage(null)}
+                  className="absolute top-2 right-2 z-10 bg-black/30 hover:bg-black/50 text-white p-1 rounded-full transition-colors"
                 >
-                  {favoriteStorages.includes(selectedStorage.id) ? (
-                    <FaBookmark size={16} className="text-yellow-500" />
+                  <AiOutlineClose size={16} />
+                </button>
+
+                {/* Storage Photo */}
+                <div className="relative h-40 w-full bg-gray-100">
+                  {selectedStorage.photos ? (
+                    <img
+                      src={`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${
+                        JSON.parse(selectedStorage.photos)[0]?.photo_reference
+                      }&key=${GOOGLE_MAPS_API_KEY}`}
+                      alt={selectedStorage.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
                   ) : (
-                    <FaRegBookmark size={16} />
+                    <div className="w-full h-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
+                      <FaWarehouse
+                        size={48}
+                        className="text-white opacity-80"
+                      />
+                    </div>
                   )}
-                </button>
 
-                {/* Storage name overlay */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-white">
-                  <h3 className="text-xl font-bold truncate">
-                    {selectedStorage.name}
-                  </h3>
-                  <div className="flex items-center mt-1">
-                    {renderRating(selectedStorage.rating)}
-                    <span className="ml-2 text-sm">
-                      ({selectedStorage.userRatingsTotal || 0} reviews)
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status tag */}
-              <div className="px-4 py-2">
-                <span
-                  className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                    getStorageTag(selectedStorage).color
-                  }`}
-                >
-                  {getStorageTag(selectedStorage).text}
-                </span>
-                {selectedStorage.openNow && (
-                  <span className="inline-block ml-2 px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                    Open Now
-                  </span>
-                )}
-              </div>
-
-              {/* Key details */}
-              <div className="px-4 py-2 space-y-3">
-                <div className="flex items-start">
-                  <div className="w-6 text-gray-500 mt-1">
-                    <MdLocationOn />
-                  </div>
-                  <div className="ml-2 text-sm text-gray-700">
-                    {selectedStorage.vicinity || "Address not available"}
-                  </div>
-                </div>
-
-                <div className="flex items-center">
-                  <div className="w-6 text-gray-500">
-                    <FaPhoneAlt size={14} />
-                  </div>
-                  <div className="ml-2 text-sm text-gray-700">
-                    {selectedStorage.phoneNumber ? (
-                      <a
-                        href={`tel:${selectedStorage.phoneNumber}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {selectedStorage.phoneNumber}
-                      </a>
+                  {/* Favorites button */}
+                  <button
+                    onClick={() => toggleFavorite(selectedStorage.id)}
+                    className="absolute top-2 left-2 z-10 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-md transition-colors"
+                  >
+                    {favoriteStorages.includes(selectedStorage.id) ? (
+                      <FaBookmark size={16} className="text-yellow-500" />
                     ) : (
-                      "Phone not available"
+                      <FaRegBookmark size={16} />
                     )}
+                  </button>
+
+                  {/* Storage name overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-white">
+                    <h3 className="text-xl font-bold truncate">
+                      {selectedStorage.name}
+                    </h3>
+                    <div className="flex items-center mt-1">
+                      {renderRating(selectedStorage.rating)}
+                      <span className="ml-2 text-sm">
+                        ({selectedStorage.userRatingsTotal || 0} reviews)
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center">
-                  <div className="w-6 text-gray-500">
-                    <FaThermometerHalf />
+                {/* Status tag */}
+                <div className="px-4 py-2">
+                  <span
+                    className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                      getStorageTag(selectedStorage).color
+                    }`}
+                  >
+                    {getStorageTag(selectedStorage).text}
+                  </span>
+                  {selectedStorage.openNow && (
+                    <span className="inline-block ml-2 px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                      Open Now
+                    </span>
+                  )}
+                </div>
+
+                {/* Key details */}
+                <div className="px-4 py-2 space-y-3">
+                  <div className="flex items-start">
+                    <div className="w-6 text-gray-500 mt-1">
+                      <MdLocationOn />
+                    </div>
+                    <div className="ml-2 text-sm text-gray-700">
+                      {selectedStorage.vicinity || "Address not available"}
+                    </div>
                   </div>
-                  <div className="ml-2 text-sm text-gray-700">
-                    {selectedStorage.temperature || "Temperature not specified"}
+
+                  <div className="flex items-center">
+                    <div className="w-6 text-gray-500">
+                      <FaPhoneAlt size={14} />
+                    </div>
+                    <div className="ml-2 text-sm text-gray-700">
+                      {selectedStorage.phoneNumber ? (
+                        <a
+                          href={`tel:${selectedStorage.phoneNumber}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {selectedStorage.phoneNumber}
+                        </a>
+                      ) : (
+                        "Phone not available"
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <div className="w-6 text-gray-500">
+                      <FaThermometerHalf />
+                    </div>
+                    <div className="ml-2 text-sm text-gray-700">
+                      {selectedStorage.temperature ||
+                        "Temperature not specified"}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <div className="w-6 text-gray-500">
+                      <FaWarehouse />
+                    </div>
+                    <div className="ml-2 text-sm text-gray-700">
+                      {selectedStorage.capacity || "Capacity not specified"}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <div className="w-6 text-blue-500">
+                      <FaDirections />
+                    </div>
+                    <div className="ml-2 text-sm font-medium">
+                      {Math.round(
+                        calculateDistance(
+                          liveLocation.lat,
+                          liveLocation.lon,
+                          selectedStorage.lat,
+                          selectedStorage.lon,
+                        ),
+                      )}{" "}
+                      km away
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center">
-                  <div className="w-6 text-gray-500">
-                    <FaWarehouse />
-                  </div>
-                  <div className="ml-2 text-sm text-gray-700">
-                    {selectedStorage.capacity || "Capacity not specified"}
-                  </div>
-                </div>
-
-                <div className="flex items-center">
-                  <div className="w-6 text-blue-500">
-                    <FaDirections />
-                  </div>
-                  <div className="ml-2 text-sm font-medium">
-                    {Math.round(
-                      calculateDistance(
-                        liveLocation.lat,
-                        liveLocation.lon,
-                        selectedStorage.lat,
-                        selectedStorage.lon
-                      )
-                    )}{" "}
-                    km away
-                  </div>
+                {/* Action buttons */}
+                <div className="px-4 py-3 border-t border-gray-100">
+                  <button
+                    onClick={() => onSelectStorage(selectedStorage)}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center"
+                  >
+                    Select This Storage
+                  </button>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${selectedStorage.lat},${selectedStorage.lon}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full mt-2 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center"
+                  >
+                    <FaDirections className="mr-2" /> Get Directions
+                  </a>
                 </div>
               </div>
-
-              {/* Action buttons */}
-              <div className="px-4 py-3 border-t border-gray-100">
-                <button
-                  onClick={() => onSelectStorage(selectedStorage)}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center"
-                >
-                  Select This Storage
-                </button>
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${selectedStorage.lat},${selectedStorage.lon}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full mt-2 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center"
-                >
-                  <FaDirections className="mr-2" /> Get Directions
-                </a>
-              </div>
-            </div>
-          </Popup>
-        )}
+            </Popup>
+          )}
         </Map>
       )}
 
@@ -990,8 +990,8 @@ const NearbyColdStoragesMap = ({
                         liveLocation.lat,
                         liveLocation.lon,
                         storage.lat,
-                        storage.lon
-                      )
+                        storage.lon,
+                      ),
                     )}{" "}
                     km
                   </span>

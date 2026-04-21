@@ -30,7 +30,7 @@ const ActionBar = ({ crop, userPhone }) => {
 
   const handleQuantityChange = (e) => {
     setQuantity(
-      Math.max(1, Math.min(crop.quantity, parseInt(e.target.value) || 1))
+      Math.max(1, Math.min(crop.quantity, parseInt(e.target.value) || 1)),
     );
   };
 
@@ -53,13 +53,12 @@ const ActionBar = ({ crop, userPhone }) => {
   const handleCall = async () => {
     try {
       const response = await api.post(
-        `${API_CONFIG.MAIN_BACKEND}/auth/otp/initiate?phoneNumber=${crop.contact}`
+        `${API_CONFIG.MAIN_BACKEND}/auth/otp/initiate?phoneNumber=${crop.contact}`,
       );
       toast.success("Call initiated successfully!", {
         icon: <Phone size={18} />,
         style: { borderRadius: "10px", background: "#333", color: "#fff" },
       });
-      console.log("Call API response:", response.data);
       setShowCallPopup(false); // Close initial pop-up
       setShowCallScreen(true); // Open call screen
     } catch (err) {

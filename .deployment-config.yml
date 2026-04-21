@@ -1,0 +1,17 @@
+# ============================================================================
+# Deployment Configuration
+# ============================================================================
+# This file controls the CI/CD pipeline behavior.
+# Commit this file to your repository to enable/disable deployment.
+#
+# ENABLE_DEPLOYMENT values:
+#   true  - Full CI/CD: Build → Push to Docker Hub → Deploy to EC2
+#   false - CI only: Build → Push to Docker Hub (skip EC2 deployment)
+#
+# Usage:
+#   1. Edit this file and change ENABLE_DEPLOYMENT to true/false
+#   2. Commit and push to trigger the pipeline
+#   3. The pipeline will automatically read this configuration
+# ============================================================================
+
+ENABLE_DEPLOYMENT: false

@@ -1,0 +1,276 @@
+name: CI/CD Pipeline — Build, Push & Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      skip_lint:
+        description: "Skip lint step"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      force_deploy:
+        description: "Force deployment (override config file)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APP_DIR: /home/${{ secrets.EC2_USERNAME }}/AgriConnect_Frontend
+  DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/agriconnect-frontend
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # JOB 1: Read Deployment Configuration
+  # ═══════════════════════════════════════════════════════════════════════════
+  read-config:
+    name: Read Deployment Config
+    runs-on: ubuntu-latest
+    outputs:
+      enable_deployment: ${{ steps.config.outputs.enable_deployment }}
+      should_deploy: ${{ steps.config.outputs.should_deploy }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read deployment configuration
+        id: config
+        run: |
+          # Read ENABLE_DEPLOYMENT from .deployment-config.yml
+          if [ -f .deployment-config.yml ]; then
+            ENABLE_DEPLOYMENT=$(grep -E '^ENABLE_DEPLOYMENT:' .deployment-config.yml | awk '{print $2}' | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+            echo "enable_deployment=${ENABLE_DEPLOYMENT}" >> $GITHUB_OUTPUT
+            echo "📋 Deployment config: ENABLE_DEPLOYMENT=${ENABLE_DEPLOYMENT}"
+          else
+            echo "⚠️  .deployment-config.yml not found, defaulting to false"
+            echo "enable_deployment=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Check if deployment should run (config file OR manual override)
+          if [ "${{ github.event.inputs.force_deploy }}" == "true" ]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "🚀 Deployment ENABLED (manual override)"
+          elif [ "${ENABLE_DEPLOYMENT}" == "true" ]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "🚀 Deployment ENABLED (config file)"
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo "🔕 Deployment DISABLED"
+          fi
+
+      - name: Display pipeline mode
+        run: |
+          echo "════════════════════════════════════════════════════════"
+          echo "  CI/CD Pipeline Configuration"
+          echo "════════════════════════════════════════════════════════"
+          echo "  Config File: ENABLE_DEPLOYMENT=${{ steps.config.outputs.enable_deployment }}"
+          echo "  Manual Override: ${{ github.event.inputs.force_deploy }}"
+          echo "  Final Decision: DEPLOY=${{ steps.config.outputs.should_deploy }}"
+          echo ""
+          if [ "${{ steps.config.outputs.should_deploy }}" == "true" ]; then
+            echo "  Pipeline Mode: FULL CI/CD"
+            echo "  ├─ ✅ Lint"
+            echo "  ├─ ✅ Build Docker Image"
+            echo "  ├─ ✅ Push to Docker Hub"
+            echo "  └─ ✅ Deploy to EC2"
+          else
+            echo "  Pipeline Mode: CI ONLY"
+            echo "  ├─ ✅ Lint"
+            echo "  ├─ ✅ Build Docker Image"
+            echo "  ├─ ✅ Push to Docker Hub"
+            echo "  └─ ⏭️  Skip EC2 Deployment"
+          fi
+          echo "════════════════════════════════════════════════════════"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # JOB 2: Lint
+  # ═══════════════════════════════════════════════════════════════════════════
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    needs: read-config
+    if: ${{ github.event.inputs.skip_lint != 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # JOB 3: Build & Push to Docker Hub (ALWAYS RUNS)
+  # ═══════════════════════════════════════════════════════════════════════════
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: [read-config, lint]
+    if: always() && (needs.lint.result == 'success' || needs.lint.result == 'skipped')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix={{branch}}-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+
+      - name: Docker image pushed successfully
+        run: |
+          echo "✅ Docker image pushed to Docker Hub"
+          echo "📦 Image: ${{ env.DOCKER_IMAGE }}:latest"
+          echo "🔗 https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/agriconnect-frontend"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # JOB 4: Deploy to EC2 (CONDITIONAL - Only if ENABLE_DEPLOYMENT=true)
+  # ═══════════════════════════════════════════════════════════════════════════
+  deploy-to-ec2:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: [read-config, build-and-push]
+    if: needs.read-config.outputs.should_deploy == 'true'
+    environment:
+      name: production
+      url: https://agriconnectme.shop
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Sync source to EC2
+        run: |
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            --exclude='.env' \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            ./ \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ env.APP_DIR }}/
+
+      - name: Pull latest Docker image and restart container
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "bash -l -s" << 'ENDSSH'
+              set -e
+              export PATH=$PATH:/usr/bin:/usr/local/bin
+              cd ~/AgriConnect_Frontend
+
+              echo "==> Logging in to Docker Hub..."
+              echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+              echo "==> Pulling latest image from Docker Hub..."
+              docker pull ${{ env.DOCKER_IMAGE }}:latest
+
+              echo "==> Logging out of Docker Hub..."
+              docker logout
+
+              echo "==> Restarting container with new image..."
+              DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }} docker compose up -d --remove-orphans
+
+              echo "==> Pruning old images..."
+              docker image prune -f
+
+              echo "==> Container status:"
+              DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }} docker compose ps
+          ENDSSH
+
+      - name: Verify deployment
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "bash -l -c 'sleep 5 && curl -sf http://localhost:5000/ | grep -q \"<div id=\\\"root\\\">\" && echo \"✅ App is live on port 5000.\" || (echo \"❌ Health check failed.\" && docker compose -f ~/AgriConnect_Frontend/docker-compose.yml logs --tail=50 && exit 1)'"
+
+      - name: Deployment successful
+        run: |
+          echo "════════════════════════════════════════════════════════"
+          echo "  🎉 Deployment Successful!"
+          echo "════════════════════════════════════════════════════════"
+          echo "  🌐 Production URL: https://agriconnectme.shop"
+          echo "  🐳 Docker Image: ${{ env.DOCKER_IMAGE }}:latest"
+          echo "  📅 Deployed at: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "════════════════════════════════════════════════════════"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # JOB 5: Deployment Skipped Notification
+  # ═══════════════════════════════════════════════════════════════════════════
+  deployment-skipped:
+    name: Deployment Skipped
+    runs-on: ubuntu-latest
+    needs: [read-config, build-and-push]
+    if: needs.read-config.outputs.should_deploy == 'false'
+    steps:
+      - name: Notify deployment skipped
+        run: |
+          echo "════════════════════════════════════════════════════════"
+          echo "  ⏭️  EC2 Deployment Skipped"
+          echo "════════════════════════════════════════════════════════"
+          echo "  Reason: ENABLE_DEPLOYMENT=false in .deployment-config.yml"
+          echo ""
+          echo "  ✅ CI completed successfully:"
+          echo "  ├─ Code linted"
+          echo "  ├─ Docker image built"
+          echo "  └─ Image pushed to Docker Hub"
+          echo ""
+          echo "  📦 Docker Image: ${{ env.DOCKER_IMAGE }}:latest"
+          echo ""
+          echo "  To enable deployment:"
+          echo "  1. Edit .deployment-config.yml"
+          echo "  2. Set ENABLE_DEPLOYMENT: true"
+          echo "  3. Commit and push"
+          echo ""
+          echo "  Or use manual workflow dispatch with force_deploy=true"
+          echo "════════════════════════════════════════════════════════"

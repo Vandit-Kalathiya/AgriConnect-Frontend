@@ -20,7 +20,6 @@ const TermsAndConditions = ({
   };
 
   const handleProceedToPayment = () => {
-    console.log('in handleProceedToPayment');
     handleContractUpload();
     setIsPopupOpen(false);
     // onSaveAndNext(); // This would be the function that redirects to payment gateway

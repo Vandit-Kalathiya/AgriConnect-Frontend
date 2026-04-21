@@ -32,13 +32,20 @@ const Navbar = () => {
   const [showSignature, setShowSignature] = useState(false);
 
   // Notification state from Zustand store
-  const { unreadCount, isDrawerOpen, openDrawer, closeDrawer, initForUser, disconnect } =
-    useNotificationStore();
+  const {
+    unreadCount,
+    isDrawerOpen,
+    openDrawer,
+    closeDrawer,
+    initForUser,
+    disconnect,
+    isEnabled,
+  } = useNotificationStore();
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  const menuRef    = useRef(null);
+  const menuRef = useRef(null);
   const profileRef = useRef(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -71,7 +78,7 @@ const Navbar = () => {
 
       if (user1?.id) {
         // Initialise notification store: loads data + connects WebSocket
-        const jwtToken = getTokenFromCookie() ?? '';
+        const jwtToken = getTokenFromCookie() ?? "";
         initForUser(user1.id, jwtToken);
 
         // Fetch profile picture
@@ -147,17 +154,36 @@ const Navbar = () => {
     { name: "My Orders", path: "/orders", icon: <FaShoppingCart /> },
   ];
   const profileMenuItems = [
-    { to: "/profile", icon: <FaUser className="text-green-600" />, label: "Profile Settings" },
-    { to: "/wishlist", icon: <FaHeart className="text-red-500" />, label: "My Wishlist" },
-    { to: "/orders", icon: <FaShoppingCart className="text-blue-600" />, label: "My Orders" },
-    { to: "/settings", icon: <FaCog className="text-gray-600" />, label: "Account Settings" },
-  ];  
+    {
+      to: "/profile",
+      icon: <FaUser className="text-green-600" />,
+      label: "Profile Settings",
+    },
+    {
+      to: "/wishlist",
+      icon: <FaHeart className="text-red-500" />,
+      label: "My Wishlist",
+    },
+    {
+      to: "/orders",
+      icon: <FaShoppingCart className="text-blue-600" />,
+      label: "My Orders",
+    },
+    {
+      to: "/settings",
+      icon: <FaCog className="text-gray-600" />,
+      label: "Account Settings",
+    },
+  ];
 
   return (
     <>
       <nav className="bg-white shadow-md px-3 sm:px-4 md:px-6 lg:px-10 xl:px-20 flex justify-between items-center fixed w-full top-0 z-50 h-14 gap-2">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2 group transition-all duration-300 min-w-0">
+        <Link
+          to="/"
+          className="flex items-center space-x-2 group transition-all duration-300 min-w-0"
+        >
           <div className="relative">
             <img
               src={leafImg}
@@ -318,12 +344,19 @@ const Navbar = () => {
 
           <button
             data-notification-bell="true"
-            onClick={() => isDrawerOpen ? closeDrawer() : openDrawer()}
-            className="hidden lg:flex text-gray-600 hover:text-green-600 transition-colors duration-200 relative"
+            onClick={() => (isDrawerOpen ? closeDrawer() : openDrawer())}
+            className={`hidden lg:flex transition-colors duration-200 relative ${
+              isEnabled
+                ? "text-gray-600 hover:text-green-600"
+                : "text-gray-400 cursor-not-allowed opacity-60"
+            }`}
             aria-label="Open notifications"
+            title={
+              !isEnabled ? "Notifications are disabled" : "Open notifications"
+            }
           >
             <FaBell size={20} />
-            {unreadCount > 0 && (
+            {isEnabled && unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center leading-none">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
@@ -333,12 +366,19 @@ const Navbar = () => {
           {/* Mobile bell */}
           <button
             data-notification-bell="true"
-            onClick={() => isDrawerOpen ? closeDrawer() : openDrawer()}
-            className="lg:hidden text-gray-600 hover:text-green-600 transition-colors duration-200 relative p-1"
+            onClick={() => (isDrawerOpen ? closeDrawer() : openDrawer())}
+            className={`lg:hidden transition-colors duration-200 relative p-1 ${
+              isEnabled
+                ? "text-gray-600 hover:text-green-600"
+                : "text-gray-400 cursor-not-allowed opacity-60"
+            }`}
             aria-label="Open notifications"
+            title={
+              !isEnabled ? "Notifications are disabled" : "Open notifications"
+            }
           >
             <FaBell size={18} />
-            {unreadCount > 0 && (
+            {isEnabled && unreadCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full h-3.5 w-3.5 flex items-center justify-center leading-none">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>

@@ -55,7 +55,6 @@ const Step3 = ({
         throw new Error("Invalid price value from AI backend");
       }
       const cleanPrice = numericPrice.toFixed(2);
-      console.log("Cleaned AI Price per kg:", cleanPrice);
 
       // Update AI-generated price in form data
       handleInputChange({
@@ -66,9 +65,6 @@ const Step3 = ({
       handleInputChange({
         target: { name: "finalPrice", value: cleanPrice },
       });
-
-      // Log the updated formData to debug
-      console.log("Updated formData after AI price:", formData);
 
       // Ensure recommendations and nearbyFarmers are arrays
       const validRecommendations = Array.isArray(parsedData.recommendations)
@@ -270,8 +266,8 @@ const Step3 = ({
                   errors.aiGeneratedPrice
                     ? "border-red-500 bg-red-50"
                     : priceCalculated
-                    ? "border-green-300 bg-green-50"
-                    : "border-gray-300 bg-gray-50"
+                      ? "border-green-300 bg-green-50"
+                      : "border-gray-300 bg-gray-50"
                 }`}
                 placeholder={
                   isLoadingAiPrice ? "Calculating..." : "e.g., 250.00"

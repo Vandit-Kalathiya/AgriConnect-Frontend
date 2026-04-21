@@ -33,7 +33,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
 
-const CROP_ADVISORY_URL = import.meta.env.VITE_CROP_ADVISORY_URL || 'http://localhost:5001';
+const CROP_ADVISORY_URL =
+  import.meta.env.VITE_CROP_ADVISORY_URL || "http://localhost:5001";
 
 const CropAdvisory = () => {
   const [state, setState] = useState("");
@@ -80,7 +81,7 @@ const CropAdvisory = () => {
         enableHighAccuracy: true,
         timeout: 15000,
         maximumAge: 0,
-      }
+      },
     );
   };
 
@@ -93,7 +94,7 @@ const CropAdvisory = () => {
           headers: {
             "Accept-Language": "en",
           },
-        }
+        },
       );
       const address = response.data.address;
       return {
@@ -127,12 +128,11 @@ const CropAdvisory = () => {
     try {
       const response = await axios.get(
         `${CROP_ADVISORY_URL}/predict?state=${encodeURIComponent(
-          state
+          state,
         )}&district=${encodeURIComponent(district)}&season=${encodeURIComponent(
-          season
-        )}`
+          season,
+        )}`,
       );
-      console.log("API Response:", response.data);
 
       const predictions = response.data.predictions;
       const sortedCrops = Object.entries(predictions)

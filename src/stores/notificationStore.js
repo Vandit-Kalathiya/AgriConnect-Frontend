@@ -7,6 +7,7 @@ import {
     deleteNotification,
 } from '../services/notificationApi';
 import { notificationSocket } from '../services/notificationSocket';
+import { isNotificationEnabled, getNotificationDisabledReason } from '../config/featureFlags';
 
 /**
  * Tracks the store's own socket subscription so it can be cleaned up before
@@ -24,14 +25,16 @@ let _storeNotifUnsubscribe = null;
  */
 export const useNotificationStore = create((set, get) => ({
     /* ── State ──────────────────────────────────────────────────────── */
-    notifications:  [],
-    unreadCount:    0,
-    totalPages:     1,
-    currentPage:    0,
-    isLoading:      false,
-    isLoadingMore:  false,
-    isDrawerOpen:   false,
-    error:          null,
+    notifications: [],
+    unreadCount: 0,
+    totalPages: 1,
+    currentPage: 0,
+    isLoading: false,
+    isLoadingMore: false,
+    isDrawerOpen: false,
+    error: null,
+    isEnabled: isNotificationEnabled(),
+    disabledReason: getNotificationDisabledReason(),
 
     /* ── Initialise for logged-in user ──────────────────────────────── */
     /**
@@ -40,6 +43,17 @@ export const useNotificationStore = create((set, get) => ({
      */
     initForUser: (userId, jwtToken = '') => {
         if (!userId) return;
+
+        if (!isNotificationEnabled()) {
+            console.warn('[NotificationStore] Notifications disabled via feature flag');
+            set({
+                isEnabled: false,
+                disabledReason: getNotificationDisabledReason()
+            });
+            return;
+        }
+
+        set({ isEnabled: true, disabledReason: null });
 
         // Kick off initial data load
         get().loadNotifications(userId, 0);
@@ -73,15 +87,15 @@ export const useNotificationStore = create((set, get) => ({
                 notifications: isAppend
                     ? [...get().notifications, ...items]
                     : items,
-                totalPages:  data?.totalPages  ?? 1,
-                currentPage: data?.number      ?? 0,
-                isLoading:      false,
-                isLoadingMore:  false,
+                totalPages: data?.totalPages ?? 1,
+                currentPage: data?.number ?? 0,
+                isLoading: false,
+                isLoadingMore: false,
             });
         } catch (err) {
             set({
                 error: err?.message ?? 'Failed to load notifications.',
-                isLoading:     false,
+                isLoading: false,
                 isLoadingMore: false,
             });
         }
@@ -173,6 +187,6 @@ export const useNotificationStore = create((set, get) => ({
     },
 
     /* ── Drawer ──────────────────────────────────────────────────────── */
-    openDrawer:  () => set({ isDrawerOpen: true }),
+    openDrawer: () => set({ isDrawerOpen: true }),
     closeDrawer: () => set({ isDrawerOpen: false }),
 }));

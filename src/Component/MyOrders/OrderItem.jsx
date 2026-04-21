@@ -57,7 +57,7 @@ const OrderItem = ({
                 "Content-Type": "application/json",
               },
               withCredentials: true,
-            }
+            },
           );
           setFarmerDetails(response.data);
         } catch (error) {
@@ -78,7 +78,7 @@ const OrderItem = ({
       const response2 = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/api/payments/verify-delivery/${orderId}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       const agreementId = order.agreementId;
@@ -90,11 +90,10 @@ const OrderItem = ({
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       const fetchedAgreementDetails = fetchResponse.data;
-      console.log("Fetched agreement details:", fetchedAgreementDetails);
 
       const contractRequest = {
         farmerInfo: fetchedAgreementDetails.farmerInfo,
@@ -116,7 +115,7 @@ const OrderItem = ({
             "Content-Type": "application/json",
             Accept: "application/pdf",
           },
-        }
+        },
       );
 
       const blob = response.data;
@@ -128,7 +127,7 @@ const OrderItem = ({
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       const buyerResponse = await api.get(
@@ -138,26 +137,25 @@ const OrderItem = ({
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       await handleUploadContract(
         blob,
         farmerResponse.data.uniqueHexAddress,
-        buyerResponse.data.uniqueHexAddress
+        buyerResponse.data.uniqueHexAddress,
       );
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = `AgriConnect_Contract_${contractRequest.farmerInfo.farmerName.replace(
         /\s+/g,
-        "_"
+        "_",
       )}_${contractRequest.buyerInfo.buyerName.replace(/\s+/g, "_")}.pdf`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      console.log("Contract PDF generated successfully");
 
       toast.success("Contract PDF Generated Successfully");
 
@@ -165,7 +163,7 @@ const OrderItem = ({
       const quantity = order.quantity;
 
       const updateListingStatus = await api.put(
-        `${API_CONFIG.MARKET_ACCESS}/listings/${listingId}/purchased/${quantity}`
+        `${API_CONFIG.MARKET_ACCESS}/listings/${listingId}/purchased/${quantity}`,
       );
 
       if (updateListingStatus.status === 200) {
@@ -198,11 +196,10 @@ const OrderItem = ({
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       toast.success("Contract uploaded successfully!");
-      console.log("Upload response:", response.data);
     } catch (err) {
       toast.error("Failed to upload contract!");
       console.error("Upload error:", err);

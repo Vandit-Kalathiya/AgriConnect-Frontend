@@ -1,5 +1,6 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+import { isNotificationEnabled } from '../config/featureFlags';
 
 // Use a same-origin endpoint by default so browser requests do not depend on
 // cross-origin CORS headers in production.
@@ -18,10 +19,10 @@ const WS_URL = `${window.location.origin}/notifications/ws`;
  */
 class NotificationSocketService {
     constructor() {
-        this._client        = null;
-        this._subscription  = null;
+        this._client = null;
+        this._subscription = null;
         this._currentUserId = null;
-        this._handlers      = new Set();
+        this._handlers = new Set();
         this._reconnectAttempts = 0;
     }
 
@@ -31,6 +32,11 @@ class NotificationSocketService {
      * @param {string} jwtToken  - JWT (sent in STOMP connect headers)
      */
     connect(userId, jwtToken = '') {
+        if (!isNotificationEnabled()) {
+            console.warn('[WS] Notifications are disabled via feature flag');
+            return;
+        }
+
         if (this._client?.active && this._currentUserId === userId) return;
 
         this._currentUserId = userId;
@@ -71,7 +77,7 @@ class NotificationSocketService {
             },
 
             onDisconnect: () => {
-                console.log('[WS] Disconnected');
+                // WebSocket disconnected
             },
 
             onStompError: (frame) => {
@@ -95,7 +101,7 @@ class NotificationSocketService {
         if (this._client?.active) {
             this._client.deactivate();
         }
-        this._client        = null;
+        this._client = null;
         this._currentUserId = null;
     }
 

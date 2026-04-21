@@ -65,7 +65,7 @@ const CropDetailPage = () => {
         `${API_CONFIG.MARKET_ACCESS}/listings/get/${id}`,
         {
           withCredentials: true,
-        }
+        },
       );
 
       const listing = response.data;
@@ -101,14 +101,14 @@ const CropDetailPage = () => {
             withCredentials: true,
             responseType: "blob",
           })
-          .then((res) => URL.createObjectURL(res.data))
+          .then((res) => URL.createObjectURL(res.data)),
       );
 
       const imageUrls = await Promise.all(imagePromises);
       setImages(imageUrls);
     } catch (err) {
       setError(
-        `Failed to fetch crop data: ${err.response?.data || err.message}`
+        `Failed to fetch crop data: ${err.response?.data || err.message}`,
       );
       toast.error("Failed to load crop details");
     } finally {
@@ -131,7 +131,7 @@ const CropDetailPage = () => {
           <Heart size={18} className="text-red-500 fill-red-500" />
         ),
         style: { borderRadius: "10px", background: "#333", color: "#fff" },
-      }
+      },
     );
   };
 
@@ -147,7 +147,6 @@ const CropDetailPage = () => {
     if (!cropData) return "";
     // Generate a URL to a new route with the crop ID
     const qrUrl = `${window.location.origin}/qr-details/${cropData.id}`;
-    console.log("QR URL:", qrUrl); // Debug output
     return qrUrl;
   };
 
@@ -277,8 +276,8 @@ const CropDetailPage = () => {
                 cropData.status === "PURCHASED"
                   ? "bg-green-600 text-white"
                   : cropData.status === "ARCHIVED"
-                  ? "bg-gray-600 text-white"
-                  : "bg-blue-600 text-white"
+                    ? "bg-gray-600 text-white"
+                    : "bg-blue-600 text-white"
               }`}
             >
               {cropData.status.charAt(0).toUpperCase() +

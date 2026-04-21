@@ -106,7 +106,7 @@ const PaymentProcess = () => {
 
       const response = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/api/payments/create-order`,
-        paymentData
+        paymentData,
       );
 
       const razorpayData = response.data;
@@ -133,11 +133,10 @@ const PaymentProcess = () => {
                 headers: {
                   "Content-Type": "application/x-www-form-urlencoded",
                 },
-              }
+              },
             );
 
             const verifyData = verifyResponse.data || {};
-            console.log(verifyData);
 
             if (verifyData.success) {
               const listingId = order?.listingId || verifyData.data.listingId;
@@ -206,12 +205,6 @@ const PaymentProcess = () => {
 
     setDeliveryStatus("rejected");
     setShowRejectModal(false);
-
-    console.log("Rejection data:", {
-      reason: rejectionReason,
-      comment: rejectionComment,
-      contractHash: pdfHash,
-    });
   };
 
   const simulateDelivery = () => {
