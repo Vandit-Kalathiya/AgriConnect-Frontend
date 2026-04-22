@@ -159,11 +159,6 @@ const ToastItem = ({ id, notification, onDismiss, onView }) => {
     triggerDismiss();
   };
 
-  const source =
-    notification?.sourceService
-      ?.replace(/-/g, " ")
-      ?.replace(/\b\w/g, (c) => c.toUpperCase()) ?? "";
-
   return (
     <div
       className={`
@@ -198,17 +193,9 @@ const ToastItem = ({ id, notification, onDismiss, onView }) => {
         {/* Text */}
         <div className="flex-1 min-w-0">
           <p className="text-[13.5px] font-semibold text-gray-800 leading-snug truncate">
-            {meta.label}
+            {notification?.message || meta.label}
           </p>
-          <div className="flex items-center gap-1 mt-0.5">
-            {source && (
-              <>
-                <span className="text-[11px] text-gray-400">{source}</span>
-                <span className="text-gray-300 text-[10px]">·</span>
-              </>
-            )}
-            <span className="text-[11px] text-gray-400">just now</span>
-          </div>
+          <span className="text-[11px] text-gray-400">just now</span>
         </div>
 
         {/* Action buttons */}

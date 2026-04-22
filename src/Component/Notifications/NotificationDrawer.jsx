@@ -99,10 +99,7 @@ const NotificationItem = ({ notification, userId }) => {
         <p
           className={`text-sm leading-snug ${isUnread ? "font-semibold text-gray-800" : "text-gray-600"}`}
         >
-          {label}
-        </p>
-        <p className="text-xs text-gray-400 mt-0.5">
-          {notification.sourceService} · {notification.templateId}
+          {notification.message || label}
         </p>
         {isFailed && (
           <p className="text-xs text-red-500 mt-0.5">Delivery failed</p>

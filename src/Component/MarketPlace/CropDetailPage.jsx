@@ -96,7 +96,7 @@ const CropDetailPage = () => {
       setCropData(mappedCropData);
 
       const imagePromises = listing.images.map((image) =>
-        axios
+        api
           .get(`${API_CONFIG.MARKET_ACCESS}/image/${image.id}`, {
             withCredentials: true,
             responseType: "blob",

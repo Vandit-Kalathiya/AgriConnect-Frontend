@@ -14,4 +14,4 @@
 #   3. The pipeline will automatically read this configuration
 # ============================================================================
 
-ENABLE_DEPLOYMENT: false
+ENABLE_DEPLOYMENT: true
