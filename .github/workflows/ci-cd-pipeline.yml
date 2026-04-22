@@ -58,7 +58,7 @@ jobs:
             echo "⚠️  .deployment-config.yml not found, defaulting to false"
             echo "enable_deployment=false" >> $GITHUB_OUTPUT
           fi
-          
+
           # Check if deployment should run (config file OR manual override)
           if [ "${{ github.event.inputs.force_deploy }}" == "true" ]; then
             echo "should_deploy=true" >> $GITHUB_OUTPUT
@@ -120,62 +120,13 @@ jobs:
         run: npm run lint
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # JOB 3: Build & Push to Docker Hub (ALWAYS RUNS)
+  # JOB 3: Sync Code to EC2 (ALWAYS RUNS)
   # ═══════════════════════════════════════════════════════════════════════════
-  build-and-push:
-    name: Build & Push Docker Image
+  sync-code:
+    name: Sync Code to EC2
     runs-on: ubuntu-latest
     needs: [read-config, lint]
     if: always() && (needs.lint.result == 'success' || needs.lint.result == 'skipped')
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.DOCKER_IMAGE }}
-          tags: |
-            type=raw,value=latest
-            type=sha,prefix={{branch}}-
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
-          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
-
-      - name: Docker image pushed successfully
-        run: |
-          echo "✅ Docker image pushed to Docker Hub"
-          echo "📦 Image: ${{ env.DOCKER_IMAGE }}:latest"
-          echo "🔗 https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/agriconnect-frontend"
-
-  # ═══════════════════════════════════════════════════════════════════════════
-  # JOB 4: Deploy to EC2 (CONDITIONAL - Only if ENABLE_DEPLOYMENT=true)
-  # ═══════════════════════════════════════════════════════════════════════════
-  deploy-to-ec2:
-    name: Deploy to EC2
-    runs-on: ubuntu-latest
-    needs: [read-config, build-and-push]
-    if: needs.read-config.outputs.should_deploy == 'true'
-    environment:
-      name: production
-      url: https://agriconnectme.shop
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -198,7 +149,7 @@ jobs:
             ./ \
             ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ env.APP_DIR }}/
 
-      - name: Pull latest Docker image and restart container
+      - name: Build Docker image on EC2
         run: |
           ssh -i ~/.ssh/deploy_key \
             -o StrictHostKeyChecking=no \
@@ -211,13 +162,51 @@ jobs:
               echo "==> Logging in to Docker Hub..."
               echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-              echo "==> Pulling latest image from Docker Hub..."
-              docker pull ${{ env.DOCKER_IMAGE }}:latest
+              echo "==> Building Docker image on EC2 (with .env file)..."
+              docker build -t ${{ env.DOCKER_IMAGE }}:latest .
+
+              echo "==> Pushing image to Docker Hub..."
+              docker push ${{ env.DOCKER_IMAGE }}:latest
 
               echo "==> Logging out of Docker Hub..."
               docker logout
 
-              echo "==> Restarting container with new image..."
+              echo "✅ Docker image built and pushed successfully"
+          ENDSSH
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # JOB 4: Deploy to EC2 (CONDITIONAL - Only if ENABLE_DEPLOYMENT=true)
+  # ═══════════════════════════════════════════════════════════════════════════
+  deploy-to-ec2:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: [read-config, sync-code]
+    if: needs.read-config.outputs.should_deploy == 'true'
+    environment:
+      name: production
+      url: https://agriconnectme.shop
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Pull latest Docker image and restart container
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "bash -l -s" << 'ENDSSH'
+              set -e
+              export PATH=$PATH:/usr/bin:/usr/local/bin
+              cd ~/AgriConnect_Frontend
+
+              echo "==> Restarting container with latest image..."
               DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }} docker compose up -d --remove-orphans
 
               echo "==> Pruning old images..."
@@ -250,7 +239,7 @@ jobs:
   deployment-skipped:
     name: Deployment Skipped
     runs-on: ubuntu-latest
-    needs: [read-config, build-and-push]
+    needs: [read-config, sync-code]
     if: needs.read-config.outputs.should_deploy == 'false'
     steps:
       - name: Notify deployment skipped
