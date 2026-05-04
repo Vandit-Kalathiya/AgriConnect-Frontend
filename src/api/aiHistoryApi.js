@@ -2,11 +2,7 @@ import api from "../config/axiosInstance";
 import { API_CONFIG } from "../config/apiConfig";
 import { getUsernameFromToken } from "../../helper";
 
-const HISTORY_API = api.create({
-  baseURL: API_CONFIG.AI_BASE,
-  timeout: 15000,
-  withCredentials: true,
-});
+const AI_HISTORY_BASE = API_CONFIG.AI_BASE;
 const inFlightRequests = new Map();
 
 const getUserPhoneHeader = () => {
@@ -34,10 +30,10 @@ export const fetchKisanMitraHistory = async ({ page = 0, size = 20 } = {}) => {
   const key = `chat:${userPhone}:${page}:${size}`;
 
   return runDeduped(key, async () => {
-    const response = await HISTORY_API.get("/chat/history", {
+    const response = await api.get(`${AI_HISTORY_BASE}/chat/history`, {
       params: { page, size },
       headers: getUserPhoneHeader(),
-      withCredentials: true,
+      timeout: 15000,
     });
     return response.data;
   });
@@ -48,36 +44,36 @@ export const fetchCropAdvisoryHistory = async ({ page = 0, size = 20 } = {}) => 
   const key = `crop:${userPhone}:${page}:${size}`;
 
   return runDeduped(key, async () => {
-    const response = await HISTORY_API.get("/crop/history", {
+    const response = await api.get(`${AI_HISTORY_BASE}/crop/history`, {
       params: { page, size },
       headers: getUserPhoneHeader(),
-      withCredentials: true,
+      timeout: 15000,
     });
     return response.data;
   });
 };
 
 export const deleteKisanMitraHistory = async ({ conversationId } = {}) => {
-  const response = await HISTORY_API.delete("/chat/history", {
+  const response = await api.delete(`${AI_HISTORY_BASE}/chat/history`, {
     params: conversationId ? { conversationId } : undefined,
     headers: getUserPhoneHeader(),
-    withCredentials: true,
+    timeout: 15000,
   });
   return response.data;
 };
 
 export const deleteConversationById = async (conversationId) => {
-  const response = await HISTORY_API.delete(`/chat/conversations/${conversationId}`, {
+  const response = await api.delete(`${AI_HISTORY_BASE}/chat/conversations/${conversationId}`, {
     headers: getUserPhoneHeader(),
-    withCredentials: true,
+    timeout: 15000,
   });
   return response.data;
 };
 
 export const deleteAllAiHistory = async () => {
-  const response = await HISTORY_API.delete("/history/all", {
+  const response = await api.delete(`${AI_HISTORY_BASE}/history/all`, {
     headers: getUserPhoneHeader(),
-    withCredentials: true,
+    timeout: 15000,
   });
   return response.data;
 };
@@ -191,10 +187,10 @@ export const fetchChatConversations = async ({ page = 0, size = 20 } = {}) => {
   };
 
   try {
-    const response = await HISTORY_API.get("/chat/conversations", {
+    const response = await api.get(`${AI_HISTORY_BASE}/chat/conversations`, {
       params: { page, size },
       headers: getUserPhoneHeader(),
-      withCredentials: true,
+      timeout: 15000,
     });
 
     const normalized = normalizeConversationsPayload(response.data);
@@ -206,10 +202,10 @@ export const fetchChatConversations = async ({ page = 0, size = 20 } = {}) => {
   }
 
   // Compatibility mode: some backend deployments still expose data primarily through /chat/history.
-  const historyResponse = await HISTORY_API.get("/chat/history", {
+  const historyResponse = await api.get(`${AI_HISTORY_BASE}/chat/history`, {
     params: { page, size },
     headers: getUserPhoneHeader(),
-    withCredentials: true,
+    timeout: 15000,
   });
 
   const historyData = historyResponse.data || {};
@@ -232,24 +228,24 @@ export const fetchConversationMessages = async (
   conversationId,
   { page = 0, size = 50 } = {}
 ) => {
-  const response = await HISTORY_API.get(
-    `/chat/conversations/${conversationId}/messages`,
+  const response = await api.get(
+    `${AI_HISTORY_BASE}/chat/conversations/${conversationId}/messages`,
     {
       params: { page, size },
       headers: getUserPhoneHeader(),
-      withCredentials: true,
+      timeout: 15000,
     }
   );
   return response.data;
 };
 
 export const renameConversationTitle = async (conversationId, title) => {
-  const response = await HISTORY_API.patch(
-    `/chat/conversations/${conversationId}/title`,
+  const response = await api.patch(
+    `${AI_HISTORY_BASE}/chat/conversations/${conversationId}/title`,
     { title },
     {
       headers: getUserPhoneHeader(),
-      withCredentials: true,
+      timeout: 15000,
     }
   );
   return response.data;
