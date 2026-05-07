@@ -1,28 +1,36 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../../config/axiosInstance";
-import { API_CONFIG } from "../../config/apiConfig";
 import { Pencil } from "lucide-react";
+import {
+  convertImageInfoToUrl,
+  revokeImageUrl,
+  hasValidImages,
+} from "../../utils/imageUtils";
 
 const CropCard = ({ crop }) => {
   const [images, setImages] = useState([]);
   const navigate = useNavigate();
 
-  const getImage = async () => {
-    const imageUrl = `${API_CONFIG.MARKET_ACCESS}/image/${crop.images[0].id}`;
-    await api
-      .get(imageUrl, {
-        responseType: "blob",
-      })
-      .then((res) => {
-        const url = URL.createObjectURL(res.data);
-        setImages(url);
-      });
-  };
-
   useEffect(() => {
-    getImage();
-  }, []);
+    if (hasValidImages(crop.images)) {
+      const imageUrl = convertImageInfoToUrl(crop.images[0]);
+
+      if (imageUrl) {
+        setImages(imageUrl);
+      } else {
+        setImages("");
+      }
+    } else {
+      setImages("");
+    }
+
+    // Cleanup function - only revoke blob URLs (not data URLs)
+    return () => {
+      if (images && typeof images === "string" && images.startsWith("blob:")) {
+        revokeImageUrl(images);
+      }
+    };
+  }, [crop.images]);
 
   const handleUpdate = (e) => {
     e.preventDefault();
@@ -36,9 +44,13 @@ const CropCard = ({ crop }) => {
         {/* Image Section */}
         <div className="relative">
           <img
-            src={images}
+            src={images || "https://via.placeholder.com/600x400?text=No+Image"}
             alt={`${crop.productType} - ${crop.productName}`}
             className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-t-2xl transition-opacity duration-300 hover:opacity-90"
+            onError={(e) => {
+              e.target.src =
+                "https://via.placeholder.com/600x400?text=No+Image";
+            }}
           />
           {/* Update button overlay */}
           <button
@@ -62,8 +74,8 @@ const CropCard = ({ crop }) => {
                     crop.status === "PURCHASED"
                       ? "bg-green-600 text-white"
                       : crop.status === "ARCHIEVED"
-                      ? "bg-gray-600 text-white"
-                      : "bg-blue-600 text-white"
+                        ? "bg-gray-600 text-white"
+                        : "bg-blue-600 text-white"
                   }`}
                 >
                   {crop.status.charAt(0).toUpperCase() + crop.status.slice(1)}

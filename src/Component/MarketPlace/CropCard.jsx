@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
-import api from "../../config/axiosInstance";
-import { API_CONFIG } from "../../config/apiConfig";
+import {
+  convertImagesToUrls,
+  revokeImageUrl,
+  hasValidImages,
+} from "../../utils/imageUtils";
 
 const CropCard = ({ crop }) => {
   const [loading, setLoading] = useState(true); // Track loading state
@@ -10,37 +13,32 @@ const CropCard = ({ crop }) => {
   const [images, setImages] = useState([]);
 
   useEffect(() => {
-    fetchImages();
-  }, []);
-
-  const fetchImages = async () => {
-    try {
-      setLoading(true);
-      const imagePromises = crop.images.map((image) => {
-        const imageUrl = `${API_CONFIG.MARKET_ACCESS}/image/${image.id}`;
-        return api
-          .get(imageUrl, {
-            responseType: "blob",
-          })
-          .then((res) => {
-            const url = URL.createObjectURL(res.data);
-            return url;
-          });
-      });
-
-      const imageUrls = await Promise.all(imagePromises);
-      setImages(imageUrls);
-    } catch (err) {
-      setError("Failed to load images");
-    } finally {
+    if (hasValidImages(crop.images)) {
+      try {
+        setLoading(true);
+        const imageUrls = convertImagesToUrls(crop.images);
+        setImages(imageUrls);
+        setError(null);
+      } catch (err) {
+        setError("Failed to load images");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setImages([]);
       setLoading(false);
     }
-  };
+  }, [crop.images]);
 
   // Cleanup Blob URLs to prevent memory leaks
   useEffect(() => {
     return () => {
-      images.forEach((url) => URL.revokeObjectURL(url));
+      // Only revoke blob URLs, not data URLs
+      images.forEach((url) => {
+        if (url && url.startsWith("blob:")) {
+          revokeImageUrl(url);
+        }
+      });
     };
   }, [images]);
 

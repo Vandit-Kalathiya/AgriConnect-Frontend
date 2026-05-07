@@ -21,6 +21,11 @@ import ActionBar from "./ActionBar";
 import { toast } from "react-hot-toast";
 import { getCurrentUser } from "../../../helper";
 import { QRCodeCanvas } from "qrcode.react";
+import {
+  convertImagesToUrls,
+  revokeImageUrl,
+  hasValidImages,
+} from "../../utils/imageUtils";
 
 const CropDetailPage = () => {
   const navigate = useNavigate();
@@ -69,10 +74,10 @@ const CropDetailPage = () => {
       );
 
       const listing = response.data;
-      // console.log(listing);
+
       const mappedCropData = {
         id: listing.id,
-        images: listing.images, // Fixed: Keep full array
+        images: listing.images || [],
         type: listing.productType,
         variety: listing.productName,
         quantity: listing.quantity,
@@ -80,11 +85,11 @@ const CropDetailPage = () => {
         location: listing.location,
         harvestDate: listing.harvestedDate,
         shelfLife: listing.shelfLifetime,
-        price: `₹${listing.finalPrice.toFixed(2)}`,
+        price: `₹${listing.finalPrice?.toFixed(2) || "0.00"}`,
         priceUnit: `per ${listing.unitOfQuantity}`,
         description: listing.productDescription,
         contact: listing.contactOfFarmer,
-        rating: 4.5,
+        rating: listing.rating || 4.5,
         farmName: listing.farmName || "Organic Farm",
         farmerName: listing.farmerName || "Local Farmer",
         isOrganic: listing.isOrganic || false,
@@ -95,17 +100,12 @@ const CropDetailPage = () => {
 
       setCropData(mappedCropData);
 
-      const imagePromises = listing.images.map((image) =>
-        api
-          .get(`${API_CONFIG.MARKET_ACCESS}/image/${image.id}`, {
-            withCredentials: true,
-            responseType: "blob",
-          })
-          .then((res) => URL.createObjectURL(res.data)),
-      );
-
-      const imageUrls = await Promise.all(imagePromises);
-      setImages(imageUrls);
+      if (hasValidImages(listing.images)) {
+        const imageUrls = convertImagesToUrls(listing.images);
+        setImages(imageUrls);
+      } else {
+        setImages([]);
+      }
     } catch (err) {
       setError(
         `Failed to fetch crop data: ${err.response?.data || err.message}`,

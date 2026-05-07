@@ -6,6 +6,11 @@ import toast from "react-hot-toast";
 import { API_CONFIG } from "../../config/apiConfig";
 import Loader from "../Loader/Loader";
 import {
+  convertImageInfoToUrl,
+  revokeImageUrl,
+  hasValidImages,
+} from "../../utils/imageUtils";
+import {
   ArrowLeft,
   Upload,
   X,
@@ -159,8 +164,28 @@ const UpdateListingForm = () => {
         productPhotos: [],
       }));
 
-      if (l.images && l.images.length > 0) {
-        const photos = await fetchExistingImages(l.images);
+      if (hasValidImages(l.images)) {
+        const photos = l.images
+          .map((img) => {
+            const preview = convertImageInfoToUrl(img);
+            if (preview) {
+              blobUrlsRef.current.push(preview);
+              const uint8Array = new Uint8Array(img.data);
+              const blob = new Blob([uint8Array], {
+                type: img.fileType || "image/jpeg",
+              });
+              const file = new File(
+                [blob],
+                img.fileName || `existing-${img.id}.jpg`,
+                {
+                  type: img.fileType || "image/jpeg",
+                },
+              );
+              return { file, preview, existingId: img.id };
+            }
+            return null;
+          })
+          .filter((photo) => photo !== null);
         setFormData((prev) => ({ ...prev, productPhotos: photos }));
       }
     } catch (error) {
@@ -175,25 +200,6 @@ const UpdateListingForm = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchExistingImages = async (images) => {
-    const results = await Promise.allSettled(
-      images.map(async (img) => {
-        const res = await api.get(`${BASE_URL}/image/${img.id}`, {
-          withCredentials: true,
-          responseType: "blob",
-        });
-        const blob = res.data;
-        const file = new File([blob], `existing-${img.id}.jpg`, {
-          type: blob.type || "image/jpeg",
-        });
-        const preview = URL.createObjectURL(blob);
-        blobUrlsRef.current.push(preview);
-        return { file, preview, existingId: img.id };
-      }),
-    );
-    return results.filter((r) => r.status === "fulfilled").map((r) => r.value);
   };
 
   const handleInputChange = (e) => {

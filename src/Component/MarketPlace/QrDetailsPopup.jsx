@@ -15,14 +15,14 @@ const QrDetailsPopup = () => {
     const fetchCropData = async () => {
       try {
         const response = await api.get(
-          `${API_CONFIG.MARKET_ACCESS}/listings/get/${id}`
+          `${API_CONFIG.MARKET_ACCESS}/listings/get/${id}`,
         );
         const listing = response.data;
         setCropData({
           variety: listing.productName,
           type: listing.productType,
           location: listing.location,
-          price: `₹${listing.finalPrice.toFixed(2)}`,
+          price: `₹${listing.finalPrice?.toFixed(2) || "0.00"}`,
           quantity: `${listing.quantity} ${listing.unitOfQuantity}`,
           available: listing.status === "ACTIVE" ? "Yes" : "No",
           shelfLife: listing.shelfLifetime,

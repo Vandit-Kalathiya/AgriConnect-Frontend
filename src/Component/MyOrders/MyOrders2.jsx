@@ -18,11 +18,15 @@ import {
 import { useNavigate } from "react-router-dom";
 import api from "../../config/axiosInstance";
 import { getCurrentUser } from "../../../helper";
+import { convertImageInfoToUrl, hasValidImages } from "../../utils/imageUtils";
 import { XCircle, ThumbsUp } from "react-feather";
 import toast from "react-hot-toast";
 import Loader from "../Loader/Loader";
 import { API_CONFIG } from "../../config/apiConfig";
-import { useCursorPagination, buildPaginationParams } from "../../hooks/useCursorPagination";
+import {
+  useCursorPagination,
+  buildPaginationParams,
+} from "../../hooks/useCursorPagination";
 import PaginationControls from "../Common/PaginationControls";
 import LoadMoreButton from "../Common/LoadMoreButton";
 
@@ -46,23 +50,27 @@ const MyOrders = () => {
   // Fetch function for cursor pagination
   const fetchOrdersPaginated = async (cursor = null, limit = 20) => {
     try {
-      const user = currentUser || await getCurrentUser();
+      const user = currentUser || (await getCurrentUser());
       if (!user?.uniqueHexAddress) {
         throw new Error("User not logged in");
       }
-      
+
       if (!currentUser) {
         setCurrentUser(user);
       }
 
-      const params = buildPaginationParams(cursor, limit, sortOrder === "desc" ? "DESC" : "ASC");
-      
+      const params = buildPaginationParams(
+        cursor,
+        limit,
+        sortOrder === "desc" ? "DESC" : "ASC",
+      );
+
       const response = await api.get(
         `${API_CONFIG.CONTRACT_FARMING}/orders/u/${user.uniqueHexAddress}/paginated?${params}`,
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
-        }
+        },
       );
 
       return response.data; // Returns { data: [...], metadata: {...} }
@@ -122,26 +130,11 @@ const MyOrders = () => {
     { key: "completed", label: "Completed", color: "green" },
   ];
 
-  const fetchImage = async (imageId) => {
-    try {
-      const res = await api.get(
-        `${API_CONFIG.MARKET_ACCESS}/image/${imageId}`,
-        {
-          responseType: "blob",
-        }
-      );
-      return URL.createObjectURL(res.data);
-    } catch (err) {
-      console.error("Failed to fetch image:", err);
-      return null;
-    }
-  };
-
   const fetchListingById = async (listingId) => {
     try {
       const response = await api.get(
         `${API_CONFIG.MARKET_ACCESS}/listings/get/${listingId}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       return response.data;
     } catch (err) {
@@ -159,7 +152,7 @@ const MyOrders = () => {
         fetchListingById(order.listingId).then((listing) => ({
           orderId: order.id,
           listing,
-        }))
+        })),
       );
 
       const listingsData = await Promise.all(listingPromises);
@@ -170,21 +163,16 @@ const MyOrders = () => {
 
       setListings(newListings);
 
-      const imagePromises = Object.entries(newListings).map(
-        ([orderId, listing]) =>
-          listing?.images?.[0]?.id
-            ? fetchImage(listing.images[0].id).then((blobUrl) => ({
-                orderId,
-                blobUrl,
-              }))
-            : Promise.resolve({ orderId, blobUrl: null })
+      const newImages = Object.entries(newListings).reduce(
+        (acc, [orderId, listing]) => {
+          if (hasValidImages(listing?.images)) {
+            const imageUrl = convertImageInfoToUrl(listing.images[0]);
+            if (imageUrl) acc[orderId] = imageUrl;
+          }
+          return acc;
+        },
+        {},
       );
-
-      const imagesData = await Promise.all(imagePromises);
-      const newImages = imagesData.reduce((acc, { orderId, blobUrl }) => {
-        if (blobUrl) acc[orderId] = blobUrl;
-        return acc;
-      }, {});
 
       setImages(newImages);
     };
@@ -214,12 +202,12 @@ const MyOrders = () => {
               "delivered",
               "return_requested",
               "return_confirmed",
-            ].includes(order.status)
+            ].includes(order.status),
           );
           break;
         case "completed":
           filtered = filtered.filter((order) =>
-            ["completed", "refunded"].includes(order.status)
+            ["completed", "refunded"].includes(order.status),
           );
           break;
       }
@@ -246,24 +234,24 @@ const MyOrders = () => {
     // Date range filter
     if (dateRange.start) {
       filtered = filtered.filter(
-        (order) => new Date(order.createdDate) >= new Date(dateRange.start)
+        (order) => new Date(order.createdDate) >= new Date(dateRange.start),
       );
     }
     if (dateRange.end) {
       filtered = filtered.filter(
-        (order) => new Date(order.createdDate) <= new Date(dateRange.end)
+        (order) => new Date(order.createdDate) <= new Date(dateRange.end),
       );
     }
 
     // Price range filter
     if (priceRange.min) {
       filtered = filtered.filter(
-        (order) => order.amount >= parseFloat(priceRange.min)
+        (order) => order.amount >= parseFloat(priceRange.min),
       );
     }
     if (priceRange.max) {
       filtered = filtered.filter(
-        (order) => order.amount <= parseFloat(priceRange.max)
+        (order) => order.amount <= parseFloat(priceRange.max),
       );
     }
 
@@ -335,11 +323,11 @@ const MyOrders = () => {
             "delivered",
             "return_requested",
             "return_confirmed",
-          ].includes(o.status)
+          ].includes(o.status),
         ).length;
       case "completed":
         return orders.filter((o) =>
-          ["completed", "refunded"].includes(o.status)
+          ["completed", "refunded"].includes(o.status),
         ).length;
       default:
         return 0;
@@ -459,14 +447,14 @@ const MyOrders = () => {
         await api.post(
           `${API_CONFIG.CONTRACT_FARMING}/api/payments/confirm-delivery/${pdfHash}/${trackingNumber}`,
           { trackingNumber },
-          { withCredentials: true }
+          { withCredentials: true },
         );
         toast.success("Delivery confirmed successfully!");
       } else if (newStatus === "return_confirmed") {
         await api.post(
           `${API_CONFIG.CONTRACT_FARMING}/api/payments/confirm-return/${pdfHash}`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
         toast.success("Return confirmed successfully!");
       }
@@ -485,7 +473,7 @@ const MyOrders = () => {
       await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/api/payments/reject-delivery/${pdfHash}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
       toast.success("Refund processed successfully!");
       refresh(); // Refresh current page
@@ -528,7 +516,7 @@ const MyOrders = () => {
       const order = orders.find((o) => o.id === selectedOrderId);
       await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/api/payments/request-return/${order.pdfHash}/abcd`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       toast.success("Delivery rejection submitted successfully");
       handleCloseRejectModal();
@@ -550,7 +538,7 @@ const MyOrders = () => {
       const res = await api.post(
         `${API_CONFIG.CONTRACT_FARMING}/api/payments/verify-delivery/${order.pdfHash}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       if (res.status === 200) {
@@ -819,7 +807,9 @@ const MyOrders = () => {
           <div className="text-center py-12">
             <FaShoppingCart className="text-red-500 text-5xl mx-auto mb-4 opacity-50" />
             <h3 className="text-xl font-semibold text-red-700 mb-2">Error</h3>
-            <p className="text-md text-gray-600 max-w-md mx-auto">{error?.message || error}</p>
+            <p className="text-md text-gray-600 max-w-md mx-auto">
+              {error?.message || error}
+            </p>
             <button
               onClick={loadFirstPage}
               className="mt-4 bg-green-600 text-white py-2 px-4 rounded-full hover:bg-green-700 transition-all"
@@ -894,12 +884,12 @@ const MyOrders = () => {
                     {hasActiveFilters
                       ? "Try adjusting your filters to see more results."
                       : activeTab === "pending_payment"
-                      ? "You haven't placed any orders yet requiring payment."
-                      : activeTab === "in_progress"
-                      ? "No orders are currently in progress."
-                      : activeTab === "completed"
-                      ? "No orders have been completed or refunded."
-                      : "You haven't placed any orders yet."}
+                        ? "You haven't placed any orders yet requiring payment."
+                        : activeTab === "in_progress"
+                          ? "No orders are currently in progress."
+                          : activeTab === "completed"
+                            ? "No orders have been completed or refunded."
+                            : "You haven't placed any orders yet."}
                   </p>
                   {hasActiveFilters && (
                     <button
@@ -930,6 +920,9 @@ const MyOrders = () => {
                               src={image || "/placeholder-image.jpg"}
                               alt={listing?.productType || "Product"}
                               className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = "/placeholder-image.jpg";
+                              }}
                             />
                             {/* Order ID Badge */}
                             <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
@@ -945,11 +938,11 @@ const MyOrders = () => {
                                     order.status === "refunded"
                                       ? "text-green-700 bg-green-100"
                                       : order.status === "created" ||
-                                        order.status === "return_confirmed"
-                                      ? "text-yellow-700 bg-yellow-100"
-                                      : order.status === "return_requested"
-                                      ? "text-red-700 bg-red-100"
-                                      : "text-blue-700 bg-blue-100"
+                                          order.status === "return_confirmed"
+                                        ? "text-yellow-700 bg-yellow-100"
+                                        : order.status === "return_requested"
+                                          ? "text-red-700 bg-red-100"
+                                          : "text-blue-700 bg-blue-100"
                                   }`}
                                 >
                                   {order.status === "completed" ||
@@ -970,7 +963,7 @@ const MyOrders = () => {
                                 <span className="text-gray-500 text-sm flex items-center">
                                   <FaCalendarAlt className="mr-1" />
                                   {new Date(
-                                    order.createdDate
+                                    order.createdDate,
                                   ).toLocaleDateString("en-US", {
                                     month: "short",
                                     day: "numeric",
@@ -1030,7 +1023,7 @@ const MyOrders = () => {
                                     handleFarmerAction(
                                       order.pdfHash,
                                       "return_confirmed",
-                                      ""
+                                      "",
                                     );
                                   } else if (
                                     !isFarmer &&
@@ -1070,31 +1063,33 @@ const MyOrders = () => {
               )}
 
               {/* Pagination Controls */}
-              {filteredAndSortedOrders.length > 0 && paginationMode === "paginated" && (
-                <PaginationControls
-                  hasNext={hasNextPage}
-                  hasPrev={hasPrevPage}
-                  onNext={loadNextPage}
-                  onPrev={loadPrevPage}
-                  onRefresh={refresh}
-                  isLoading={isLoading}
-                  currentPage={currentPage}
-                  returnedCount={metadata.returnedCount || orders.length}
-                  pageSize={metadata.pageSize || 20}
-                  color="green"
-                />
-              )}
+              {filteredAndSortedOrders.length > 0 &&
+                paginationMode === "paginated" && (
+                  <PaginationControls
+                    hasNext={hasNextPage}
+                    hasPrev={hasPrevPage}
+                    onNext={loadNextPage}
+                    onPrev={loadPrevPage}
+                    onRefresh={refresh}
+                    isLoading={isLoading}
+                    currentPage={currentPage}
+                    returnedCount={metadata.returnedCount || orders.length}
+                    pageSize={metadata.pageSize || 20}
+                    color="green"
+                  />
+                )}
 
               {/* Load More Button */}
-              {filteredAndSortedOrders.length > 0 && paginationMode === "loadMore" && (
-                <LoadMoreButton
-                  onLoadMore={loadMore}
-                  hasMore={hasNextPage}
-                  isLoading={isLoading}
-                  color="green"
-                  loadedCount={orders.length}
-                />
-              )}
+              {filteredAndSortedOrders.length > 0 &&
+                paginationMode === "loadMore" && (
+                  <LoadMoreButton
+                    onLoadMore={loadMore}
+                    hasMore={hasNextPage}
+                    isLoading={isLoading}
+                    color="green"
+                    loadedCount={orders.length}
+                  />
+                )}
             </div>
           </>
         )}
@@ -1142,7 +1137,7 @@ const MyOrders = () => {
                     handleFarmerAction(
                       order.pdfHash,
                       "delivered",
-                      trackingNumber
+                      trackingNumber,
                     );
                   }}
                   className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center justify-center font-medium shadow-md"
